@@ -4,10 +4,10 @@
 
 :root {
   /* Colors - DAON Brand */
-  --md-primary-color: #44A08D;
-  --md-primary-light: #4ECDC4; 
-  --md-primary-dark: #1E3C72;
-  --md-accent-color: #4ECDC4;
+  --md-primary-color: #3FB8AF;
+  --md-primary-light: #5DD5D5; 
+  --md-primary-dark: #173F5F;
+  --md-accent-color: #5DD5D5;
   
   /* Text colors */
   --md-text-color: #2e3440;
@@ -245,9 +245,9 @@ body {
 .md-hero {
   background: linear-gradient(
     135deg,
-    #4ECDC4 0%,
-    #44A08D 50%,
-    #1E3C72 100%
+    #5DD5D5 0%,
+    #3FB8AF 50%,
+    #173F5F 100%
   );
   color: #ffffff;
   overflow: hidden;
@@ -335,14 +335,6 @@ p {
 /* First element margin reset */
 .md-content__inner > :first-child {
   margin-top: 0;
-}
-
-/* Hero section */
-.hero-actions {
-  display: flex;
-  gap: 20px;
-  margin: 30px 0;
-  flex-wrap: wrap;
 }
 
 /* Feature grid */
@@ -434,154 +426,6 @@ p {
   color: var(--md-primary-dark);
 }
 
-/* How it works */
-.how-it-works-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-  margin: 40px 0;
-}
-
-.step {
-  text-align: center;
-  padding: 20px;
-  background: var(--bg-light);
-  border-radius: var(--radius);
-  border: 1px solid var(--border-light);
-}
-
-.step h3 {
-  color: var(--text-dark);
-  margin-bottom: 15px;
-}
-
-.step p {
-  color: var(--text-light);
-}
-
-/* Platform grid */
-.platform-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  margin: 40px 0;
-}
-
-.platform-category {
-  background: var(--bg-light);
-  padding: 25px;
-  border-radius: var(--radius);
-  border-left: 4px solid var(--primary-color);
-}
-
-.platform-category h3 {
-  color: var(--text-dark);
-  margin-bottom: 15px;
-}
-
-.platform-category ul {
-  list-style: none;
-  margin-top: 15px;
-  padding: 0;
-}
-
-.platform-category li {
-  padding: 5px 0;
-  color: var(--text-light);
-}
-
-/* Documentation sections */
-.doc-sections {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  margin: 40px 0;
-}
-
-.doc-category {
-  background: var(--bg-white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius);
-  padding: 25px;
-}
-
-.doc-category h3 {
-  color: var(--text-dark);
-  margin-bottom: 15px;
-}
-
-.doc-category ul {
-  list-style: none;
-  margin-top: 15px;
-  padding: 0;
-}
-
-.doc-category li {
-  margin: 8px 0;
-}
-
-.doc-category a {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.doc-category a:hover {
-  text-decoration: underline;
-}
-
-/* CTA section */
-.cta-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin: 40px 0;
-  text-align: center;
-}
-
-.cta-button {
-  display: block;
-  padding: 30px 20px;
-  border: 2px solid var(--border-light);
-  border-radius: var(--radius);
-  text-decoration: none;
-  color: var(--text-dark);
-  background: var(--bg-white);
-  transition: all 0.3s;
-}
-
-.cta-button.primary {
-  border-color: var(--primary-color);
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-}
-
-.cta-button:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.cta-button small {
-  opacity: 0.8;
-  font-size: 0.9em;
-}
-
-/* Bottom message */
-.bottom-message {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-  padding: 40px;
-  border-radius: var(--radius);
-  text-align: center;
-  margin: 60px 0 40px 0;
-}
-
-.bottom-message h2 {
-  color: white;
-  border: none;
-  margin-bottom: 20px;
-}
-
 /* Footer */
 .md-footer {
   background: var(--md-default-bg-color--lighter);
@@ -610,37 +454,55 @@ p {
   text-align: center;
 }
 
-/* Section dividers */
-.md-section {
-  margin: var(--md-spacing-large) 0;
-}
-
-.md-section__title {
-  text-align: center;
-  margin: 0 auto var(--md-spacing-large) auto;
-  max-width: 48rem;
-}
-
-/* Status indicators */
-.md-status {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.1rem 0.4rem;
+/* Code blocks */
+pre, code {
+  font-family: var(--md-code-font);
+  background: var(--md-default-bg-color--light);
+  padding: 0.2rem 0.4rem;
   border-radius: var(--md-border-radius);
-  font-size: 0.64rem;
+  font-size: 0.7rem;
+}
+
+pre {
+  padding: var(--md-spacing);
+  overflow-x: auto;
+  margin: var(--md-spacing) 0;
+  border-left: 0.2rem solid var(--md-primary-color);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Blockquotes */
+blockquote {
+  border-left: 0.2rem solid var(--md-primary-color);
+  padding-left: var(--md-spacing);
+  margin: var(--md-spacing) 0;
+  font-style: italic;
+  color: var(--md-text-color-light);
+  background: var(--md-default-bg-color--light);
+  padding: var(--md-spacing);
+  border-radius: var(--md-border-radius);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--md-spacing) 0;
+}
+
+th, td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 0.05rem solid var(--md-border-color);
+}
+
+th {
+  background: var(--md-default-bg-color--light);
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.md-status--success {
-  background: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
-}
-
-.md-status--warning {
-  background: rgba(255, 152, 0, 0.1);
-  color: #FF9800;
 }
 
 /* Responsive design */
@@ -675,168 +537,5 @@ p {
   .md-hero__actions .md-button {
     width: 100%;
     max-width: 12rem;
-  }
-}
-
-/* Code blocks */
-pre, code {
-  font-family: 'Monaco', 'Menlo', monospace;
-  background: var(--bg-light);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-
-pre {
-  padding: 20px;
-  overflow-x: auto;
-  margin: 20px 0;
-  border-left: 4px solid var(--primary-color);
-}
-
-pre code {
-  background: none;
-  padding: 0;
-}
-
-/* Blockquotes */
-blockquote {
-  border-left: 4px solid var(--primary-color);
-  padding-left: 20px;
-  margin: 20px 0;
-  font-style: italic;
-  color: var(--text-light);
-  background: var(--bg-light);
-  padding: 20px;
-  border-radius: var(--radius);
-}
-
-/* Tables */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-}
-
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border-light);
-}
-
-th {
-  background: var(--bg-light);
-  font-weight: 600;
-}
-
-/* Creator types grid */
-.creator-types-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  margin: 40px 0;
-}
-
-.creator-type {
-  background: var(--bg-white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius);
-  padding: 25px;
-  box-shadow: var(--shadow);
-  transition: transform 0.2s;
-}
-
-.creator-type:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.creator-type h3 {
-  color: var(--text-dark);
-  margin-bottom: 10px;
-}
-
-.creator-type ul {
-  list-style: none;
-  padding: 0;
-  margin: 15px 0;
-}
-
-.creator-type li {
-  padding: 4px 0;
-  color: var(--text-light);
-}
-
-.creator-type a {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.creator-type a:hover {
-  text-decoration: underline;
-}
-
-/* Simple how it works */
-.how-it-works-simple {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin: 40px 0;
-}
-
-.how-it-works-simple .step {
-  text-align: center;
-  padding: 20px;
-  background: var(--bg-light);
-  border-radius: var(--radius);
-  border: 1px solid var(--border-light);
-}
-
-.how-it-works-simple .step h3 {
-  color: var(--text-dark);
-  margin-bottom: 15px;
-}
-
-.how-it-works-simple .step p {
-  color: var(--text-light);
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .nav-container {
-    flex-direction: column;
-    height: auto;
-    padding: 15px 20px;
-  }
-  
-  .nav-links {
-    margin: 15px 0;
-    gap: 20px;
-  }
-  
-  .hero-actions {
-    flex-direction: column;
-  }
-  
-  .btn-large {
-    width: 100%;
-  }
-  
-  h1 {
-    font-size: 2em;
-  }
-  
-  h2 {
-    font-size: 1.5em;
-  }
-  
-  .quick-options-grid,
-  .platform-grid,
-  .doc-sections,
-  .how-it-works-steps,
-  .creator-types-grid,
-  .how-it-works-simple {
-    grid-template-columns: 1fr;
   }
 }
