@@ -4,89 +4,136 @@ title: "DAON Creator Protection"
 description: "Protect your creative work from AI exploitation with blockchain-verified ownership"
 ---
 
-# 🛡️ Protect Your Creative Work from AI Exploitation
 
-**DAON (Digital Asset Ownership Network) provides cryptographic proof of content ownership to fight unauthorized AI training and commercial exploitation.**
 
-<div class="hero-actions">
-  <a href="/get-started/" class="btn btn-primary btn-large">🚀 Get Started (2 minutes)</a>
-  <a href="/creators/" class="btn btn-secondary btn-large">👨‍🎨 For Creators</a>
-  <a href="/platforms/" class="btn btn-secondary btn-large">🏢 For Platforms</a>
+## Quick Protection Options
+
+Choose the right protection method for your creative work.
+
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon">📝</div>
+    <h3 class="md-feature__title">WordPress Bloggers</h3>
+    <p class="md-feature__description">Install our plugin and protect all posts automatically</p>
+    <ul class="md-feature__list">
+      <li>One-click installation</li>
+      <li>Automatic protection for new posts</li>
+      <li>Liberation License blocks AI training</li>
+    </ul>
+    <a href="/examples/wordpress/" class="md-feature__link">Download Plugin →</a>
+  </div>
+
+  <div class="md-feature">
+    <div class="md-feature__icon">📚</div>
+    <h3 class="md-feature__title">AO3 Fanfiction Writers</h3>
+    <p class="md-feature__description">Browser extension protects your works instantly</p>
+    <ul class="md-feature__list">
+      <li>Works on any AO3 page</li>
+      <li>Bulk protection for existing works</li>
+      <li>Cryptographic ownership proof</li>
+    </ul>
+    <a href="/examples/browser-extension/" class="md-feature__link">Get Extension →</a>
+  </div>
+
+  <div class="md-feature">
+    <div class="md-feature__icon">💻</div>
+    <h3 class="md-feature__title">Platform Developers</h3>
+    <p class="md-feature__description">Integrate creator protection in 3 lines of code</p>
+    <ul class="md-feature__list">
+      <li>SDKs for all major languages</li>
+      <li>REST API for any platform</li>
+      <li>Copy-paste examples ready</li>
+    </ul>
+    <a href="/platforms/" class="md-feature__link">See Integration →</a>
+  </div>
+
+  <div class="md-feature">
+    <div class="md-feature__icon">📁</div>
+    <h3 class="md-feature__title">Bulk Protection</h3>
+    <p class="md-feature__description">Protect hundreds of existing works at once</p>
+    <ul class="md-feature__list">
+      <li>Import from exports or file folders</li>
+      <li>Support for JSON, XML, text files</li>
+      <li>Progress tracking and error recovery</li>
+    </ul>
+    <a href="/examples/bulk-protection/" class="md-feature__link">Download Tool →</a>
+  </div>
 </div>
 
 ---
 
-## 🎯 Quick Protection Options
+## Why DAON?
 
-<div class="quick-options">
-  
-### 📝 WordPress Bloggers
-**Install our plugin and protect all posts automatically**
-- One-click installation
-- Automatic protection for new posts
-- Liberation License blocks AI training
-- [Download Plugin →](/examples/wordpress/)
+Everything you need to protect your creative work from AI exploitation.
 
-### 📚 AO3 Fanfiction Writers  
-**Browser extension protects your works instantly**
-- Works on any AO3 page
-- Bulk protection for existing works
-- Cryptographic ownership proof
-- [Get Extension →](/examples/browser-extension/)
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon">🔒</div>
+    <h3 class="md-feature__title">Cryptographic Ownership Proof</h3>
+    <p class="md-feature__description">Your content gets a unique SHA-256 hash stored on blockchain, providing tamper-proof evidence you created it first.</p>
+  </div>
 
-### 💻 Platform Developers
-**Integrate creator protection in 3 lines of code**
-- SDKs for all major languages
-- REST API for any platform
-- Copy-paste examples ready
-- [See Integration →](/platforms/)
+  <div class="md-feature">
+    <div class="md-feature__icon">⚖️</div>
+    <h3 class="md-feature__title">Liberation License</h3>
+    <p class="md-feature__description">Blocks corporate AI training without compensation while allowing personal use, education, and humanitarian purposes.</p>
+  </div>
 
-### 📁 Bulk Protection
-**Protect hundreds of existing works at once**
-- Import from exports or file folders
-- Support for JSON, XML, text files
-- Progress tracking and error recovery  
-- [Download Tool →](/examples/bulk-protection/)
+  <div class="md-feature">
+    <div class="md-feature__icon">🌍</div>
+    <h3 class="md-feature__title">Universal Protection</h3>
+    <p class="md-feature__description">Protection travels with your content across platforms, site changes, and legal jurisdictions.</p>
+  </div>
 
+  <div class="md-feature">
+    <div class="md-feature__icon">🇪🇺</div>
+    <h3 class="md-feature__title">Legal Framework</h3>
+    <p class="md-feature__description">Hosted in Germany with GDPR compliance and creator-friendly courts for enforcement.</p>
+  </div>
+
+  <div class="md-feature">
+    <div class="md-feature__icon">💰</div>
+    <h3 class="md-feature__title">Completely Free</h3>
+    <p class="md-feature__description">No subscriptions, no limits, no hidden costs. Creator protection should be accessible to everyone.</p>
+  </div>
+
+  <div class="md-feature">
+    <div class="md-feature__icon">⚡</div>
+    <h3 class="md-feature__title">Fast and Lightweight</h3>
+    <p class="md-feature__description">Protection happens in seconds with zero impact on your site performance or user experience.</p>
+  </div>
 </div>
 
 ---
 
-## ⚡ Why DAON?
+## How It Works
 
-### 🔒 **Cryptographic Ownership Proof**
-Your content gets a unique SHA-256 hash stored on blockchain, providing tamper-proof evidence you created it first.
+Simple, fast, and effective protection in four steps.
 
-### ⚖️ **Liberation License**
-Blocks corporate AI training without compensation while allowing personal use, education, and humanitarian purposes.
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon">1️⃣</div>
+    <h3 class="md-feature__title">Create Content</h3>
+    <p class="md-feature__description">Write your story, article, or creative work as normal on any platform.</p>
+  </div>
 
-### 🌍 **Universal Protection**  
-Protection travels with your content across platforms, site changes, and legal jurisdictions.
+  <div class="md-feature">
+    <div class="md-feature__icon">2️⃣</div>
+    <h3 class="md-feature__title">Protect with DAON</h3>
+    <p class="md-feature__description">Use our tools to register your content with blockchain verification.</p>
+  </div>
 
-### 🇪🇺 **Legal Framework**
-Hosted in Germany with GDPR compliance and creator-friendly courts for enforcement.
+  <div class="md-feature">
+    <div class="md-feature__icon">3️⃣</div>
+    <h3 class="md-feature__title">Get Proof</h3>
+    <p class="md-feature__description">Receive cryptographic proof of ownership with verification URL.</p>
+  </div>
 
-### 💰 **Completely Free**
-No subscriptions, no limits, no hidden costs. Creator protection should be accessible to everyone.
-
----
-
-## 📊 How It Works
-
-<div class="how-it-works">
-
-### 1. **Create Content** ✍️
-Write your story, article, or creative work as normal on any platform.
-
-### 2. **Protect with DAON** 🛡️  
-Use our tools to register your content with blockchain verification.
-
-### 3. **Get Proof** 📜
-Receive cryptographic proof of ownership with verification URL.
-
-### 4. **Legal Standing** ⚖️
-If violations occur, you have tamper-proof evidence for legal action.
-
+  <div class="md-feature">
+    <div class="md-feature__icon">4️⃣</div>
+    <h3 class="md-feature__title">Legal Standing</h3>
+    <p class="md-feature__description">If violations occur, you have tamper-proof evidence for legal action.</p>
+  </div>
 </div>
 
 ---
@@ -106,32 +153,52 @@ If violations occur, you have tamper-proof evidence for legal action.
 
 ## 🚀 Platform Support
 
-<div class="platform-grid">
+<div class="platform-grid" markdown="1">
 
-### **Content Management**
+<div class="platform-category" markdown="1">
+
+### Content Management
+
 - WordPress (Plugin available)
 - Ghost (Webhook integration)
 - Medium (Web tool)
 - Substack (Copy-paste tool)
 
-### **Fanfiction Platforms**  
+</div>
+
+<div class="platform-category" markdown="1">
+
+### Fanfiction Platforms
+
 - Archive of Our Own (Browser extension)
 - FanFiction.Net (Browser extension)
 - Wattpad (SDK integration)
 - Custom platforms (Ruby/Rails SDK)
 
-### **Developer Platforms**
+</div>
+
+<div class="platform-category" markdown="1">
+
+### Developer Platforms
+
 - Next.js/React (Node.js SDK)
-- Django/Flask (Python SDK)  
+- Django/Flask (Python SDK)
 - Laravel/Symfony (PHP SDK)
 - Rails (Ruby SDK)
 - Any Go application (Go SDK)
 
-### **Academic Platforms**
+</div>
+
+<div class="platform-category" markdown="1">
+
+### Academic Platforms
+
 - ArXiv-style preprint servers
-- Institutional repositories  
+- Institutional repositories
 - Research blogs
 - Academic social networks
+
+</div>
 
 </div>
 
@@ -139,21 +206,34 @@ If violations occur, you have tamper-proof evidence for legal action.
 
 ## 📚 Documentation
 
-<div class="doc-sections">
+<div class="doc-sections" markdown="1">
 
-### 🎨 **For Creators**
+<div class="doc-category" markdown="1">
+
+### 🎨 For Creators
+
 - [Getting Started Guide](/creators/getting-started/)
 - [Bulk Protection Tool](/creators/bulk-protection/)
 - [Understanding Licenses](/creators/licenses/)
 - [Legal Protection](/creators/legal/)
 
-### 🏢 **For Platforms**  
-- [Integration Overview](/platforms/overview/)
-- [Quick Integration Examples](/platforms/examples/)
+</div>
+
+<div class="doc-category" markdown="1">
+
+### 🏢 For Platforms
+
+- [Integration Overview](/platforms/)
+- [Quick Integration Examples](/examples/)
 - [SDK Documentation](/api/)
 - [WordPress Plugin Guide](/platforms/wordpress/)
 
-### 🛠️ **For Developers**
+</div>
+
+<div class="doc-category" markdown="1">
+
+### 🛠️ For Developers
+
 - [API Reference](/api/reference/)
 - [Node.js SDK](/api/nodejs/)
 - [Python SDK](/api/python/)
@@ -161,11 +241,18 @@ If violations occur, you have tamper-proof evidence for legal action.
 - [Ruby SDK](/api/ruby/)
 - [Go SDK](/api/go/)
 
-### ⚖️ **Legal Framework**
+</div>
+
+<div class="doc-category" markdown="1">
+
+### ⚖️ Legal Framework
+
 - [Liberation License](/legal/liberation-license/)
 - [Creator Rights](/legal/creator-rights/)
 - [AI Training Compliance](/legal/ai-compliance/)
 - [GDPR & Privacy](/legal/privacy/)
+
+</div>
 
 </div>
 

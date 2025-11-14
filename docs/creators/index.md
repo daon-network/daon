@@ -14,57 +14,75 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
 
 ## 🎯 Quick Start for Different Creator Types
 
-<div class="quick-options">
+<div class="creator-types-grid" markdown="1">
 
-### ✍️ **Writers & Bloggers**
+<div class="creator-type" markdown="1">
+
+### ✍️ Writers & Bloggers
+
 **WordPress, Medium, personal blogs**
 
 **Best Tool:** WordPress Plugin or Web Protection Tool
+
 - ✅ Automatic protection for all posts
 - ✅ One-click setup
 - ✅ Liberation License blocks AI training
 - ✅ Legal proof of ownership
 
-[📝 Writer's Guide →](/creators/writers/)
+[📝 Get Started →](/creators/getting-started/)
 
----
+</div>
 
-### 📚 **Fanfiction Authors** 
+<div class="creator-type" markdown="1">
+
+### 📚 Fanfiction Authors
+
 **AO3, FanFiction.Net, Wattpad**
 
 **Best Tool:** Browser Extension
+
 - ✅ Protect existing works in bulk
 - ✅ Works on AO3, FFN, and most platforms
 - ✅ No need to re-upload anything
 - ✅ Cryptographic ownership proof
 
-[📖 Fanfiction Guide →](/creators/fanfiction/)
+[📖 Browser Extension →](/examples/browser-extension/)
 
----
+</div>
 
-### 🎨 **Visual Artists**
+<div class="creator-type" markdown="1">
+
+### 🎨 Visual Artists
+
 **DeviantArt, Instagram, portfolio sites**
 
 **Best Tool:** Bulk Protection Tool
+
 - ✅ Protect image files and artwork
 - ✅ Generate cryptographic fingerprints
 - ✅ Proof of creation date
 - ✅ Legal standing against theft
 
-[🎨 Artist Guide →](/creators/artists/)
+[🎨 Bulk Protection →](/creators/bulk-protection/)
 
----
+</div>
 
-### 🎓 **Academic Writers**
+<div class="creator-type" markdown="1">
+
+### 🎓 Academic Writers
+
 **Research blogs, preprint servers**
 
 **Best Tool:** Platform Integration or Web Tool
+
 - ✅ Protect papers and articles
 - ✅ Timestamp research publication
 - ✅ Prevent unauthorized AI training
 - ✅ Maintain academic integrity
 
-[🎓 Academic Guide →](/creators/academic/)
+[🎓 Getting Started →](/creators/getting-started/)
+
+</div>
 
 </div>
 
@@ -94,19 +112,39 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
 
 ## 📋 How Protection Works (Simple Version)
 
-<div class="how-it-works">
+<div class="how-it-works-simple" markdown="1">
 
-### 1. **You Create Content** ✍️
+<div class="step" markdown="1">
+
+### 1. You Create Content ✍️
+
 Write your story, article, or any creative work
 
-### 2. **DAON Creates Fingerprint** 🔍
+</div>
+
+<div class="step" markdown="1">
+
+### 2. DAON Creates Fingerprint 🔍
+
 Mathematical hash proves it's your unique content
 
-### 3. **Blockchain Registration** ⛓️
+</div>
+
+<div class="step" markdown="1">
+
+### 3. Blockchain Registration ⛓️
+
 Permanent, tamper-proof record with timestamp
 
-### 4. **Legal Protection Active** ⚖️
+</div>
+
+<div class="step" markdown="1">
+
+### 4. Legal Protection Active ⚖️
+
 Liberation License blocks unauthorized AI training
+
+</div>
 
 </div>
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ site.lang | default: 'en' }}">
+<html lang="{{ site.lang | default: 'en' }}" class="no-js">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,86 +17,103 @@
     <link rel="stylesheet" href="{{ '/assets/css/daon.css' | relative_url }}">
     <link rel="icon" type="image/x-icon" href="{{ '/assets/images/favicon.ico' | relative_url }}">
     
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
     {% seo %}
 </head>
 <body>
-    <header class="site-header">
-        <nav class="site-nav">
-            <div class="nav-container">
-                <a href="{{ '/' | relative_url }}" class="nav-brand">
-                    <span class="shield">🛡️</span>
-                    <strong>DAON</strong>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    
+    <header class="md-header">
+        <nav class="md-header__inner md-container">
+            <button class="md-header__button md-icon" aria-label="Open drawer">☰</button>
+            
+            <div class="md-header__title">
+                <a href="{{ '/' | relative_url }}" class="md-logo">
+                    <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" style="stop-color:#4ECDC4;stop-opacity:1" />
+                          <stop offset="50%" style="stop-color:#44A08D;stop-opacity:1" />
+                          <stop offset="100%" style="stop-color:#1E3C72;stop-opacity:1" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M25 18 L75 18 L88 38 L88 62 L75 82 L25 82 L12 62 L12 38 Z" 
+                            fill="url(#logoGradient)" 
+                            stroke="none"/>
+                      <path d="M35 32 L35 68 L55 68 C62 68 68 62 68 55 L68 45 C68 38 62 32 55 32 Z M42 39 L55 39 C58 39 61 42 61 45 L61 55 C61 58 58 61 55 61 L42 61 Z" 
+                            fill="white" 
+                            fill-rule="evenodd"/>
+                    </svg>
                 </a>
-                
-                <div class="nav-links">
-                    {% for link in site.nav_links %}
-                    <a href="{{ link.url | relative_url }}" {% if page.url == link.url %}class="active"{% endif %}>
-                        {{ link.title }}
-                    </a>
-                    {% endfor %}
-                </div>
-                
-                <div class="nav-cta">
-                    <a href="/get-started/" class="btn btn-primary btn-small">Get Protected</a>
-                </div>
+                <strong>DAON</strong>
+                <span class="md-header__topic">Creator Protection</span>
+            </div>
+            
+            <div class="md-header__option">
+                <button class="md-header__button md-icon" aria-label="Search">🔍</button>
+            </div>
+        </nav>
+        
+        <nav class="md-tabs">
+            <div class="md-tabs__inner md-container">
+                <ul class="md-tabs__list">
+                    <li class="md-tabs__item">
+                        <a href="{{ '/' | relative_url }}" class="md-tabs__link md-tabs__link--active">Home</a>
+                    </li>
+                    <li class="md-tabs__item">
+                        <a href="{{ '/creators/' | relative_url }}" class="md-tabs__link">For Creators</a>
+                    </li>
+                    <li class="md-tabs__item">
+                        <a href="{{ '/platforms/' | relative_url }}" class="md-tabs__link">For Platforms</a>
+                    </li>
+                    <li class="md-tabs__item">
+                        <a href="{{ '/api/' | relative_url }}" class="md-tabs__link">Developer API</a>
+                    </li>
+                    <li class="md-tabs__item">
+                        <a href="{{ '/examples/' | relative_url }}" class="md-tabs__link">Examples</a>
+                    </li>
+                    <li class="md-tabs__item">
+                        <a href="{{ '/legal/' | relative_url }}" class="md-tabs__link">Legal</a>
+                    </li>
+                </ul>
             </div>
         </nav>
     </header>
     
-    <main class="site-content">
-        {{ content }}
-    </main>
+    <!-- Hero section for homepage -->
+    <div class="md-hero">
+        <div class="md-hero__inner">
+            <h1 class="md-hero__title">Protect Your Creative Work from AI Exploitation</h1>
+            <p class="md-hero__description">
+                DAON provides cryptographic proof of content ownership to fight unauthorized AI training and commercial exploitation. 
+                Free, easy, and legally enforceable.
+            </p>
+            <div class="md-hero__actions">
+                <a href="/creators/getting-started/" class="md-button md-button--primary md-button--large">Get Started</a>
+                <a href="/examples/" class="md-button md-button--secondary md-button--large">See Examples</a>
+            </div>
+        </div>
+    </div>
     
-    <footer class="site-footer">
-        <div class="footer-container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>🛡️ DAON Network</h3>
-                    <p>Protecting creators from AI exploitation with blockchain-verified ownership proof.</p>
-                    <div class="footer-social">
-                        {% for link in site.footer_links %}
-                        <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.title }}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>For Creators</h4>
-                    <ul>
-                        <li><a href="/creators/getting-started/">Getting Started</a></li>
-                        <li><a href="/creators/bulk-protection/">Bulk Protection</a></li>
-                        <li><a href="/creators/legal/">Legal Protection</a></li>
-                        <li><a href="/creators/faq/">FAQ</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>For Developers</h4>
-                    <ul>
-                        <li><a href="/platforms/overview/">Integration Guide</a></li>
-                        <li><a href="/api/reference/">API Reference</a></li>
-                        <li><a href="/examples/">Code Examples</a></li>
-                        <li><a href="/community/contribute/">Contributing</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h4>Legal & Support</h4>
-                    <ul>
-                        <li><a href="/legal/liberation-license/">Liberation License</a></li>
-                        <li><a href="/legal/privacy/">Privacy Policy</a></li>
-                        <li><a href="/community/support/">Get Support</a></li>
-                        <li><a href="https://status.daon.network">System Status</a></li>
-                    </ul>
+    <div class="md-container">
+        <main class="md-main">
+            <div class="md-main__inner md-container">
+                <div class="md-content">
+                    <article class="md-content__inner">
+                        {{ content }}
+                    </article>
                 </div>
             </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; {{ 'now' | date: "%Y" }} DAON Network. Open source under MIT License.</p>
-                <p><small>Every protected work is a victory against exploitation.</small></p>
+        </main>
+    </div>
+    
+    <footer class="md-footer">
+        <div class="md-footer-meta">
+            <div class="md-footer-meta__inner md-container">
+                <div class="md-footer-copyright">
+                    <p>&copy; {{ 'now' | date: "%Y" }} DAON Network. Open source under MIT License.</p>
+                    <p><small>🛡️ Every protected work is a victory against exploitation.</small></p>
+                </div>
             </div>
         </div>
     </footer>
