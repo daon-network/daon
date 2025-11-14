@@ -25,10 +25,10 @@ Choose the right protection method for your creative work.
 
   <div class="md-feature">
     <div class="md-feature__icon">📚</div>
-    <h3 class="md-feature__title">AO3 Fanfiction Writers</h3>
+    <h3 class="md-feature__title">Writers</h3>
     <p class="md-feature__description">Browser extension protects your works instantly</p>
     <ul class="md-feature__list">
-      <li>Works on any AO3 page</li>
+      <li>Works on any writing platform</li>
       <li>Bulk protection for existing works</li>
       <li>Cryptographic ownership proof</li>
     </ul>
@@ -138,18 +138,7 @@ Simple, fast, and effective protection in four steps.
 
 ---
 
-## 🏆 Success Stories
 
-> **"Protected 847 fanfics in 20 minutes with the bulk tool. Now I have proof I wrote them before any AI company trained on them."**  
-> — AO3 Creator
-
-> **"Plugin took 2 minutes to install. Three months later, I got proof someone was scraping my blog for AI training. Now I have legal standing to fight it."**  
-> — WordPress Blogger  
-
-> **"DAON integration took 3 lines of code. Now we can offer our users real protection against exploitation."**  
-> — Platform Developer
-
----
 
 ## 🚀 Platform Support
 
@@ -277,46 +266,51 @@ Simple, fast, and effective protection in four steps.
 
 ---
 
-## 🔥 Ready to Protect Your Work?
+## Ready to Protect Your Work?
 
-<div class="cta-section">
+Choose your starting point and get protected in minutes.
 
-### **Choose Your Starting Point:**
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon">🚀</div>
+    <h3 class="md-feature__title">Quick Start Guide</h3>
+    <p class="md-feature__description">Get protected in 2 minutes with our step-by-step guide</p>
+    <a href="/creators/getting-started/" class="md-feature__link">Get Started →</a>
+  </div>
 
-<a href="/get-started/" class="cta-button primary">
-  🚀 **Quick Start Guide**<br>
-  <small>Get protected in 2 minutes</small>
-</a>
+  <div class="md-feature">
+    <div class="md-feature__icon">📋</div>
+    <h3 class="md-feature__title">See Examples</h3>
+    <p class="md-feature__description">Copy-paste integration code for any platform</p>
+    <a href="/examples/" class="md-feature__link">View Examples →</a>
+  </div>
 
-<a href="/examples/" class="cta-button secondary">  
-  📋 **See Examples**<br>
-  <small>Copy-paste integration code</small>
-</a>
+  <div class="md-feature">
+    <div class="md-feature__icon">👨‍🎨</div>
+    <h3 class="md-feature__title">Creator Guide</h3>
+    <p class="md-feature__description">Non-technical walkthrough for writers and artists</p>
+    <a href="/creators/" class="md-feature__link">For Creators →</a>
+  </div>
 
-<a href="/creators/" class="cta-button secondary">
-  👨‍🎨 **Creator Guide**<br>
-  <small>Non-technical walkthrough</small>
-</a>
-
-<a href="/api/" class="cta-button secondary">
-  🛠️ **Developer Docs**<br>
-  <small>Technical API reference</small>
-</a>
-
+  <div class="md-feature">
+    <div class="md-feature__icon">🛠️</div>
+    <h3 class="md-feature__title">Developer Docs</h3>
+    <p class="md-feature__description">Technical API reference and integration guides</p>
+    <a href="/api/" class="md-feature__link">Developer API →</a>
+  </div>
 </div>
 
 ---
 
-<div class="bottom-message">
-
-## ⚔️ Every Protected Work Is a Victory
-
-**Join thousands of creators already protecting their work with DAON.**
-
-*Every line of code is an act of revolution.*  
-*Every protected work fights exploitation.*  
-*Every creator matters.*
-
-**🛡️ DAON: Creator Rights Guardian**
-
+<div class="md-cta-footer">
+  <div class="md-cta-content">
+    <h2>Ready to protect your creative work?</h2>
+    <p>Join creators worldwide who are fighting back against AI exploitation with blockchain-verified ownership.</p>
+  </div>
+  <div class="md-cta-action">
+    <a href="/creators/getting-started/" class="md-cta-link">
+      Get Started Now
+      <span class="md-cta-arrow">→</span>
+    </a>
+  </div>
 </div>
