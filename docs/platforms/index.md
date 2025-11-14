@@ -4,97 +4,114 @@ title: "Platform Integration Overview"
 description: "Add DAON creator protection to your platform in 3 lines of code"
 ---
 
-# 🏢 DAON for Platforms
+# DAON for Platforms
 
 **Add creator protection to your platform in 3 lines of code.** Give your users the power to fight AI exploitation.
 
 ---
 
-## 🚀 Why Integrate DAON?
+## Why Integrate DAON?
 
-### **🎨 Your Creators Get:**
-- **Cryptographic ownership proof** for their content
-- **Legal standing** against AI exploitation
-- **Liberation License** blocking unauthorized training
-- **Peace of mind** their work is protected
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="users"></i></div>
+    <h3 class="md-feature__title">Your Creators Get</h3>
+    <ul class="md-feature__list">
+      <li>Cryptographic ownership proof for their content</li>
+      <li>Legal standing against AI exploitation</li>
+      <li>Liberation License blocking unauthorized training</li>
+      <li>Peace of mind their work is protected</li>
+    </ul>
+  </div>
 
-### **🏢 Your Platform Gets:**
-- **Competitive advantage** over platforms without protection
-- **Creator loyalty** from providing protection tools
-- **Legal compliance** with creator rights frameworks
-- **Marketing differentiation** as a creator-friendly platform
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="building"></i></div>
+    <h3 class="md-feature__title">Your Platform Gets</h3>
+    <ul class="md-feature__list">
+      <li>Competitive advantage over platforms without protection</li>
+      <li>Creator loyalty from providing protection tools</li>
+      <li>Legal compliance with creator rights frameworks</li>
+      <li>Marketing differentiation as a creator-friendly platform</li>
+    </ul>
+  </div>
 
-### **📈 Business Benefits:**
-- Higher creator retention rates
-- Premium feature for monetization
-- Positive PR and community trust
-- Future-proofing against AI regulations
-
----
-
-## ⚡ Integration Options
-
-<div class="quick-options">
-
-### 🔥 **SDK Integration** (Recommended)
-**Add protection directly to your codebase**
-
-- ✅ Automatic protection for all content
-- ✅ Native UI integration
-- ✅ Full control over user experience
-- ✅ 3-line code implementation
-
-**Best For:** Custom platforms, CMSs, writing apps
-
-[📋 See SDK Examples →](/examples/)
-
----
-
-### 🔌 **WordPress Plugin**
-**Ready-made solution for WordPress sites**
-
-- ✅ Zero-code installation
-- ✅ Automatic protection settings
-- ✅ Admin dashboard integration
-- ✅ Works with any theme
-
-**Best For:** WordPress blogs, news sites, content publishers
-
-[📥 Download Plugin →](/examples/wordpress/)
-
----
-
-### 🌐 **Web API Integration**
-**REST API for any platform or language**
-
-- ✅ Platform-agnostic HTTP calls
-- ✅ Works with any tech stack
-- ✅ Webhook support for automation
-- ✅ JSON request/response
-
-**Best For:** Legacy systems, custom integrations, microservices
-
-[📖 API Documentation →](/api/reference/)
-
----
-
-### 🛠️ **Custom Solutions**
-**Tailored integration for enterprise needs**
-
-- ✅ White-label branding options
-- ✅ Custom business logic
-- ✅ Enterprise support & SLA
-- ✅ On-premise deployment
-
-**Best For:** Large platforms, enterprise customers
-
-[💼 Contact Enterprise →](mailto:enterprise@daon.network)
-
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="trending-up"></i></div>
+    <h3 class="md-feature__title">Business Benefits</h3>
+    <ul class="md-feature__list">
+      <li>Higher creator retention rates</li>
+      <li>Premium feature for monetization</li>
+      <li>Positive PR and community trust</li>
+      <li>Future-proofing against AI regulations</li>
+    </ul>
+  </div>
 </div>
 
 ---
 
-## 🏗️ Implementation Examples by Platform Type
+## Integration Options
+
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="code-2"></i></div>
+    <h3 class="md-feature__title">SDK Integration (Recommended)</h3>
+    <p class="md-feature__description">Add protection directly to your codebase</p>
+    <ul class="md-feature__list">
+      <li>Automatic protection for all content</li>
+      <li>Native UI integration</li>
+      <li>Full control over user experience</li>
+      <li>3-line code implementation</li>
+    </ul>
+    <p><strong>Best For:</strong> Custom platforms, CMSs, writing apps</p>
+    <a href="/examples/" class="md-feature__link">See SDK Examples →</a>
+  </div>
+
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="plug"></i></div>
+    <h3 class="md-feature__title">WordPress Plugin</h3>
+    <p class="md-feature__description">Ready-made solution for WordPress sites</p>
+    <ul class="md-feature__list">
+      <li>Zero-code installation</li>
+      <li>Automatic protection settings</li>
+      <li>Admin dashboard integration</li>
+      <li>Works with any theme</li>
+    </ul>
+    <p><strong>Best For:</strong> WordPress blogs, news sites, content publishers</p>
+    <a href="/examples/wordpress/" class="md-feature__link">Download Plugin →</a>
+  </div>
+
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="globe"></i></div>
+    <h3 class="md-feature__title">Web API Integration</h3>
+    <p class="md-feature__description">REST API for any platform or language</p>
+    <ul class="md-feature__list">
+      <li>Platform-agnostic HTTP calls</li>
+      <li>Works with any tech stack</li>
+      <li>Webhook support for automation</li>
+      <li>JSON request/response</li>
+    </ul>
+    <p><strong>Best For:</strong> Legacy systems, custom integrations, microservices</p>
+    <a href="/api/reference/" class="md-feature__link">API Documentation →</a>
+  </div>
+
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="settings"></i></div>
+    <h3 class="md-feature__title">Custom Solutions</h3>
+    <p class="md-feature__description">Tailored integration for enterprise needs</p>
+    <ul class="md-feature__list">
+      <li>White-label branding options</li>
+      <li>Custom business logic</li>
+      <li>Enterprise support & SLA</li>
+      <li>On-premise deployment</li>
+    </ul>
+    <p><strong>Best For:</strong> Large platforms, enterprise customers</p>
+    <a href="mailto:enterprise@daon.network" class="md-feature__link">Contact Enterprise →</a>
+  </div>
+</div>
+
+---
+
+## Implementation Examples by Platform Type
 
 ### **Content Management Systems**
 
@@ -186,7 +203,7 @@ export default async function publishPaper(req, res) {
 
 ---
 
-## 🎯 Integration Patterns
+## Integration Patterns
 
 ### **Pattern 1: Auto-Protection**
 Automatically protect all content when published
@@ -229,7 +246,7 @@ const autosave = debounce(async (content) => {
 
 ---
 
-## 🔧 Available SDKs
+## Available SDKs
 
 <div class="platform-grid">
 
@@ -291,7 +308,7 @@ curl -X POST https://api.daon.network/protect
 
 ---
 
-## 🏆 Platform Success Stories
+## Platform Success Stories
 
 > **"DAON integration took literally 3 lines of code. Now we can offer our 50K+ writers real protection against AI exploitation."**  
 > — Indie Writing Platform Developer
@@ -307,7 +324,7 @@ curl -X POST https://api.daon.network/protect
 
 ---
 
-## 📋 Integration Checklist
+## Integration Checklist
 
 ### **Phase 1: Setup (30 minutes)**
 - [ ] Choose your integration method (SDK/API/Plugin)
@@ -336,7 +353,7 @@ curl -X POST https://api.daon.network/protect
 
 ---
 
-## 🛡️ Technical Architecture
+## Technical Architecture
 
 ### **Security & Privacy**
 - **No Content Storage:** Only SHA-256 hashes stored on blockchain
@@ -358,7 +375,7 @@ curl -X POST https://api.daon.network/protect
 
 ---
 
-## 🆘 Integration Support
+## Integration Support
 
 ### **Documentation & Resources**
 - [Complete API Reference](/api/reference/)
@@ -380,37 +397,43 @@ curl -X POST https://api.daon.network/protect
 
 ---
 
-## 🚀 Ready to Integrate?
+## Ready to Integrate?
 
-<div class="cta-section">
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="clipboard-list"></i></div>
+    <h3 class="md-feature__title">See Examples</h3>
+    <p class="md-feature__description">Copy-paste integration code</p>
+    <a href="/examples/" class="md-feature__link">See Examples →</a>
+  </div>
 
-<a href="/examples/" class="cta-button primary">
-  📋 **See Examples**<br>
-  <small>Copy-paste integration code</small>
-</a>
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="book"></i></div>
+    <h3 class="md-feature__title">API Docs</h3>
+    <p class="md-feature__description">Complete technical reference</p>
+    <a href="/api/reference/" class="md-feature__link">API Docs →</a>
+  </div>
 
-<a href="/api/reference/" class="cta-button secondary">
-  📖 **API Docs**<br>
-  <small>Complete technical reference</small>
-</a>
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="message-circle"></i></div>
+    <h3 class="md-feature__title">Get Help</h3>
+    <p class="md-feature__description">Chat with developers</p>
+    <a href="https://discord.gg/daon" class="md-feature__link">Get Help →</a>
+  </div>
 
-<a href="https://discord.gg/daon" class="cta-button secondary">
-  💬 **Get Help**<br>
-  <small>Chat with developers</small>
-</a>
-
-<a href="mailto:integrations@daon.network" class="cta-button secondary">
-  🤝 **Enterprise**<br>
-  <small>Custom solutions & support</small>
-</a>
-
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="handshake"></i></div>
+    <h3 class="md-feature__title">Enterprise</h3>
+    <p class="md-feature__description">Custom solutions & support</p>
+    <a href="mailto:integrations@daon.network" class="md-feature__link">Enterprise →</a>
+  </div>
 </div>
 
 ---
 
 <div class="bottom-message">
 
-## 🛡️ Protect Your Community
+## Protect Your Community
 
 **Every platform with DAON protection is a victory for creator rights.**
 

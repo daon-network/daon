@@ -4,13 +4,13 @@ title: "DAON SDKs & API Documentation"
 description: "Complete API reference and SDK documentation for all supported languages"
 ---
 
-# 🛠️ DAON SDKs & API Documentation
+# DAON SDKs & API Documentation
 
 **Complete API reference and SDK documentation for integrating DAON creator protection into any platform.**
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### **1. Choose Your Language**
 ```bash
@@ -51,115 +51,98 @@ console.log('Verified:', verification.isValid);
 
 ---
 
-## 📚 SDK Documentation
+## SDK Documentation
 
-<div class="doc-sections">
+<div class="md-grid">
 
-### **JavaScript/TypeScript**
-**For web apps, Node.js, React, Vue, Angular**
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="code"></i></div>
+    <h3 class="md-feature__title">JavaScript/TypeScript</h3>
+    <p class="md-feature__description">For web apps, Node.js, React, Vue, Angular</p>
+    <ul class="md-feature__list">
+      <li><a href="/api/nodejs/">Node.js SDK Guide</a></li>
+      <li><a href="/api/nodejs/types/">TypeScript Definitions</a></li>
+      <li><a href="/api/nodejs/react/">React Integration</a></li>
+      <li><a href="/api/nodejs/vue/">Vue Integration</a></li>
+      <li><a href="/api/nodejs/express/">Express.js Integration</a></li>
+    </ul>
+    <p><strong>Key Features:</strong> TypeScript support, CommonJS & ESM modules, Browser compatibility, Async/await ready</p>
+  </div>
 
-- [Node.js SDK Guide](/api/nodejs/)
-- [TypeScript Definitions](/api/nodejs/types/)
-- [React Integration](/api/nodejs/react/)
-- [Vue Integration](/api/nodejs/vue/)
-- [Express.js Integration](/api/nodejs/express/)
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="python"></i></div>
+    <h3 class="md-feature__title">Python</h3>
+    <p class="md-feature__description">For Django, Flask, FastAPI, academic platforms</p>
+    <ul class="md-feature__list">
+      <li><a href="/api/python/">Python SDK Guide</a></li>
+      <li><a href="/api/python/django/">Django Integration</a></li>
+      <li><a href="/api/python/flask/">Flask Integration</a></li>
+      <li><a href="/api/python/fastapi/">FastAPI Integration</a></li>
+      <li><a href="/api/python/academic/">Academic Use Cases</a></li>
+    </ul>
+    <p><strong>Key Features:</strong> Django model mixins, Flask decorators, Async support, Type hints included</p>
+  </div>
 
-**Key Features:**
-- ✅ TypeScript support
-- ✅ CommonJS & ESM modules
-- ✅ Browser compatibility
-- ✅ Async/await ready
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="gem"></i></div>
+    <h3 class="md-feature__title">Ruby</h3>
+    <p class="md-feature__description">For Rails, AO3-style platforms, fanfiction sites</p>
+    <ul class="md-feature__list">
+      <li><a href="/api/ruby/">Ruby SDK Guide</a></li>
+      <li><a href="/api/ruby/rails/">Rails Integration</a></li>
+      <li><a href="/api/ruby/activerecord/">ActiveRecord Mixins</a></li>
+      <li><a href="/platforms/ao3-integration/">AO3 Integration Example</a></li>
+      <li><a href="/api/ruby/sinatra/">Sinatra Integration</a></li>
+    </ul>
+    <p><strong>Key Features:</strong> ActiveRecord integration, Rails generators, AO3-compatible, Gem-based distribution</p>
+  </div>
 
----
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="server"></i></div>
+    <h3 class="md-feature__title">PHP</h3>
+    <p class="md-feature__description">For WordPress, Laravel, Symfony, legacy systems</p>
+    <ul class="md-feature__list">
+      <li><a href="/api/php/">PHP SDK Guide</a></li>
+      <li><a href="/api/php/wordpress/">WordPress Integration</a></li>
+      <li><a href="/api/php/laravel/">Laravel Integration</a></li>
+      <li><a href="/api/php/symfony/">Symfony Integration</a></li>
+      <li><a href="/api/php/legacy/">Legacy PHP Guide</a></li>
+    </ul>
+    <p><strong>Key Features:</strong> WordPress hooks, Laravel facades, PSR-4 autoloading, PHP 7.4+ support</p>
+  </div>
 
-### **Python**
-**For Django, Flask, FastAPI, academic platforms**
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="cpu"></i></div>
+    <h3 class="md-feature__title">Go</h3>
+    <p class="md-feature__description">For high-performance systems, microservices</p>
+    <ul class="md-feature__list">
+      <li><a href="/api/go/">Go SDK Guide</a></li>
+      <li><a href="/api/go/grpc/">gRPC Integration</a></li>
+      <li><a href="/api/go/microservices/">Microservices Pattern</a></li>
+      <li><a href="/api/go/performance/">Performance Optimization</a></li>
+      <li><a href="/api/go/concurrent/">Concurrent Protection</a></li>
+    </ul>
+    <p><strong>Key Features:</strong> High performance, Concurrent operations, gRPC support, Minimal dependencies</p>
+  </div>
 
-- [Python SDK Guide](/api/python/)
-- [Django Integration](/api/python/django/)
-- [Flask Integration](/api/python/flask/)
-- [FastAPI Integration](/api/python/fastapi/)
-- [Academic Use Cases](/api/python/academic/)
-
-**Key Features:**
-- ✅ Django model mixins
-- ✅ Flask decorators
-- ✅ Async support
-- ✅ Type hints included
-
----
-
-### **Ruby**
-**For Rails, AO3-style platforms, fanfiction sites**
-
-- [Ruby SDK Guide](/api/ruby/)
-- [Rails Integration](/api/ruby/rails/)
-- [ActiveRecord Mixins](/api/ruby/activerecord/)
-- [AO3 Integration Example](/platforms/ao3-integration/)
-- [Sinatra Integration](/api/ruby/sinatra/)
-
-**Key Features:**
-- ✅ ActiveRecord integration
-- ✅ Rails generators
-- ✅ AO3-compatible
-- ✅ Gem-based distribution
-
----
-
-### **PHP**
-**For WordPress, Laravel, Symfony, legacy systems**
-
-- [PHP SDK Guide](/api/php/)
-- [WordPress Integration](/api/php/wordpress/)
-- [Laravel Integration](/api/php/laravel/)
-- [Symfony Integration](/api/php/symfony/)
-- [Legacy PHP Guide](/api/php/legacy/)
-
-**Key Features:**
-- ✅ WordPress hooks
-- ✅ Laravel facades
-- ✅ PSR-4 autoloading
-- ✅ PHP 7.4+ support
-
----
-
-### **Go**
-**For high-performance systems, microservices**
-
-- [Go SDK Guide](/api/go/)
-- [gRPC Integration](/api/go/grpc/)
-- [Microservices Pattern](/api/go/microservices/)
-- [Performance Optimization](/api/go/performance/)
-- [Concurrent Protection](/api/go/concurrent/)
-
-**Key Features:**
-- ✅ High performance
-- ✅ Concurrent operations
-- ✅ gRPC support
-- ✅ Minimal dependencies
-
----
-
-### **REST API**
-**For any language or custom integrations**
-
-- [REST API Reference](/api/reference/)
-- [Authentication](/api/reference/auth/)
-- [Rate Limiting](/api/reference/rate-limits/)
-- [Webhooks](/api/reference/webhooks/)
-- [Error Handling](/api/reference/errors/)
-
-**Key Features:**
-- ✅ Language-agnostic
-- ✅ HTTP/JSON interface
-- ✅ Webhook support
-- ✅ OpenAPI specification
-
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="globe"></i></div>
+    <h3 class="md-feature__title">REST API</h3>
+    <p class="md-feature__description">For any language or custom integrations</p>
+    <ul class="md-feature__list">
+      <li><a href="/api/reference/">REST API Reference</a></li>
+      <li><a href="/api/reference/auth/">Authentication</a></li>
+      <li><a href="/api/reference/rate-limits/">Rate Limiting</a></li>
+      <li><a href="/api/reference/webhooks/">Webhooks</a></li>
+      <li><a href="/api/reference/errors/">Error Handling</a></li>
+    </ul>
+    <p><strong>Key Features:</strong> Language-agnostic, HTTP/JSON interface, Webhook support, OpenAPI specification</p>
+  </div>
 </div>
 
 ---
 
-## 🔧 Core API Methods
+## Core API Methods
 
 ### **Protect Content**
 Register content with cryptographic protection
@@ -232,7 +215,7 @@ Content-Type: application/json
 
 ---
 
-## 🔑 Authentication
+## Authentication
 
 ### **API Key Authentication**
 ```http
@@ -262,7 +245,7 @@ daon.configure({
 
 ---
 
-## ⚡ Performance & Limits
+## Performance & Limits
 
 ### **Rate Limits**
 - **Free Tier:** 1,000 protections/month
@@ -282,7 +265,7 @@ daon.configure({
 
 ---
 
-## 🛡️ Security
+## Security
 
 ### **Data Protection**
 - **Content Hashing:** SHA-256 cryptographic fingerprints
@@ -298,7 +281,7 @@ daon.configure({
 
 ---
 
-## 📋 Error Handling
+## Error Handling
 
 ### **Common Error Codes**
 ```json
@@ -337,7 +320,7 @@ try {
 
 ---
 
-## 🧪 Testing & Development
+## Testing & Development
 
 ### **Sandbox Environment**
 ```javascript
@@ -364,7 +347,7 @@ mockDAON.enable();
 
 ---
 
-## 🆘 Support & Resources
+## Support & Resources
 
 ### **Documentation**
 - [Complete API Reference](/api/reference/)
@@ -385,30 +368,36 @@ mockDAON.enable();
 
 ---
 
-## 🚀 Get Started Now
+## Get Started Now
 
-<div class="cta-section">
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="book"></i></div>
+    <h3 class="md-feature__title">API Reference</h3>
+    <p class="md-feature__description">Complete technical docs</p>
+    <a href="/api/reference/" class="md-feature__link">API Reference →</a>
+  </div>
 
-<a href="/api/reference/" class="cta-button primary">
-  📖 **API Reference**<br>
-  <small>Complete technical docs</small>
-</a>
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="clipboard-list"></i></div>
+    <h3 class="md-feature__title">Code Examples</h3>
+    <p class="md-feature__description">Copy-paste snippets</p>
+    <a href="/examples/" class="md-feature__link">Code Examples →</a>
+  </div>
 
-<a href="/examples/" class="cta-button secondary">
-  📋 **Code Examples**<br>
-  <small>Copy-paste snippets</small>
-</a>
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="message-circle"></i></div>
+    <h3 class="md-feature__title">Get Help</h3>
+    <p class="md-feature__description">Chat with developers</p>
+    <a href="https://discord.gg/daon" class="md-feature__link">Get Help →</a>
+  </div>
 
-<a href="https://discord.gg/daon" class="cta-button secondary">
-  💬 **Get Help**<br>
-  <small>Chat with developers</small>
-</a>
-
-<a href="mailto:api-support@daon.network" class="cta-button secondary">
-  🛠️ **Technical Support**<br>
-  <small>Direct developer help</small>
-</a>
-
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="wrench"></i></div>
+    <h3 class="md-feature__title">Technical Support</h3>
+    <p class="md-feature__description">Direct developer help</p>
+    <a href="mailto:api-support@daon.network" class="md-feature__link">Technical Support →</a>
+  </div>
 </div>
 
 ---

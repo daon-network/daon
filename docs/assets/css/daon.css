@@ -534,24 +534,183 @@ p {
 }
 
 /* Code blocks */
-pre, code {
+code {
   font-family: var(--md-code-font);
-  background: var(--md-default-bg-color--light);
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
   padding: 0.2rem 0.4rem;
-  border-radius: var(--md-border-radius);
-  font-size: 0.7rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  color: #24292e;
 }
 
 pre {
-  padding: var(--md-spacing);
+  font-family: var(--md-code-font);
+  background: #2d3748;
+  color: #e2e8f0;
+  padding: 1.5rem;
+  border-radius: 8px;
   overflow-x: auto;
-  margin: var(--md-spacing) 0;
-  border-left: 0.2rem solid var(--md-primary-color);
+  margin: 1.5rem 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  border: 1px solid #4a5568;
 }
 
 pre code {
   background: none;
+  border: none;
   padding: 0;
+  color: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Code syntax highlighting */
+pre .hljs-comment,
+pre .hljs-quote {
+  color: #718096;
+  font-style: italic;
+}
+
+pre .hljs-keyword,
+pre .hljs-selector-tag,
+pre .hljs-literal {
+  color: #f687b3;
+}
+
+pre .hljs-string,
+pre .hljs-doctag {
+  color: #68d391;
+}
+
+pre .hljs-title,
+pre .hljs-section,
+pre .hljs-selector-id {
+  color: #63b3ed;
+}
+
+pre .hljs-subst {
+  color: #e2e8f0;
+}
+
+pre .hljs-type,
+pre .hljs-class .hljs-title {
+  color: #fbb6ce;
+}
+
+pre .hljs-tag,
+pre .hljs-name,
+pre .hljs-attribute {
+  color: #fc8181;
+}
+
+pre .hljs-regexp,
+pre .hljs-link {
+  color: #81e6d9;
+}
+
+pre .hljs-symbol,
+pre .hljs-bullet {
+  color: #b794f6;
+}
+
+pre .hljs-built_in,
+pre .hljs-builtin-name {
+  color: #f6ad55;
+}
+
+pre .hljs-meta {
+  color: #9ca3af;
+}
+
+pre .hljs-deletion {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+pre .hljs-addition {
+  background: #c6f6d5;
+  color: #2f855a;
+}
+
+pre .hljs-emphasis {
+  font-style: italic;
+}
+
+pre .hljs-strong {
+  font-weight: bold;
+}
+
+/* Language label for code blocks */
+pre[class*="language-"]::before {
+  content: attr(class);
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #4a5568;
+  color: #a0aec0;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0 8px 0 8px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* Specific language styling */
+pre[class*="language-javascript"]::before { content: "JS"; background: #f7df1e; color: #000; }
+pre[class*="language-typescript"]::before { content: "TS"; background: #3178c6; color: #fff; }
+pre[class*="language-python"]::before { content: "PY"; background: #3776ab; color: #fff; }
+pre[class*="language-ruby"]::before { content: "RB"; background: #cc342d; color: #fff; }
+pre[class*="language-php"]::before { content: "PHP"; background: #777bb4; color: #fff; }
+pre[class*="language-bash"]::before { content: "BASH"; background: #4eaa25; color: #fff; }
+pre[class*="language-json"]::before { content: "JSON"; background: #000; color: #fff; }
+pre[class*="language-html"]::before { content: "HTML"; background: #e34f26; color: #fff; }
+pre[class*="language-css"]::before { content: "CSS"; background: #1572b6; color: #fff; }
+
+/* Copy button for code blocks */
+.code-block-wrapper {
+  position: relative;
+}
+
+.code-copy-button {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #e2e8f0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.code-copy-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.code-copy-button.copied {
+  background: #48bb78;
+  border-color: #48bb78;
+  color: white;
+}
+
+/* Inline code in different contexts */
+h1 code, h2 code, h3 code, h4 code, h5 code, h6 code {
+  background: rgba(63, 184, 175, 0.1);
+  border: 1px solid rgba(63, 184, 175, 0.2);
+  color: var(--md-primary-dark);
+}
+
+.md-feature code {
+  background: rgba(93, 213, 213, 0.1);
+  border: 1px solid rgba(93, 213, 213, 0.2);
+  color: var(--md-primary-dark);
 }
 
 /* Blockquotes */

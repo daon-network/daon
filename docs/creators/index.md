@@ -4,7 +4,7 @@ title: "DAON for Creators"
 description: "Non-technical guide to protecting your creative work from AI exploitation"
 ---
 
-# 👨‍🎨 DAON for Creators
+# DAON for Creators
 
 **Protect your creative work from AI exploitation - no technical knowledge required.**
 
@@ -12,83 +12,69 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
 
 ---
 
-## 🎯 Quick Start for Different Creator Types
+## Quick Start for Different Creator Types
 
-<div class="creator-types-grid" markdown="1">
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="pen-tool"></i></div>
+    <h3 class="md-feature__title">Writers & Bloggers</h3>
+    <p class="md-feature__description">WordPress, Medium, personal blogs</p>
+    <p><strong>Best Tool:</strong> WordPress Plugin or Web Protection Tool</p>
+    <ul class="md-feature__list">
+      <li>Automatic protection for all posts</li>
+      <li>One-click setup</li>
+      <li>Liberation License blocks AI training</li>
+      <li>Legal proof of ownership</li>
+    </ul>
+    <a href="/creators/getting-started/" class="md-feature__link">Get Started →</a>
+  </div>
 
-<div class="creator-type" markdown="1">
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="book-open"></i></div>
+    <h3 class="md-feature__title">Fanfiction Authors</h3>
+    <p class="md-feature__description">AO3, FanFiction.Net, Wattpad</p>
+    <p><strong>Best Tool:</strong> Browser Extension</p>
+    <ul class="md-feature__list">
+      <li>Protect existing works in bulk</li>
+      <li>Works on AO3, FFN, and most platforms</li>
+      <li>No need to re-upload anything</li>
+      <li>Cryptographic ownership proof</li>
+    </ul>
+    <a href="/examples/browser-extension/" class="md-feature__link">Browser Extension →</a>
+  </div>
 
-### ✍️ Writers & Bloggers
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="palette"></i></div>
+    <h3 class="md-feature__title">Visual Artists</h3>
+    <p class="md-feature__description">DeviantArt, Instagram, portfolio sites</p>
+    <p><strong>Best Tool:</strong> Bulk Protection Tool</p>
+    <ul class="md-feature__list">
+      <li>Protect image files and artwork</li>
+      <li>Generate cryptographic fingerprints</li>
+      <li>Proof of creation date</li>
+      <li>Legal standing against theft</li>
+    </ul>
+    <a href="/creators/bulk-protection/" class="md-feature__link">Bulk Protection →</a>
+  </div>
 
-**WordPress, Medium, personal blogs**
-
-**Best Tool:** WordPress Plugin or Web Protection Tool
-
-- ✅ Automatic protection for all posts
-- ✅ One-click setup
-- ✅ Liberation License blocks AI training
-- ✅ Legal proof of ownership
-
-[📝 Get Started →](/creators/getting-started/)
-
-</div>
-
-<div class="creator-type" markdown="1">
-
-### 📚 Fanfiction Authors
-
-**AO3, FanFiction.Net, Wattpad**
-
-**Best Tool:** Browser Extension
-
-- ✅ Protect existing works in bulk
-- ✅ Works on AO3, FFN, and most platforms
-- ✅ No need to re-upload anything
-- ✅ Cryptographic ownership proof
-
-[📖 Browser Extension →](/examples/browser-extension/)
-
-</div>
-
-<div class="creator-type" markdown="1">
-
-### 🎨 Visual Artists
-
-**DeviantArt, Instagram, portfolio sites**
-
-**Best Tool:** Bulk Protection Tool
-
-- ✅ Protect image files and artwork
-- ✅ Generate cryptographic fingerprints
-- ✅ Proof of creation date
-- ✅ Legal standing against theft
-
-[🎨 Bulk Protection →](/creators/bulk-protection/)
-
-</div>
-
-<div class="creator-type" markdown="1">
-
-### 🎓 Academic Writers
-
-**Research blogs, preprint servers**
-
-**Best Tool:** Platform Integration or Web Tool
-
-- ✅ Protect papers and articles
-- ✅ Timestamp research publication
-- ✅ Prevent unauthorized AI training
-- ✅ Maintain academic integrity
-
-[🎓 Getting Started →](/creators/getting-started/)
-
-</div>
-
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="graduation-cap"></i></div>
+    <h3 class="md-feature__title">Academic Writers</h3>
+    <p class="md-feature__description">Research blogs, preprint servers</p>
+    <p><strong>Best Tool:</strong> Platform Integration or Web Tool</p>
+    <ul class="md-feature__list">
+      <li>Protect papers and articles</li>
+      <li>Timestamp research publication</li>
+      <li>Prevent unauthorized AI training</li>
+      <li>Maintain academic integrity</li>
+    </ul>
+    <a href="/creators/getting-started/" class="md-feature__link">Getting Started →</a>
+  </div>
 </div>
 
 ---
 
-## 🔒 What is DAON Protection?
+## What is DAON Protection?
 
 ### **The Problem:**
 - AI companies scrape your content without permission
@@ -110,49 +96,39 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
 
 ---
 
-## 📋 How Protection Works (Simple Version)
+## How Protection Works (Simple Version)
 
-<div class="how-it-works-simple" markdown="1">
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="file-text"></i></div>
+    <h3 class="md-feature__title">1. You Create Content</h3>
+    <p class="md-feature__description">Write your story, article, or any creative work</p>
+  </div>
 
-<div class="step" markdown="1">
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="fingerprint"></i></div>
+    <h3 class="md-feature__title">2. DAON Creates Fingerprint</h3>
+    <p class="md-feature__description">Mathematical hash proves it's your unique content</p>
+  </div>
 
-### 1. You Create Content ✍️
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="link"></i></div>
+    <h3 class="md-feature__title">3. Blockchain Registration</h3>
+    <p class="md-feature__description">Permanent, tamper-proof record with timestamp</p>
+  </div>
 
-Write your story, article, or any creative work
-
-</div>
-
-<div class="step" markdown="1">
-
-### 2. DAON Creates Fingerprint 🔍
-
-Mathematical hash proves it's your unique content
-
-</div>
-
-<div class="step" markdown="1">
-
-### 3. Blockchain Registration ⛓️
-
-Permanent, tamper-proof record with timestamp
-
-</div>
-
-<div class="step" markdown="1">
-
-### 4. Legal Protection Active ⚖️
-
-Liberation License blocks unauthorized AI training
-
-</div>
-
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="shield-check"></i></div>
+    <h3 class="md-feature__title">4. Legal Protection Active</h3>
+    <p class="md-feature__description">Liberation License blocks unauthorized AI training</p>
+  </div>
 </div>
 
 **Result:** If someone uses your content without permission, you have bulletproof evidence it's yours.
 
 ---
 
-## 🛡️ Protection Options by Platform
+## Protection Options by Platform
 
 ### **WordPress Blogs (40% of websites)**
 - **WordPress Plugin** - Automatic protection
@@ -180,7 +156,7 @@ Liberation License blocks unauthorized AI training
 
 ---
 
-## ⚖️ Understanding the Liberation License
+## Understanding the Liberation License
 
 **The Liberation License is specifically designed to stop AI exploitation while preserving fair use:**
 
@@ -204,7 +180,7 @@ Liberation License blocks unauthorized AI training
 
 ---
 
-## 🔐 Privacy & Security
+## Privacy & Security
 
 ### **What DAON Stores:**
 - Mathematical fingerprint (SHA-256 hash) of your content
@@ -228,7 +204,7 @@ Liberation License blocks unauthorized AI training
 
 ---
 
-## 💰 Pricing & Costs
+## Pricing & Costs
 
 ### **DAON Protection is Completely Free**
 - ✅ No subscription fees
@@ -243,7 +219,7 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 
 ---
 
-## 🆘 Getting Help
+## Getting Help
 
 ### **Documentation & Guides**
 - [WordPress Plugin Guide](/examples/wordpress/)
@@ -264,7 +240,7 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 
 ---
 
-## 📈 Success Stories
+## Success Stories
 
 > **"Protected 847 fanfictions in 20 minutes using the bulk tool. Now I have legal proof I wrote them all before AI companies could scrape them."**  
 > — AO3 Author, 2.3M words protected
@@ -280,37 +256,43 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 
 ---
 
-## 🚀 Ready to Protect Your Work?
+## Ready to Protect Your Work?
 
-<div class="cta-section">
+<div class="md-grid">
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="shield"></i></div>
+    <h3 class="md-feature__title">Start Protection</h3>
+    <p class="md-feature__description">2-minute setup guide</p>
+    <a href="/get-started/" class="md-feature__link">Start Protection →</a>
+  </div>
 
-<a href="/get-started/" class="cta-button primary">
-  🛡️ **Start Protection**<br>
-  <small>2-minute setup guide</small>
-</a>
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="help-circle"></i></div>
+    <h3 class="md-feature__title">Read FAQ</h3>
+    <p class="md-feature__description">Common questions answered</p>
+    <a href="/creators/faq/" class="md-feature__link">Read FAQ →</a>
+  </div>
 
-<a href="/creators/faq/" class="cta-button secondary">
-  ❓ **Read FAQ**<br>
-  <small>Common questions answered</small>
-</a>
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="wrench"></i></div>
+    <h3 class="md-feature__title">See Tools</h3>
+    <p class="md-feature__description">Plugin, extension, bulk tool</p>
+    <a href="/examples/" class="md-feature__link">See Tools →</a>
+  </div>
 
-<a href="/examples/" class="cta-button secondary">
-  🔧 **See Tools**<br>
-  <small>Plugin, extension, bulk tool</small>
-</a>
-
-<a href="https://discord.gg/daon" class="cta-button secondary">
-  💬 **Join Community**<br>
-  <small>Chat with other creators</small>
-</a>
-
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="message-circle"></i></div>
+    <h3 class="md-feature__title">Join Community</h3>
+    <p class="md-feature__description">Chat with other creators</p>
+    <a href="https://discord.gg/daon" class="md-feature__link">Join Community →</a>
+  </div>
 </div>
 
 ---
 
 <div class="bottom-message">
 
-## ⚔️ Join the Creative Resistance
+## Join the Creative Resistance
 
 **Every protected work is a victory against exploitation.**
 

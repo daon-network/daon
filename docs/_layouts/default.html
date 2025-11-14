@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="{{ '/assets/css/daon.css' | relative_url }}">
     <link rel="icon" type="image/x-icon" href="{{ '/assets/images/favicon.ico' | relative_url }}">
     
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
     {% seo %}
 </head>
 <body>
@@ -98,5 +101,12 @@
             </div>
         </div>
     </footer>
+    
+    <script>
+        // Initialize Lucide icons after DOM load
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
 </body>
 </html>
