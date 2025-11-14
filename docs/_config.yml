@@ -3,7 +3,7 @@
 title: "DAON Creator Protection"
 description: "Digital Asset Ownership Network - Protecting creators from AI exploitation"
 url: "https://daon-network.github.io"
-baseurl: "/daon-docs"
+baseurl: "/daon"
 
 # Site settings
 author: "DAON Network"
@@ -14,7 +14,6 @@ twitter_username: "daon_network"
 # Build settings
 markdown: kramdown
 highlighter: rouge
-theme: minima
 
 plugins:
   - jekyll-feed
