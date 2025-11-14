@@ -4,33 +4,33 @@
 
 :root {
   /* Colors - DAON Brand */
-  --md-primary-color: #3FB8AF;
-  --md-primary-light: #5DD5D5; 
-  --md-primary-dark: #173F5F;
+  --md-primary-color: #5DD5D5;
+  --md-primary-light: #7DE8E8; 
+  --md-primary-dark: #2BA7A7;
   --md-accent-color: #5DD5D5;
   
   /* Text colors */
-  --md-text-color: #2e3440;
-  --md-text-color-light: #54606d; 
-  --md-text-color-lighter: #8b949e;
+  --md-text-color: #e2e8f0;
+  --md-text-color-light: #cbd5e1; 
+  --md-text-color-lighter: #94a3b8;
   
   /* Background colors */
-  --md-default-bg-color: #ffffff;
-  --md-default-bg-color--light: #f8f9fa;
-  --md-default-bg-color--lighter: #eceff4;
-  --md-default-bg-color--lightest: #f6f8fa;
+  --md-default-bg-color: #0f172a;
+  --md-default-bg-color--light: #1e293b;
+  --md-default-bg-color--lighter: #334155;
+  --md-default-bg-color--lightest: #475569;
   
   /* Surface colors */
-  --md-surface-color: #ffffff;
-  --md-surface-color--light: #f8f9fa;
+  --md-surface-color: #1e293b;
+  --md-surface-color--light: #334155;
   
   /* Border colors */
-  --md-border-color: #e1e4e8;
-  --md-border-color--light: #f1f3f4;
+  --md-border-color: #334155;
+  --md-border-color--light: #475569;
   
   /* Shadow */
-  --md-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.05), 0 0 0.05rem rgba(0, 0, 0, 0.1);
-  --md-shadow-hover: 0 0.4rem 1rem rgba(0, 0, 0, 0.1), 0 0 0.1rem rgba(0, 0, 0, 0.15);
+  --md-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.3), 0 0 0.05rem rgba(0, 0, 0, 0.2);
+  --md-shadow-hover: 0 0.4rem 1rem rgba(0, 0, 0, 0.4), 0 0 0.1rem rgba(0, 0, 0, 0.3);
   
   /* Typography */
   --md-text-font: -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
@@ -58,7 +58,7 @@ body {
   font-size: 1rem;
   line-height: 1.6;
   color: var(--md-text-color);
-  background: #f8fafc;
+  background: var(--md-default-bg-color);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -75,14 +75,14 @@ body {
 
 /* Header */
 .md-header {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(20px);
-  box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.3), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.2);
   position: sticky;
   top: 0;
   z-index: 1000;
   height: 2.4rem;
-  border-bottom: 1px solid rgba(93, 213, 213, 0.1);
+  border-bottom: 1px solid rgba(93, 213, 213, 0.2);
 }
 
 .md-header__inner {
@@ -105,6 +105,7 @@ body {
 
 .md-header__button:hover {
   background: var(--md-default-bg-color--light);
+  color: var(--md-primary-light);
 }
 
 /* Logo and title */
@@ -246,11 +247,11 @@ body {
   padding: 3rem 2rem;
   margin: 0 auto;
   max-width: 70rem;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(30, 41, 59, 0.8);
   backdrop-filter: blur(10px);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(93, 213, 213, 0.1);
   position: relative;
 }
 
@@ -395,14 +396,14 @@ p {
 
 /* Feature cards */
 .md-feature {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(30, 41, 59, 0.9);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(51, 65, 85, 0.5);
   border-radius: 16px;
   padding: 2.5rem;
   position: relative;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 
@@ -423,10 +424,10 @@ p {
 }
 
 .md-feature:hover {
-  border-color: rgba(93, 213, 213, 0.4);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border-color: rgba(93, 213, 213, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   transform: translateY(-8px);
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(30, 41, 59, 0.95);
 }
 
 .md-feature:hover::before {
@@ -441,13 +442,13 @@ p {
   height: 3rem;
   border-radius: 16px;
   background: linear-gradient(135deg, 
-    rgba(93, 213, 213, 0.2) 0%, 
-    rgba(63, 184, 175, 0.2) 50%, 
-    rgba(23, 63, 95, 0.2) 100%
+    rgba(125, 232, 232, 0.2) 0%, 
+    rgba(93, 213, 213, 0.2) 50%, 
+    rgba(43, 167, 167, 0.2) 100%
   );
   font-size: 1.4rem;
   margin-bottom: var(--md-spacing);
-  color: var(--md-primary-dark);
+  color: var(--md-primary-light);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(93, 213, 213, 0.3);
@@ -456,10 +457,11 @@ p {
 .md-feature:hover .md-feature__icon {
   transform: scale(1.1);
   background: linear-gradient(135deg, 
-    rgba(93, 213, 213, 0.3) 0%, 
-    rgba(63, 184, 175, 0.3) 50%, 
-    rgba(23, 63, 95, 0.3) 100%
+    rgba(125, 232, 232, 0.3) 0%, 
+    rgba(93, 213, 213, 0.3) 50%, 
+    rgba(43, 167, 167, 0.3) 100%
   );
+  color: var(--md-primary-color);
 }
 
 .md-feature__title {
@@ -595,8 +597,8 @@ p {
 /* Footer */
 .md-footer {
   background: linear-gradient(135deg, 
-    rgba(248, 250, 252, 0.8) 0%, 
-    rgba(226, 232, 240, 0.9) 100%
+    rgba(15, 23, 42, 0.9) 0%, 
+    rgba(30, 41, 59, 0.8) 100%
   );
   backdrop-filter: blur(10px);
   margin-top: 0;
@@ -606,10 +608,10 @@ p {
 
 .md-footer-meta {
   background: linear-gradient(135deg, 
-    rgba(241, 245, 249, 0.9) 0%, 
-    rgba(248, 250, 252, 0.8) 100%
+    rgba(30, 41, 59, 0.9) 0%, 
+    rgba(15, 23, 42, 0.8) 100%
   );
-  border-top: 1px solid rgba(93, 213, 213, 0.1);
+  border-top: 1px solid rgba(93, 213, 213, 0.2);
   backdrop-filter: blur(10px);
 }
 
