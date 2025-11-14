@@ -3,34 +3,34 @@
 /* DAON Documentation Site - MkDocs Material Inspired */
 
 :root {
-  /* Colors - DAON Brand */
+  /* Colors - DAON Brand (teal as accent only) */
   --md-primary-color: #5DD5D5;
   --md-primary-light: #7DE8E8; 
   --md-primary-dark: #2BA7A7;
   --md-accent-color: #5DD5D5;
   
   /* Text colors */
-  --md-text-color: #e2e8f0;
-  --md-text-color-light: #cbd5e1; 
+  --md-text-color: #f1f5f9;
+  --md-text-color-light: #e2e8f0; 
   --md-text-color-lighter: #94a3b8;
   
-  /* Background colors */
-  --md-default-bg-color: #0f172a;
-  --md-default-bg-color--light: #1e293b;
-  --md-default-bg-color--lighter: #334155;
-  --md-default-bg-color--lightest: #475569;
+  /* Background colors - neutral grays */
+  --md-default-bg-color: #0a0f1c;
+  --md-default-bg-color--light: #111827;
+  --md-default-bg-color--lighter: #1f2937;
+  --md-default-bg-color--lightest: #374151;
   
   /* Surface colors */
-  --md-surface-color: #1e293b;
-  --md-surface-color--light: #334155;
+  --md-surface-color: #111827;
+  --md-surface-color--light: #1f2937;
   
   /* Border colors */
-  --md-border-color: #334155;
-  --md-border-color--light: #475569;
+  --md-border-color: #374151;
+  --md-border-color--light: #4b5563;
   
   /* Shadow */
-  --md-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.3), 0 0 0.05rem rgba(0, 0, 0, 0.2);
-  --md-shadow-hover: 0 0.4rem 1rem rgba(0, 0, 0, 0.4), 0 0 0.1rem rgba(0, 0, 0, 0.3);
+  --md-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.4), 0 0 0.05rem rgba(0, 0, 0, 0.3);
+  --md-shadow-hover: 0 0.4rem 1rem rgba(0, 0, 0, 0.5), 0 0 0.1rem rgba(0, 0, 0, 0.4);
   
   /* Typography */
   --md-text-font: -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
@@ -75,14 +75,14 @@ body {
 
 /* Header */
 .md-header {
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(10, 15, 28, 0.95);
   backdrop-filter: blur(20px);
   box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.3), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.2);
   position: sticky;
   top: 0;
   z-index: 1000;
   height: 2.4rem;
-  border-bottom: 1px solid rgba(93, 213, 213, 0.2);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.3);
 }
 
 .md-header__inner {
@@ -247,11 +247,11 @@ body {
   padding: 3rem 2rem;
   margin: 0 auto;
   max-width: 70rem;
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(17, 24, 39, 0.8);
   backdrop-filter: blur(10px);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(93, 213, 213, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(55, 65, 81, 0.3);
   position: relative;
 }
 
@@ -362,8 +362,8 @@ p {
 /* Section backgrounds for visual separation */
 .md-content__inner h2:nth-of-type(even) {
   background: linear-gradient(135deg, 
-    rgba(93, 213, 213, 0.05) 0%, 
-    rgba(248, 250, 252, 0.8) 100%
+    rgba(31, 41, 55, 0.3) 0%, 
+    rgba(17, 24, 39, 0.2) 100%
   );
   margin: 3rem -2rem 2rem -2rem;
   padding: 2rem 2rem 0.5rem 2rem;
@@ -380,7 +380,7 @@ p {
   height: 2px;
   background: linear-gradient(90deg, 
     transparent 0%, 
-    var(--md-primary-light) 50%, 
+    var(--md-primary-color) 50%, 
     transparent 100%
   );
 }
@@ -396,14 +396,14 @@ p {
 
 /* Feature cards */
 .md-feature {
-  background: rgba(30, 41, 59, 0.9);
+  background: rgba(17, 24, 39, 0.9);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  border: 1px solid rgba(55, 65, 81, 0.4);
   border-radius: 16px;
   padding: 2.5rem;
   position: relative;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   overflow: hidden;
 }
 
@@ -424,10 +424,10 @@ p {
 }
 
 .md-feature:hover {
-  border-color: rgba(93, 213, 213, 0.6);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(93, 213, 213, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   transform: translateY(-8px);
-  background: rgba(30, 41, 59, 0.95);
+  background: rgba(17, 24, 39, 0.95);
 }
 
 .md-feature:hover::before {
@@ -441,27 +441,20 @@ p {
   width: 3rem;
   height: 3rem;
   border-radius: 16px;
-  background: linear-gradient(135deg, 
-    rgba(125, 232, 232, 0.2) 0%, 
-    rgba(93, 213, 213, 0.2) 50%, 
-    rgba(43, 167, 167, 0.2) 100%
-  );
+  background: rgba(55, 65, 81, 0.5);
   font-size: 1.4rem;
   margin-bottom: var(--md-spacing);
-  color: var(--md-primary-light);
+  color: #d1d5db;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(93, 213, 213, 0.3);
+  border: 1px solid rgba(75, 85, 99, 0.4);
 }
 
 .md-feature:hover .md-feature__icon {
   transform: scale(1.1);
-  background: linear-gradient(135deg, 
-    rgba(125, 232, 232, 0.3) 0%, 
-    rgba(93, 213, 213, 0.3) 50%, 
-    rgba(43, 167, 167, 0.3) 100%
-  );
+  background: rgba(93, 213, 213, 0.15);
   color: var(--md-primary-color);
+  border-color: rgba(93, 213, 213, 0.3);
 }
 
 .md-feature__title {
@@ -597,8 +590,8 @@ p {
 /* Footer */
 .md-footer {
   background: linear-gradient(135deg, 
-    rgba(15, 23, 42, 0.9) 0%, 
-    rgba(30, 41, 59, 0.8) 100%
+    rgba(10, 15, 28, 0.9) 0%, 
+    rgba(17, 24, 39, 0.8) 100%
   );
   backdrop-filter: blur(10px);
   margin-top: 0;
@@ -608,10 +601,10 @@ p {
 
 .md-footer-meta {
   background: linear-gradient(135deg, 
-    rgba(30, 41, 59, 0.9) 0%, 
-    rgba(15, 23, 42, 0.8) 100%
+    rgba(17, 24, 39, 0.9) 0%, 
+    rgba(10, 15, 28, 0.8) 100%
   );
-  border-top: 1px solid rgba(93, 213, 213, 0.2);
+  border-top: 1px solid rgba(55, 65, 81, 0.3);
   backdrop-filter: blur(10px);
 }
 
