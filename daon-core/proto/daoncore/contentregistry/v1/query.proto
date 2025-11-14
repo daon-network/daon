@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package daoncore.contentregistry.v1;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "daoncore/contentregistry/v1/params.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/daon-network/daon-core/x/contentregistry/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/daon-network/daon-core/contentregistry/v1/params";
+  }
+
+  // VerifyContent Queries a list of VerifyContent items.
+  rpc VerifyContent(QueryVerifyContentRequest) returns (QueryVerifyContentResponse) {
+    option (google.api.http).get = "/daon-network/daon-core/contentregistry/v1/verify_content/{content_hash}";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// QueryVerifyContentRequest defines the QueryVerifyContentRequest message.
+message QueryVerifyContentRequest {
+  string content_hash = 1;
+}
+
+// QueryVerifyContentResponse defines the QueryVerifyContentResponse message.
+message QueryVerifyContentResponse {
+  bool verified = 1;
+  string creator = 2;
+  string license = 3;
+  int64 timestamp = 4;
+}

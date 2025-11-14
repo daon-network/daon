@@ -1,0 +1,16 @@
+syntax = "proto3";
+package daoncore.contentregistry.v1;
+
+option go_package = "github.com/daon-network/daon-core/x/contentregistry/types";
+
+// ContentRecord defines the ContentRecord message.
+message ContentRecord {
+  string content_hash = 1;
+  string creator = 2;
+  string license = 3;
+  int64 timestamp = 4;
+  string platform = 5;
+  string fingerprint = 6;
+  repeated string revision_history = 7;
+  repeated string transfer_history = 8;
+}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 350px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      margin: 0;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    
+    .tagline {
+      font-size: 12px;
+      opacity: 0.9;
+      font-style: italic;
+    }
+    
+    .work-info {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .work-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .work-meta {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    
+    .protection-status {
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      text-align: center;
+    }
+    
+    .protected {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid #4CAF50;
+    }
+    
+    .unprotected {
+      background: rgba(244, 67, 54, 0.2);
+      border: 1px solid #F44336;
+    }
+    
+    .pending {
+      background: rgba(255, 152, 0, 0.2);
+      border: 1px solid #FF9800;
+    }
+    
+    .action-button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    
+    .protect-button {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    .protect-button:hover {
+      background: #45a049;
+    }
+    
+    .protect-button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    
+    .verify-button {
+      background: #2196F3;
+      color: white;
+    }
+    
+    .verify-button:hover {
+      background: #1976D2;
+    }
+    
+    .license-select {
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+    
+    .info-text {
+      font-size: 11px;
+      opacity: 0.8;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    
+    .liberation-info {
+      background: rgba(255,255,255,0.1);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-bottom: 8px;
+    }
+    
+    .footer {
+      text-align: center;
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🛡️ DAON</div>
+    <div class="tagline">"Every line of code is an act of revolution"</div>
+  </div>
+  
+  <div id="work-info" class="work-info" style="display: none;">
+    <div class="work-title" id="work-title">Loading...</div>
+    <div class="work-meta" id="work-meta">Author • Fandom • Rating</div>
+  </div>
+  
+  <div id="protection-status" class="protection-status unprotected">
+    <span id="status-text">Checking protection status...</span>
+  </div>
+  
+  <div id="license-section" style="display: none;">
+    <select id="license-select" class="license-select">
+      <option value="liberation_v1">Liberation License v1.0 (Recommended)</option>
+      <option value="cc_by_nc">Creative Commons BY-NC</option>
+      <option value="cc_by_nc_sa">Creative Commons BY-NC-SA</option>
+      <option value="all_rights_reserved">All Rights Reserved</option>
+    </select>
+    
+    <div class="liberation-info">
+      💡 <strong>Liberation License</strong> allows personal use, education, and humanitarian purposes while blocking corporate AI training without compensation.
+    </div>
+  </div>
+  
+  <button id="protect-button" class="action-button protect-button" disabled>
+    Protect This Work
+  </button>
+  
+  <button id="verify-button" class="action-button verify-button">
+    Verify Protection
+  </button>
+  
+  <div class="info-text">
+    DAON provides cryptographic proof of creator ownership that travels with your work across platforms. Fight back against AI exploitation.
+  </div>
+  
+  <div class="footer">
+    <div>Using DAON blockchain for tamper-proof protection</div>
+    <div>🇪🇺 Hosted in Germany • GDPR Protected</div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# Build artifacts
+build/
+dist/
+
+# Development files
+.git
+.github
+*.md
+docs/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files
+coverage.txt
+*.test
+
+# Node modules (if any)
+node_modules/
+
+# Docker files (don't include in build context)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Local development
+.env
+.env.local

@@ -1,0 +1,14 @@
+syntax = "proto3";
+package ccccore.contentregistry.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/creative-commons-chain/ccc-core/x/contentregistry/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "ccccore/x/contentregistry/Params";
+  option (gogoproto.equal) = true;
+  
+}

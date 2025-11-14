@@ -1,0 +1,296 @@
+/* DAON Creator Protection - Admin Styles */
+
+.daon-admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 1rem 0 2rem 0;
+}
+
+.daon-logo {
+    text-align: center;
+}
+
+.daon-shield {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.daon-logo h2 {
+    color: white;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.8rem;
+}
+
+.daon-logo .description {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Stats Cards */
+.daon-stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.daon-stat-card {
+    background: white;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.daon-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.daon-stat-card.error {
+    border-color: #dc3232;
+    background: #fef7f7;
+}
+
+.daon-stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.daon-stat-card.error .daon-stat-number {
+    color: #dc3232;
+}
+
+.daon-stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Info Section */
+.daon-info-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e1e1e1;
+}
+
+.daon-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.daon-info-card {
+    background: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.daon-info-card h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.daon-info-card p {
+    color: #666;
+    line-height: 1.6;
+}
+
+.daon-support-links {
+    background: #f0f0f1;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.daon-support-links h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.daon-support-links ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.daon-support-links li {
+    margin: 0;
+}
+
+.daon-support-links a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.daon-support-links a:hover {
+    text-decoration: underline;
+}
+
+/* Meta Box Styles */
+#daon-protection {
+    border: 1px solid #e1e1e1;
+}
+
+#daon-protection .postbox-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#daon-protection .postbox-header h2 {
+    color: white;
+}
+
+.daon-status {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.daon-status-protected {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.daon-status-pending {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.daon-status-icon {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.daon-status-text {
+    font-weight: bold;
+}
+
+.daon-details {
+    font-size: 0.9rem;
+}
+
+.daon-details p {
+    margin: 0.5rem 0;
+}
+
+.daon-details .button {
+    margin-top: 0.5rem;
+}
+
+.daon-license-selection {
+    margin: 1rem 0;
+}
+
+.daon-license-selection label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.daon-license-selection select {
+    width: 100%;
+    max-width: 300px;
+}
+
+.daon-license-info {
+    margin-top: 0.5rem;
+}
+
+.daon-license-info .description {
+    font-size: 0.85rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Protection buttons */
+.daon-protect-post,
+.daon-retry-protection {
+    background: #667eea !important;
+    border-color: #667eea !important;
+    color: white !important;
+    transition: all 0.2s ease;
+}
+
+.daon-protect-post:hover,
+.daon-retry-protection:hover {
+    background: #5a67d8 !important;
+    border-color: #5a67d8 !important;
+    transform: translateY(-1px);
+}
+
+.daon-protect-post:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Loading states */
+.daon-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.daon-loading::after {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    border: 2px solid #666;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: daon-spin 1s linear infinite;
+}
+
+@keyframes daon-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .daon-stats-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .daon-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .daon-support-links ul {
+        flex-direction: column;
+    }
+    
+    .daon-admin-header {
+        padding: 1rem;
+    }
+    
+    .daon-shield {
+        font-size: 2rem;
+    }
+    
+    .daon-logo h2 {
+        font-size: 1.5rem;
+    }
+}

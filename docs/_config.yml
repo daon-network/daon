@@ -1,0 +1,136 @@
+# DAON Documentation Site Configuration
+
+title: "DAON Creator Protection"
+description: "Digital Asset Ownership Network - Protecting creators from AI exploitation"
+url: "https://daon-network.github.io"
+baseurl: "/daon-docs"
+
+# Site settings
+author: "DAON Network"
+email: "docs@daon.network"
+github_username: "daon-network"
+twitter_username: "daon_network"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Navigation
+nav_links:
+  - title: "Home"
+    url: "/"
+  - title: "Get Started"
+    url: "/get-started/"
+  - title: "For Creators"
+    url: "/creators/"
+  - title: "For Platforms"
+    url: "/platforms/"
+  - title: "SDKs & APIs"
+    url: "/api/"
+  - title: "Examples"
+    url: "/examples/"
+  - title: "Legal"
+    url: "/legal/"
+  - title: "Community"
+    url: "/community/"
+
+# Footer links
+footer_links:
+  - title: "GitHub"
+    url: "https://github.com/daon-network"
+    icon: "github"
+  - title: "Discord"
+    url: "https://discord.gg/daon"
+    icon: "discord"
+  - title: "Twitter"
+    url: "https://twitter.com/daon_network"
+    icon: "twitter"
+  - title: "Status"
+    url: "https://status.daon.network"
+    icon: "status"
+
+# Collections
+collections:
+  guides:
+    output: true
+    permalink: /:collection/:name/
+  examples:
+    output: true
+    permalink: /:collection/:name/
+  api:
+    output: true
+    permalink: /:collection/:name/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      author: "DAON Network"
+  - scope:
+      path: ""
+      type: "guides"
+    values:
+      layout: "guide"
+  - scope:
+      path: ""
+      type: "examples"
+    values:
+      layout: "example"
+  - scope:
+      path: ""
+      type: "api"
+    values:
+      layout: "api"
+
+# Custom variables
+daon:
+  version: "1.0.0"
+  api_url: "https://api.daon.network"
+  github_url: "https://github.com/daon-network"
+  discord_url: "https://discord.gg/daon"
+  
+  # Feature flags for documentation
+  show_beta_features: false
+  show_advanced_guides: true
+  
+  # Brand colors
+  colors:
+    primary: "#667eea"
+    secondary: "#764ba2"
+    success: "#4CAF50"
+    warning: "#FF9800"
+    danger: "#F44336"
+
+# SEO
+lang: "en"
+logo: "/assets/images/daon-logo.png"
+social:
+  name: "DAON Network"
+  links:
+    - "https://twitter.com/daon_network"
+    - "https://github.com/daon-network"
+    - "https://discord.gg/daon"
+
+# Analytics (when ready)
+# google_analytics: "G-XXXXXXXXXX"
+
+# Exclude from build
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .bundle
+  - .sass-cache
+  - .jekyll-cache
+  - .jekyll-metadata
+  - README.md

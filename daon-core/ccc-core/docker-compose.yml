@@ -1,0 +1,121 @@
+# Docker Compose for Creative Commons Chain Development & Testing
+version: '3.8'
+
+services:
+  # Main blockchain node
+  validator1:
+    build: .
+    container_name: ccc-validator1
+    ports:
+      - "26656:26656"  # P2P port
+      - "26657:26657"  # RPC port
+      - "1317:1317"    # REST API port
+      - "9090:9090"    # gRPC port
+    volumes:
+      - validator1_data:/home/ccc/.ccc-core
+      - ./scripts:/scripts:ro
+    environment:
+      - CHAIN_ID=creative-commons-chain-1
+      - VALIDATOR_NAME=validator1
+      - MONIKER=ccc-validator1
+    command: >
+      sh -c "
+        if [ ! -d /home/ccc/.ccc-core/config ]; then
+          echo 'Initializing validator1...'
+          ccc-cored init validator1 --chain-id creative-commons-chain-1 --home /home/ccc/.ccc-core
+          ccc-cored keys add validator1 --keyring-backend test --home /home/ccc/.ccc-core
+          ccc-cored genesis add-genesis-account validator1 100000000stake --keyring-backend test --home /home/ccc/.ccc-core
+          ccc-cored genesis gentx validator1 10000000stake --keyring-backend test --chain-id creative-commons-chain-1 --home /home/ccc/.ccc-core
+          ccc-cored genesis collect-gentxs --home /home/ccc/.ccc-core
+        fi
+        ccc-cored start --home /home/ccc/.ccc-core
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:26657/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ccc-network
+
+  # Second validator for multi-node testing
+  validator2:
+    build: .
+    container_name: ccc-validator2
+    ports:
+      - "26666:26656"
+      - "26667:26657" 
+      - "1327:1317"
+      - "9091:9090"
+    volumes:
+      - validator2_data:/home/ccc/.ccc-core
+    environment:
+      - CHAIN_ID=creative-commons-chain-1
+      - VALIDATOR_NAME=validator2
+      - MONIKER=ccc-validator2
+    depends_on:
+      - validator1
+    command: >
+      sh -c "
+        sleep 10
+        if [ ! -d /home/ccc/.ccc-core/config ]; then
+          echo 'Initializing validator2...'
+          ccc-cored init validator2 --chain-id creative-commons-chain-1 --home /home/ccc/.ccc-core
+          # Copy genesis from validator1
+          wget -O /home/ccc/.ccc-core/config/genesis.json http://validator1:26657/genesis
+          # Set persistent peers
+          sed -i 's/persistent_peers = \"\"/persistent_peers = \"$(curl -s http://validator1:26657/status | jq -r '.result.node_info.id')@validator1:26656\"/' /home/ccc/.ccc-core/config/config.toml
+        fi
+        ccc-cored start --home /home/ccc/.ccc-core
+      "
+    networks:
+      - ccc-network
+
+  # REST API Gateway (for production deployment)
+  api-gateway:
+    image: nginx:alpine
+    container_name: ccc-api-gateway
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - validator1
+    networks:
+      - ccc-network
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus
+    container_name: ccc-prometheus
+    ports:
+      - "9093:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - ccc-network
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana
+    container_name: ccc-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=ccc-admin
+    networks:
+      - ccc-network
+
+volumes:
+  validator1_data:
+  validator2_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  ccc-network:
+    driver: bridge

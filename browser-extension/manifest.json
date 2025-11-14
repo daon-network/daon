@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "DAON Creator Protection",
+  "version": "1.0.0",
+  "description": "Protect your fanfiction from AI exploitation with cryptographic proof of ownership",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "background"
+  ],
+  
+  "host_permissions": [
+    "https://archiveofourown.org/*",
+    "https://*.archiveofourown.org/*",
+    "https://api.daon.network/*"
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": [
+        "https://archiveofourown.org/works/*",
+        "https://*.archiveofourown.org/works/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "DAON Creator Protection",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["injected.js"],
+      "matches": ["https://archiveofourown.org/*", "https://*.archiveofourown.org/*"]
+    }
+  ]
+}

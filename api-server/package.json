@@ -1,0 +1,52 @@
+{
+  "name": "daon-api-server",
+  "version": "1.0.0",
+  "description": "DAON REST API server bridging SDKs to blockchain",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test src/test/*.test.js",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "keywords": [
+    "daon",
+    "creator-protection",
+    "blockchain",
+    "api",
+    "content-registry"
+  ],
+  "author": "DAON Network",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "dotenv": "^16.3.1",
+    "crypto": "^1.0.1",
+    "winston": "^3.11.0",
+    "express-validator": "^7.0.1",
+    "@cosmjs/stargate": "^0.32.2",
+    "@cosmjs/proto-signing": "^0.32.2",
+    "@cosmjs/crypto": "^0.32.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0",
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/daon-network/api-server"
+  },
+  "bugs": {
+    "url": "https://github.com/daon-network/api-server/issues"
+  },
+  "homepage": "https://docs.daon.network/api/"
+}

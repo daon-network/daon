@@ -1,0 +1,17 @@
+syntax = "proto3";
+package ccccore.contentregistry.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "ccccore/contentregistry/v1/params.proto";
+
+option go_package = "github.com/creative-commons-chain/ccc-core/x/contentregistry/types";
+
+// GenesisState defines the contentregistry module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}

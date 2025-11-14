@@ -1,0 +1,17 @@
+syntax = "proto3";
+package daoncore.contentregistry.v1;
+
+import "amino/amino.proto";
+import "daoncore/contentregistry/v1/params.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/daon-network/daon-core/x/contentregistry/types";
+
+// GenesisState defines the contentregistry module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
