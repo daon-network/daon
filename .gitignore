@@ -1,0 +1,7 @@
+# Large compiled binaries
+daon-core/daon-cored
+daon-core/build/
+**/node_modules/
+**/.DS_Store
+*.log
+.env
