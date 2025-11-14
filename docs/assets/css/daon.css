@@ -58,57 +58,10 @@ body {
   font-size: 1rem;
   line-height: 1.6;
   color: var(--md-text-color);
-  background: linear-gradient(
-    135deg,
-    #f8fafc 0%,
-    #e2e8f0 25%,
-    #f1f5f9 50%,
-    #e2e8f0 75%,
-    #f8fafc 100%
-  );
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  background: #f8fafc;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: relative;
-}
-
-/* Subtle animated background gradient */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Add subtle pattern overlay */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(93, 213, 213, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(23, 63, 95, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(63, 184, 175, 0.05) 0%, transparent 50%);
-  background-size: 300px 300px, 400px 400px, 200px 200px;
-  background-position: 0 0, 100px 100px, 50px 50px;
-  animation: float 20s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
-}
-
-@keyframes float {
-  0%, 100% { 
-    transform: translateY(0px) rotate(0deg);
-    opacity: 1;
-  }
-  50% { 
-    transform: translateY(-20px) rotate(180deg);
-    opacity: 0.8;
-  }
 }
 
 /* Container */
@@ -316,29 +269,7 @@ body::before {
   position: relative;
 }
 
-.md-hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-  background-size: 400px 400px, 300px 300px, 500px 500px;
-  animation: heroFloat 25s ease-in-out infinite;
-}
 
-@keyframes heroFloat {
-  0%, 100% { 
-    background-position: 0% 0%, 100% 100%, 50% 50%;
-  }
-  50% { 
-    background-position: 100% 50%, 0% 50%, 0% 100%;
-  }
-}
 
 .md-hero__inner {
   padding: 4rem var(--md-spacing);
