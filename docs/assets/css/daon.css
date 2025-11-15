@@ -111,6 +111,7 @@ body {
 .md-logo {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   margin-right: 0.75rem;
   height: 2rem;
   width: 2rem;
@@ -119,6 +120,7 @@ body {
 .md-logo svg {
   height: 100%;
   width: 100%;
+  display: block;
 }
 
 .md-header__topic {
