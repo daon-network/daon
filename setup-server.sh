@@ -333,14 +333,7 @@ ${DOMAIN} {
     }
     respond @options 200
     
-    # Rate limiting (built into Caddy)
-    rate_limit {
-        zone static_rl {
-            key {remote_host}
-            window 1m
-            events 100
-        }
-    }
+    # Basic rate limiting (can add fail2ban rules separately)
     
     # Health check endpoint (no logging)
     @health {
