@@ -200,18 +200,25 @@ body {
 
 .md-button--primary {
   background: var(--md-primary-color);
-  color: #ffffff;
+  color: #000000;
+  font-weight: 600;
+}
+
+.md-button--primary:hover {
+  background: var(--md-primary-light);
+  color: #000000;
 }
 
 .md-button--secondary {
-  background: transparent;
-  color: var(--md-primary-color);
-  border: 0.1rem solid var(--md-primary-color);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 0.1rem solid rgba(255, 255, 255, 0.3);
 }
 
 .md-button--secondary:hover {
-  background: var(--md-primary-color);
+  background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* Hero section buttons */
