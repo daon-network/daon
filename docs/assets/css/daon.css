@@ -364,12 +364,14 @@ h6:hover .header-link {
   opacity: 1;
 }
 
-.header-link {
+.header-link,
+.header-link:link,
+.header-link:visited {
   margin-left: 0.5rem;
   opacity: 0;
   transition: all 0.2s ease;
-  color: var(--md-text-color-lighter);
-  text-decoration: none;
+  color: var(--md-text-color-lighter) !important;
+  text-decoration: none !important;
   font-weight: normal;
   font-size: 0.9em;
   display: inline-flex;
@@ -377,11 +379,13 @@ h6:hover .header-link {
   padding: 0.25rem;
   border-radius: 4px;
   background: transparent;
+  border: none !important;
 }
 
-.header-link:hover {
-  color: var(--md-primary-color);
-  text-decoration: none;
+.header-link:hover,
+.header-link:active {
+  color: var(--md-primary-color) !important;
+  text-decoration: none !important;
   background: rgba(93, 213, 213, 0.1);
   transform: scale(1.1);
 }
@@ -401,28 +405,34 @@ p {
   margin-top: 0;
 }
 
-/* Links */
-a {
-  color: var(--md-primary-color);
+/* Links - Override default blue */
+a,
+a:link,
+a:visited {
+  color: var(--md-primary-color) !important;
   text-decoration: none;
   transition: color 0.125s;
 }
 
-a:hover {
-  color: var(--md-primary-light);
+a:hover,
+a:active {
+  color: var(--md-primary-light) !important;
   text-decoration: underline;
 }
 
 /* Links in content */
-.md-content__inner a {
-  color: var(--md-primary-color);
+.md-content__inner a,
+.md-content__inner a:link,
+.md-content__inner a:visited {
+  color: var(--md-primary-color) !important;
   text-decoration: none;
   border-bottom: 1px solid rgba(93, 213, 213, 0.3);
   transition: all 0.125s;
 }
 
-.md-content__inner a:hover {
-  color: var(--md-primary-light);
+.md-content__inner a:hover,
+.md-content__inner a:active {
+  color: var(--md-primary-light) !important;
   border-bottom-color: var(--md-primary-light);
 }
 
