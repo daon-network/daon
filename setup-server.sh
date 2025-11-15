@@ -339,29 +339,15 @@ ${DOMAIN} {
     @health {
         path /health
     }
-    handle @health {
-        reverse_proxy 127.0.0.1:3000 {
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-        }
-        log {
-            output discard
-        }
-    }
     
     # Main API proxy
-    handle {
-        reverse_proxy 127.0.0.1:3000 {
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-            
-            # Health check
-            health_uri /health
-            health_interval 30s
-            health_timeout 10s
-        }
+    reverse_proxy 127.0.0.1:3000 {
+        header_up X-Real-IP {remote_host}
+        
+        # Health check
+        health_uri /health
+        health_interval 30s
+        health_timeout 10s
     }
     
     # Logging
