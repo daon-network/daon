@@ -13,6 +13,11 @@
     <meta property="og:url" content="{{ page.url | absolute_url }}">
     <meta name="twitter:card" content="summary_large_image">
     
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <!-- Styles -->
     <link rel="stylesheet" href="{{ '/assets/css/daon.css' | relative_url }}">
     <link rel="icon" type="image/x-icon" href="{{ '/assets/images/favicon.ico' | relative_url }}">
@@ -23,13 +28,8 @@
     {% seo %}
 </head>
 <body>
-    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
-    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    
     <header class="md-header">
         <nav class="md-header__inner md-container">
-            <button class="md-header__button md-icon" aria-label="Open drawer">☰</button>
-            
             <div class="md-header__title">
                 <a href="{{ '/' | relative_url }}" class="md-logo">
                     <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -45,11 +45,7 @@
                     </svg>
                 </a>
                 <strong>DAON</strong>
-                <span class="md-header__topic">Creator Protection</span>
-            </div>
-            
-            <div class="md-header__option">
-                <button class="md-header__button md-icon" aria-label="Search">🔍</button>
+                <span class="md-header__topic">Digital Asset Ownership Network</span>
             </div>
         </nav>
         
