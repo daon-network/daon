@@ -423,13 +423,15 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Start server
-app.listen(PORT, () => {
-  logger.info(`🚀 DAON API Server running on port ${PORT}`);
-  logger.info(`📊 Health check: http://localhost:${PORT}/health`);
-  logger.info(`📖 API docs: http://localhost:${PORT}/api/v1`);
-  logger.info(`⛓️  Blockchain: ${blockchainEnabled ? 'Connected' : 'Demo mode'}`);
-  logger.info(`🛡️  Creator protection is now active!`);
-});
+// Start server only if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    logger.info(`🚀 DAON API Server running on port ${PORT}`);
+    logger.info(`📊 Health check: http://localhost:${PORT}/health`);
+    logger.info(`📖 API docs: http://localhost:${PORT}/api/v1`);
+    logger.info(`⛓️  Blockchain: ${blockchainEnabled ? 'Connected' : 'Demo mode'}`);
+    logger.info(`🛡️  Creator protection is now active!`);
+  });
+}
 
 export default app;

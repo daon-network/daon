@@ -9,3 +9,111 @@
 {"level":"info","message":"GET /api/v1/verify/234ef640397015f038ca3b972c31dc1f1c9f9f24ff48961330e1df4768c7bf3e - ::1","timestamp":"2025-11-14T18:08:41.377Z"}
 {"level":"info","message":"Content verification: 234ef640397015f038ca3b972c31dc1f1c9f9f24ff48961330e1df4768c7bf3e","timestamp":"2025-11-14T18:08:41.378Z"}
 {"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2025-11-14T18:08:44.535Z"}
+{"level":"info","message":"GET /api/v1 - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.029Z"}
+{"level":"info","message":"🚀 DAON API Server running on port 3000","timestamp":"2025-11-15T23:07:36.023Z"}
+{"level":"info","message":"📊 Health check: http://localhost:3000/health","timestamp":"2025-11-15T23:07:36.025Z"}
+{"level":"info","message":"📖 API docs: http://localhost:3000/api/v1","timestamp":"2025-11-15T23:07:36.026Z"}
+{"level":"info","message":"⛓️  Blockchain: Demo mode","timestamp":"2025-11-15T23:07:36.026Z"}
+{"level":"info","message":"🛡️  Creator protection is now active!","timestamp":"2025-11-15T23:07:36.026Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.034Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.037Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.043Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.045Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.046Z"}
+{"level":"info","message":"Content protected: b39bd917adc5ba734debb1452babeab0480d0b69e3963419c9c7f3974acf346f (liberation_v1)","timestamp":"2025-11-15T23:07:36.047Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.048Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.049Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.051Z"}
+{"level":"info","message":"Content protected: 090d47b2b639430bb5ea0cb23c27fe0babb6d56db146ea5f543a59a6b50899a4 (liberation_v1)","timestamp":"2025-11-15T23:07:36.050Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.052Z"}
+{"level":"info","message":"Content protected: 9d9595c5d94fb65b824f56e9999527dba9542481580d69feb89056aabaa0aa87 (liberation_v1)","timestamp":"2025-11-15T23:07:36.052Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.053Z"}
+{"level":"info","message":"Content protected: 357d0f0d188605776c186b1ba729a97a42554a52834d09021e6ee864e197935d (liberation_v1)","timestamp":"2025-11-15T23:07:36.053Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.056Z"}
+{"level":"info","message":"Content already protected: 357d0f0d188605776c186b1ba729a97a42554a52834d09021e6ee864e197935d","timestamp":"2025-11-15T23:07:36.056Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.059Z"}
+{"level":"info","message":"Content protected: 446d65370f6ab91e226dfddcd2d01d2289b01aba562127491e78aab338dcd9dc (liberation_v1)","timestamp":"2025-11-15T23:07:36.060Z"}
+{"level":"info","message":"POST /api/v1/protect/bulk - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.063Z"}
+{"level":"info","message":"Bulk protection completed: 3 works","timestamp":"2025-11-15T23:07:36.064Z"}
+{"level":"info","message":"POST /api/v1/protect/bulk - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.067Z"}
+{"level":"info","message":"POST /api/v1/protect/bulk - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.069Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.075Z"}
+{"level":"info","message":"Content protected: f9196afbf4b67517321d8e86f82ae4224a226ca75e61153c45c69cd336d12eae (liberation_v1)","timestamp":"2025-11-15T23:07:36.075Z"}
+{"level":"info","message":"GET /api/v1/verify/f9196afbf4b67517321d8e86f82ae4224a226ca75e61153c45c69cd336d12eae - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.077Z"}
+{"level":"info","message":"Content verification: f9196afbf4b67517321d8e86f82ae4224a226ca75e61153c45c69cd336d12eae","timestamp":"2025-11-15T23:07:36.078Z"}
+{"level":"info","message":"GET /api/v1/verify/7945bc2d6e4fd0a0be5216460557bef483a80b6af0acbcdf06866f5c473b9367 - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.079Z"}
+{"level":"info","message":"GET /api/v1/verify/invalid_hash - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.082Z"}
+{"level":"info","message":"GET /api/v1/verify/abcd1234 - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.083Z"}
+{"level":"info","message":"GET /api/v1/stats - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.085Z"}
+{"expected":11534350,"length":11534350,"level":"error","limit":10485760,"message":"Unhandled error: request entity too large","stack":"PayloadTooLargeError: request entity too large\n    at readStream (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/raw-body/index.js:163:17)\n    at getRawBody (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/raw-body/index.js:116:12)\n    at read (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/body-parser/lib/read.js:79:3)\n    at jsonParser (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/body-parser/lib/types/json.js:138:5)\n    at Layer.handle [as handle_request] (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/layer.js:95:5)\n    at trim_prefix (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/index.js:328:13)\n    at /Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/index.js:286:9\n    at router.process_params (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/index.js:346:12)\n    at next (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/index.js:280:10)\n    at file:///Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express-rate-limit/dist/index.mjs:779:7","timestamp":"2025-11-15T23:07:36.086Z","type":"entity.too.large"}
+{"level":"info","message":"GET /api/v1/stats - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.087Z"}
+{"level":"info","message":"GET /api/v1/verify/not-a-hash - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.088Z"}
+{"level":"info","message":"GET /api/v1/nonexistent - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.089Z"}
+{"level":"info","message":"GET /api/v1/verify/12345 - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.091Z"}
+{"level":"info","message":"GET /etc/passwd - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.092Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.094Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.097Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.098Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.099Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.103Z"}
+{"level":"info","message":"Content already protected: 9d9595c5d94fb65b824f56e9999527dba9542481580d69feb89056aabaa0aa87","timestamp":"2025-11-15T23:07:36.103Z"}
+{"level":"info","message":"GET /api/v1/stats - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.104Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.105Z"}
+{"level":"info","message":"Content protected: f8bdb442fc893906bf028ea08a0feae15a140df708409ee8ace214acc3688bf5 (liberation_v1)","timestamp":"2025-11-15T23:07:36.106Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.107Z"}
+{"level":"info","message":"Content protected: 8501292b24f2f564ecfea4d659e7e26d058e4e292640698c0f314f69ddd7c062 (liberation_v1)","timestamp":"2025-11-15T23:07:36.107Z"}
+{"level":"info","message":"GET /api/v1/verify/invalid - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:07:36.117Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2025-11-15T23:08:35.577Z"}
+{"level":"info","message":"🚀 DAON API Server running on port 3000","timestamp":"2025-11-15T23:08:52.245Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.249Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.252Z"}
+{"level":"info","message":"📊 Health check: http://localhost:3000/health","timestamp":"2025-11-15T23:08:52.247Z"}
+{"level":"info","message":"📖 API docs: http://localhost:3000/api/v1","timestamp":"2025-11-15T23:08:52.247Z"}
+{"level":"info","message":"⛓️  Blockchain: Demo mode","timestamp":"2025-11-15T23:08:52.247Z"}
+{"level":"info","message":"🛡️  Creator protection is now active!","timestamp":"2025-11-15T23:08:52.247Z"}
+{"level":"info","message":"GET /api/v1 - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.258Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.261Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.262Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.269Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.269Z"}
+{"level":"info","message":"Content protected: b39bd917adc5ba734debb1452babeab0480d0b69e3963419c9c7f3974acf346f (liberation_v1)","timestamp":"2025-11-15T23:08:52.270Z"}
+{"level":"info","message":"Content protected: 090d47b2b639430bb5ea0cb23c27fe0babb6d56db146ea5f543a59a6b50899a4 (liberation_v1)","timestamp":"2025-11-15T23:08:52.270Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.272Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.272Z"}
+{"level":"info","message":"Content protected: 9d9595c5d94fb65b824f56e9999527dba9542481580d69feb89056aabaa0aa87 (liberation_v1)","timestamp":"2025-11-15T23:08:52.272Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.274Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.275Z"}
+{"level":"info","message":"Content protected: 357d0f0d188605776c186b1ba729a97a42554a52834d09021e6ee864e197935d (liberation_v1)","timestamp":"2025-11-15T23:08:52.275Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.276Z"}
+{"level":"info","message":"Content already protected: 357d0f0d188605776c186b1ba729a97a42554a52834d09021e6ee864e197935d","timestamp":"2025-11-15T23:08:52.276Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.277Z"}
+{"level":"info","message":"Content protected: 446d65370f6ab91e226dfddcd2d01d2289b01aba562127491e78aab338dcd9dc (liberation_v1)","timestamp":"2025-11-15T23:08:52.278Z"}
+{"level":"info","message":"POST /api/v1/protect/bulk - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.280Z"}
+{"level":"info","message":"Bulk protection completed: 3 works","timestamp":"2025-11-15T23:08:52.280Z"}
+{"level":"info","message":"POST /api/v1/protect/bulk - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.282Z"}
+{"level":"info","message":"POST /api/v1/protect/bulk - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.283Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.286Z"}
+{"level":"info","message":"Content protected: f9196afbf4b67517321d8e86f82ae4224a226ca75e61153c45c69cd336d12eae (liberation_v1)","timestamp":"2025-11-15T23:08:52.286Z"}
+{"level":"info","message":"GET /api/v1/verify/f9196afbf4b67517321d8e86f82ae4224a226ca75e61153c45c69cd336d12eae - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.287Z"}
+{"level":"info","message":"Content verification: f9196afbf4b67517321d8e86f82ae4224a226ca75e61153c45c69cd336d12eae","timestamp":"2025-11-15T23:08:52.287Z"}
+{"level":"info","message":"GET /api/v1/verify/7945bc2d6e4fd0a0be5216460557bef483a80b6af0acbcdf06866f5c473b9367 - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.288Z"}
+{"level":"info","message":"GET /api/v1/verify/invalid_hash - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.289Z"}
+{"level":"info","message":"GET /api/v1/verify/abcd1234 - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.290Z"}
+{"level":"info","message":"GET /api/v1/stats - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.292Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2025-11-15T23:08:52.293Z"}
+{"expected":11534350,"length":11534350,"level":"error","limit":10485760,"message":"Unhandled error: request entity too large","stack":"PayloadTooLargeError: request entity too large\n    at readStream (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/raw-body/index.js:163:17)\n    at getRawBody (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/raw-body/index.js:116:12)\n    at read (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/body-parser/lib/read.js:79:3)\n    at jsonParser (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/body-parser/lib/types/json.js:138:5)\n    at Layer.handle [as handle_request] (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/layer.js:95:5)\n    at trim_prefix (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/index.js:328:13)\n    at /Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/index.js:286:9\n    at router.process_params (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/index.js:346:12)\n    at next (/Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express/lib/router/index.js:280:10)\n    at file:///Users/alyssapowell/Documents/projects/greenfield-blockchain/api-server/node_modules/express-rate-limit/dist/index.mjs:779:7","timestamp":"2025-11-15T23:08:52.299Z","type":"entity.too.large"}
+{"level":"info","message":"GET /api/v1/verify/not-a-hash - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.301Z"}
+{"level":"info","message":"GET /api/v1/verify/12345 - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.302Z"}
+{"level":"info","message":"GET /etc/passwd - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.303Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.305Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.307Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.308Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.309Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.312Z"}
+{"level":"info","message":"Content already protected: 9d9595c5d94fb65b824f56e9999527dba9542481580d69feb89056aabaa0aa87","timestamp":"2025-11-15T23:08:52.312Z"}
+{"level":"info","message":"GET /api/v1/stats - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.314Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.315Z"}
+{"level":"info","message":"Content protected: f8bdb442fc893906bf028ea08a0feae15a140df708409ee8ace214acc3688bf5 (liberation_v1)","timestamp":"2025-11-15T23:08:52.315Z"}
+{"level":"info","message":"POST /api/v1/protect - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.316Z"}
+{"level":"info","message":"Content protected: 8501292b24f2f564ecfea4d659e7e26d058e4e292640698c0f314f69ddd7c062 (liberation_v1)","timestamp":"2025-11-15T23:08:52.316Z"}
+{"level":"info","message":"GET /api/v1/verify/invalid - ::ffff:127.0.0.1","timestamp":"2025-11-15T23:08:52.320Z"}
