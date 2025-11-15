@@ -367,16 +367,28 @@ h6:hover .header-link {
 .header-link {
   margin-left: 0.5rem;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
   color: var(--md-text-color-lighter);
   text-decoration: none;
   font-weight: normal;
-  font-size: 0.8em;
+  font-size: 0.9em;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem;
+  border-radius: 4px;
+  background: transparent;
 }
 
 .header-link:hover {
   color: var(--md-primary-color);
   text-decoration: none;
+  background: rgba(93, 213, 213, 0.1);
+  transform: scale(1.1);
+}
+
+.header-link i {
+  width: 16px;
+  height: 16px;
 }
 
 p {

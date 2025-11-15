@@ -114,11 +114,14 @@
                     const link = document.createElement('a');
                     link.href = '#' + header.id;
                     link.className = 'header-link';
-                    link.innerHTML = '#';
+                    link.innerHTML = '<i data-lucide="link" aria-hidden="true"></i>';
                     link.setAttribute('aria-label', 'Permalink to ' + header.textContent);
                     header.appendChild(link);
                 }
             });
+            
+            // Re-initialize Lucide icons for dynamically added content
+            lucide.createIcons();
         });
     </script>
 </body>
