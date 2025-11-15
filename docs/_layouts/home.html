@@ -118,9 +118,22 @@
     </footer>
     
     <script>
-        // Initialize Lucide icons after DOM load
+        // Initialize Lucide icons and add permalinks after DOM load
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
+            
+            // Add permalink anchors to headers
+            const headers = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            headers.forEach(function(header) {
+                if (header.id) {
+                    const link = document.createElement('a');
+                    link.href = '#' + header.id;
+                    link.className = 'header-link';
+                    link.innerHTML = '#';
+                    link.setAttribute('aria-label', 'Permalink to ' + header.textContent);
+                    header.appendChild(link);
+                }
+            });
         });
     </script>
 </body>

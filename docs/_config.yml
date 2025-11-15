@@ -15,6 +15,12 @@ twitter_username: "daon_network"
 markdown: kramdown
 highlighter: rouge
 
+# Kramdown settings
+kramdown:
+  auto_ids: true
+  toc_levels: 1..6
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+
 plugins:
   - jekyll-feed
   - jekyll-sitemap
