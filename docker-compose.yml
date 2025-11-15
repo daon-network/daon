@@ -1,0 +1,208 @@
+version: '3.8'
+
+services:
+  # DAON Blockchain Node
+  daon-blockchain:
+    build: 
+      context: ./daon-core
+      dockerfile: Dockerfile
+    container_name: daon-blockchain
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:26657:26657"  # RPC
+      - "127.0.0.1:26656:26656"  # P2P
+    volumes:
+      - /opt/daon-database/blockchain:/daon/.daon
+    environment:
+      CHAIN_ID: daon-mainnet-1
+      MONIKER: daon-validator-1
+    command: ["daond", "start", "--home", "/daon/.daon"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:26657/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: daon-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: daon_production
+      POSTGRES_USER: daon_api
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /opt/daon-database/postgres:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U daon_api -d daon_production"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # Redis Cache (Memory Only)
+  redis:
+    image: redis:7-alpine
+    container_name: daon-redis
+    restart: unless-stopped
+    command: redis-server --save "" --appendonly no --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+
+  # DAON API Service 1
+  daon-api-1:
+    image: daonnetwork/api:latest
+    container_name: daon-api-1
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://daon_api:${POSTGRES_PASSWORD}@postgres:5432/daon_production
+      REDIS_URL: redis://redis:6379
+      BLOCKCHAIN_RPC: http://daon-blockchain:26657
+      API_KEY_SECRET: ${API_KEY_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      INSTANCE_ID: "api-1"
+    volumes:
+      - /opt/daon-app/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      daon-blockchain:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+  # DAON API Service 2
+  daon-api-2:
+    image: daonnetwork/api:latest
+    container_name: daon-api-2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3002:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://daon_api:${POSTGRES_PASSWORD}@postgres:5432/daon_production
+      REDIS_URL: redis://redis:6379
+      BLOCKCHAIN_RPC: http://daon-blockchain:26657
+      API_KEY_SECRET: ${API_KEY_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      INSTANCE_ID: "api-2"
+    volumes:
+      - /opt/daon-app/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      daon-blockchain:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+  # DAON API Service 3
+  daon-api-3:
+    image: daonnetwork/api:latest
+    container_name: daon-api-3
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3003:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://daon_api:${POSTGRES_PASSWORD}@postgres:5432/daon_production
+      REDIS_URL: redis://redis:6379
+      BLOCKCHAIN_RPC: http://daon-blockchain:26657
+      API_KEY_SECRET: ${API_KEY_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      INSTANCE_ID: "api-3"
+    volumes:
+      - /opt/daon-app/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      daon-blockchain:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+
+
+networks:
+  default:
+    name: daon-network

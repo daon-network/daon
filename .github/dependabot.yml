@@ -1,0 +1,71 @@
+version: 2
+updates:
+  # API Server Dependencies
+  - package-ecosystem: "npm"
+    directory: "/api-server"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    target-branch: "develop"
+    reviewers:
+      - "@daon-network/maintainers"
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+  # Go Blockchain Dependencies  
+  - package-ecosystem: "gomod"
+    directory: "/daon-core"
+    schedule:
+      interval: "weekly"
+      day: "monday" 
+      time: "06:00"
+    target-branch: "develop"
+    reviewers:
+      - "@daon-network/maintainers"
+    labels:
+      - "dependencies"
+      - "blockchain"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+  # Go SDKs
+  - package-ecosystem: "gomod"
+    directory: "/sdks/go"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    target-branch: "develop"
+    labels:
+      - "dependencies"
+      - "sdk"
+
+  # Docker Dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    target-branch: "develop"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # GitHub Actions Dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    target-branch: "develop" 
+    labels:
+      - "dependencies"
+      - "ci"
