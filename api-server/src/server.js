@@ -53,29 +53,31 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later.',
-    retryAfter: '15 minutes'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Rate limiting (disabled in test mode)
+if (process.env.NODE_ENV !== 'test') {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: {
+      error: 'Too many requests from this IP, please try again later.',
+      retryAfter: '15 minutes'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
 
-const protectLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10, // Limit content protection to 10 per minute per IP
-  message: {
-    error: 'Content protection rate limit exceeded. Please wait before protecting more content.',
-    retryAfter: '1 minute'
-  }
-});
+  const protectLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10, // Limit content protection to 10 per minute per IP
+    message: {
+      error: 'Content protection rate limit exceeded. Please wait before protecting more content.',
+      retryAfter: '1 minute'
+    }
+  });
 
-app.use('/api/', limiter);
-app.use('/api/v1/protect', protectLimiter);
+  app.use('/api/', limiter);
+  app.use('/api/v1/protect', protectLimiter);
+}
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -423,8 +425,8 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Start server only if not in test mode
-if (process.env.NODE_ENV !== 'test') {
+// Start server only if not in test mode or if explicitly required
+if (process.env.NODE_ENV !== 'test' && !process.env.SKIP_SERVER_START) {
   app.listen(PORT, () => {
     logger.info(`🚀 DAON API Server running on port ${PORT}`);
     logger.info(`📊 Health check: http://localhost:${PORT}/health`);

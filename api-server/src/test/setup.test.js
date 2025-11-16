@@ -6,7 +6,7 @@ const require = createRequire(import.meta.url);
 // Test environment setup
 before(() => {
   process.env.NODE_ENV = 'test';
-  process.env.LOG_LEVEL = 'error';
+  process.env.LOG_LEVEL = 'silent'; // Disable logging in tests
   process.env.PORT = '0'; // Random port for tests
 });
 

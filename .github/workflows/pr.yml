@@ -62,6 +62,9 @@ jobs:
         run: |
           cd api-server
           npm test
+        env:
+          NODE_ENV: test
+          SKIP_SERVER_START: true
 
       - name: Run lint checks
         run: |
