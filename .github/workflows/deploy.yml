@@ -65,17 +65,10 @@ jobs:
         run: |
           cd api-server
           npm ci
-        env:
-          NODE_ENV: test
-          SKIP_SERVER_START: true
-      
-      - name: Run tests
-        run: |
-          cd api-server
           npm test
         env:
           NODE_ENV: test
-          SKIP_SERVER_START: true
+          SKIP_SERVER_START: 'true'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
