@@ -22,7 +22,7 @@ describe('Essential Health Tests', () => {
 
     assert.strictEqual(response.body.status, 'healthy');
     assert.ok(response.body.timestamp);
-    assert.strictEqual(response.body.version, '1.0.0');
+    assert.strictEqual(response.body.version, '0.1.0');
   });
 
   test('API documentation endpoint works', async () => {

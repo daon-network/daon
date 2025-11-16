@@ -122,7 +122,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
+    version: '0.1.0',
     blockchain: blockchainEnabled ? 'connected' : 'demo-mode'
   });
 });
@@ -131,7 +131,7 @@ app.get('/health', (req, res) => {
 app.get('/api/v1', (req, res) => {
   res.json({
     name: 'DAON API',
-    version: '1.0.0',
+    version: '0.1.0',
     description: 'Creator protection API for blockchain-verified content ownership',
     endpoints: {
       'POST /api/v1/protect': 'Protect content with Liberation License',

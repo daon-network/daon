@@ -1,6 +1,6 @@
 {
   "name": "daon-api-server",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "DAON REST API server bridging SDKs to blockchain",
   "main": "src/server.js",
   "type": "module",
