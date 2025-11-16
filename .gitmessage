@@ -1,0 +1,36 @@
+# <type>[optional scope]: <description>
+#
+# [optional body]
+#
+# [optional footer(s)]
+
+# --- COMMIT TYPES ---
+# feat:     A new feature
+# fix:      A bug fix
+# docs:     Documentation only changes
+# style:    Changes that do not affect the meaning of the code
+# refactor: A code change that neither fixes a bug nor adds a feature
+# perf:     A code change that improves performance
+# test:     Adding missing tests or correcting existing tests
+# build:    Changes that affect the build system or external dependencies
+# ci:       Changes to our CI configuration files and scripts
+# chore:    Other changes that don't modify src or test files
+# revert:   Reverts a previous commit
+
+# --- EXAMPLES ---
+# feat: add user authentication
+# fix: resolve memory leak in API calls
+# docs: update API documentation
+# feat!: breaking change to user API
+# fix(auth): resolve login timeout issue
+
+# --- BREAKING CHANGES ---
+# Add ! after type/scope for breaking changes
+# Or add "BREAKING CHANGE: " in footer
+
+# --- GUIDELINES ---
+# - Use the imperative mood in the subject line
+# - Keep the subject line under 50 characters
+# - Separate subject from body with a blank line
+# - Use the body to explain what and why vs. how
+# - Use the footer for breaking changes and issue references
