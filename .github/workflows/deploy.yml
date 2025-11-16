@@ -129,19 +129,21 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to server
+       - name: Deploy to server
         run: |
-          # Copy docker-compose and related files
+          # Copy source code and docker-compose to server
+          rsync -avz --delete -e "ssh -i ~/.ssh/deploy_key" \
+            --exclude '.git' --exclude 'node_modules' --exclude 'logs' \
+            . ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/daon-source/
+          
+          # Copy docker-compose to deployment directory
           scp -i ~/.ssh/deploy_key docker-compose.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/daon/
-          scp -i ~/.ssh/deploy_key /tmp/Caddyfile.new ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
           
           # Deploy application
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             cd /opt/daon
             
-            # Update Caddy configuration
-            sudo cp /tmp/Caddyfile.new /etc/caddy/Caddyfile
-            sudo systemctl reload caddy
+            # Caddy configuration is already set up correctly
             
             # Create environment file
             cat > .env << ENVEOF
@@ -153,8 +155,8 @@ jobs:
             # Pull latest API image
             docker pull daonnetwork/api:latest
             
-            # Build blockchain image locally
-            docker build -t daon-blockchain:latest ./daon-core
+            # Build blockchain image locally from deployed source
+            docker build -t daon-blockchain:latest /opt/daon-source/daon-core
             
             # Deploy with zero-downtime rolling update
             docker-compose up -d --remove-orphans
