@@ -1,0 +1,106 @@
+# DAON Monitoring Stack Caddy Configuration
+# Add this to your main Caddyfile or include it
+
+# Grafana Dashboard Access
+grafana.{$DOMAIN:localhost} {
+    # Basic Authentication (replace with your preferred auth)
+    basicauth {
+        admin $2a$10$8c8G8z8z8z8z8z8z8z8z8e  # Change this hash
+    }
+    
+    # Security headers for monitoring
+    header {
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+    
+    # Proxy to Grafana container
+    reverse_proxy grafana:3000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto https
+    }
+    
+    # Logging
+    log {
+        output file /var/log/caddy/grafana.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+        format json
+    }
+}
+
+# Prometheus Metrics Access (Admin only)
+prometheus.{$DOMAIN:localhost} {
+    # Basic Authentication - CHANGE THESE CREDENTIALS
+    basicauth {
+        admin $2a$10$8c8G8z8z8z8z8z8z8z8z8e  # Change this hash
+    }
+    
+    # Additional IP restriction (optional)
+    # @allowed {
+    #     remote_ip 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 YOUR_OFFICE_IP
+    # }
+    # handle @allowed {
+        reverse_proxy prometheus:9090 {
+            header_up X-Real-IP {remote_host}
+        }
+    # }
+    # respond "Access Denied" 403
+}
+
+# Alertmanager Access (Admin only)  
+alerts.{$DOMAIN:localhost} {
+    # Basic Authentication - CHANGE THESE CREDENTIALS
+    basicauth {
+        admin $2a$10$8c8G8z8z8z8z8z8z8z8z8e  # Change this hash
+    }
+    
+    reverse_proxy alertmanager:9093 {
+        header_up X-Real-IP {remote_host}
+    }
+}
+
+# Alternative: Single monitoring subdomain with path-based routing
+monitoring.{$DOMAIN:localhost} {
+    # Basic Authentication for all monitoring tools
+    basicauth {
+        admin $2a$10$8c8G8z8z8z8z8z8z8z8z8e  # Change this hash
+    }
+    
+    # Security headers
+    header {
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+    }
+    
+    # Grafana at /grafana/*
+    handle_path /grafana/* {
+        reverse_proxy grafana:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+        }
+    }
+    
+    # Prometheus at /prometheus/*
+    handle_path /prometheus/* {
+        reverse_proxy prometheus:9090 {
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    
+    # Alertmanager at /alerts/*
+    handle_path /alerts/* {
+        reverse_proxy alertmanager:9093 {
+            header_up X-Real-IP {remote_host}
+        }
+    }
+    
+    # Default redirect to Grafana
+    redir /grafana/
+}

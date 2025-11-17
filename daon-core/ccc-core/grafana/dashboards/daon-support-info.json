@@ -1,0 +1,136 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "DAON Network Info",
+    "tags": ["daon", "info", "support"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Support DAON Development",
+        "type": "text",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "options": {
+          "mode": "html",
+          "content": "<div style='text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;'>\n  <h2 style='margin-top: 0; color: white;'>🛡️ DAON Network</h2>\n  <p style='font-size: 16px; margin: 16px 0;'>Protecting creators with blockchain technology</p>\n  <div style='background: rgba(255,255,255,0.1); padding: 16px; border-radius: 6px; margin: 16px 0;'>\n    <p style='margin: 8px 0;'><strong>Mission:</strong> Keep creator protection tools free and accessible</p>\n    <p style='margin: 8px 0;'><strong>Impact:</strong> Fighting AI exploitation of creative works</p>\n    <p style='margin: 8px 0;'><strong>Community:</strong> Empowering individual creators worldwide</p>\n  </div>\n  <a href='https://ko-fi.com/greenfieldoverride' target='_blank' style='\n    display: inline-block;\n    background: #FF5E5B;\n    color: white;\n    padding: 12px 24px;\n    text-decoration: none;\n    border-radius: 6px;\n    font-weight: bold;\n    margin-top: 16px;\n    transition: all 0.2s;\n  ' onmouseover='this.style.background=\"#FF4E4B\"' onmouseout='this.style.background=\"#FF5E5B\"'>\n    ☕ Support DAON on Ko-fi\n  </a>\n</div>"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Network Statistics",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "daon_api_content_protections_total",
+            "legendFormat": "Total Protections"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "System Uptime",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "time() - process_start_time_seconds",
+            "legendFormat": "Uptime"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "How to Support DAON",
+        "type": "text",
+        "gridPos": {
+          "h": 4,
+          "w": 12,
+          "x": 12,
+          "y": 4
+        },
+        "options": {
+          "mode": "html",
+          "content": "<div style='padding: 16px; background: rgba(255,255,255,0.05); border-radius: 6px;'>\n  <h4 style='margin-top: 0; color: #4CAF50;'>Ways to Support:</h4>\n  <ul style='margin: 0; padding-left: 20px; line-height: 1.6;'>\n    <li>💰 <a href='https://ko-fi.com/greenfieldoverride' target='_blank' style='color: #FFD700;'>Financial support via Ko-fi</a></li>\n    <li>⭐ Star our GitHub repositories</li>\n    <li>📢 Share DAON with other creators</li>\n    <li>🐛 Report bugs and suggest features</li>\n    <li>💻 Contribute code and documentation</li>\n  </ul>\n</div>"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Quick Links",
+        "type": "text",
+        "gridPos": {
+          "h": 6,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        },
+        "options": {
+          "mode": "html",
+          "content": "<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; padding: 16px;'>\n  <a href='https://docs.daon.network' target='_blank' style='background: rgba(33, 150, 243, 0.1); padding: 12px; border-radius: 6px; text-decoration: none; color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.3);'>\n    📖 <strong>Documentation</strong><br>\n    <small>Setup guides and API docs</small>\n  </a>\n  \n  <a href='https://github.com/daon-network' target='_blank' style='background: rgba(156, 39, 176, 0.1); padding: 12px; border-radius: 6px; text-decoration: none; color: #9C27B0; border: 1px solid rgba(156, 39, 176, 0.3);'>\n    💻 <strong>GitHub</strong><br>\n    <small>Source code and issues</small>\n  </a>\n  \n  <a href='https://discord.gg/daon' target='_blank' style='background: rgba(103, 58, 183, 0.1); padding: 12px; border-radius: 6px; text-decoration: none; color: #673AB7; border: 1px solid rgba(103, 58, 183, 0.3);'>\n    💬 <strong>Discord</strong><br>\n    <small>Community chat</small>\n  </a>\n  \n  <a href='https://ko-fi.com/greenfieldoverride' target='_blank' style='background: rgba(255, 94, 91, 0.1); padding: 12px; border-radius: 6px; text-decoration: none; color: #FF5E5B; border: 1px solid rgba(255, 94, 91, 0.3);'>\n    ☕ <strong>Ko-fi Support</strong><br>\n    <small>Help fund development</small>\n  </a>\n</div>"
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "schemaVersion": 39,
+    "version": 1,
+    "links": [
+      {
+        "title": "Support DAON",
+        "url": "https://ko-fi.com/greenfieldoverride",
+        "targetBlank": true,
+        "tags": ["support"]
+      }
+    ]
+  }
+}

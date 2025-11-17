@@ -184,3 +184,12 @@
 {"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-16T00:32:12.968Z"}
 {"level":"info","message":"GET /api/v1 - ::ffff:127.0.0.1","timestamp":"2025-11-16T00:32:12.977Z"}
 {"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-16T00:32:12.978Z"}
+{"level":"info","message":"🚀 DAON API Server running on port 3000","timestamp":"2025-11-17T00:35:28.190Z"}
+{"level":"info","message":"📊 Health check: http://localhost:3000/health","timestamp":"2025-11-17T00:35:28.192Z"}
+{"level":"info","message":"📖 API docs: http://localhost:3000/api/v1","timestamp":"2025-11-17T00:35:28.192Z"}
+{"level":"info","message":"⛓️  Blockchain: Demo mode","timestamp":"2025-11-17T00:35:28.192Z"}
+{"level":"info","message":"🛡️  Creator protection is now active!","timestamp":"2025-11-17T00:35:28.192Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-17T00:35:28.196Z"}
+{"level":"info","message":"GET /api/v1 - ::ffff:127.0.0.1","timestamp":"2025-11-17T00:35:28.205Z"}
+{"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-17T00:35:28.208Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2025-11-17T00:36:27.628Z"}

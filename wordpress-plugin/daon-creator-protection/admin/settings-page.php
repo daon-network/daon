@@ -183,10 +183,27 @@ if (!defined('ABSPATH')) {
         </div>
         
         <div class="daon-support-links">
+            <h3><?php _e('Support DAON', 'daon-creator-protection'); ?></h3>
+            <div class="daon-support-card" style="background: linear-gradient(135deg, #ff5e5b, #ff9500); padding: 16px; border-radius: 8px; margin-bottom: 16px; color: white;">
+                <h4 style="margin-top: 0; color: white;">☕ <?php _e('Help Keep DAON Free', 'daon-creator-protection'); ?></h4>
+                <p><?php _e('DAON provides free creator protection tools powered by blockchain technology. Your support helps us maintain servers, develop new features, and fight against AI exploitation of creative works.', 'daon-creator-protection'); ?></p>
+                <a href="https://ko-fi.com/greenfieldoverride" target="_blank" style="
+                    display: inline-block;
+                    background: white;
+                    color: #ff5e5b;
+                    padding: 8px 16px;
+                    text-decoration: none;
+                    border-radius: 4px;
+                    font-weight: bold;
+                    margin-top: 8px;
+                "><?php _e('Support on Ko-fi', 'daon-creator-protection'); ?></a>
+            </div>
+            
             <h3><?php _e('Need Help?', 'daon-creator-protection'); ?></h3>
             <ul>
                 <li><a href="https://docs.daon.network" target="_blank"><?php _e('Documentation', 'daon-creator-protection'); ?></a></li>
                 <li><a href="https://community.daon.network" target="_blank"><?php _e('Community Support', 'daon-creator-protection'); ?></a></li>
+                <li><a href="https://ko-fi.com/greenfieldoverride" target="_blank"><?php _e('Support Development', 'daon-creator-protection'); ?></a></li>
                 <li><a href="https://daon.network/contact" target="_blank"><?php _e('Contact Support', 'daon-creator-protection'); ?></a></li>
                 <li><a href="https://github.com/daon-network/wordpress-plugin" target="_blank"><?php _e('GitHub Repository', 'daon-creator-protection'); ?></a></li>
             </ul>

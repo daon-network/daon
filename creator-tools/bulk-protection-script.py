@@ -19,6 +19,9 @@ Features:
 - Progress tracking and error recovery
 - License selection and creator verification
 - Dry-run mode for testing
+
+💰 Support DAON: https://ko-fi.com/greenfieldoverride
+🛡️ Keep creator protection tools free for everyone!
 """
 
 import argparse
@@ -557,6 +560,7 @@ class BulkProtectionTool:
         else:
             print(f"\n🎉 Protection complete! Your works are now secured by DAON blockchain.")
             print(f"You can verify protection at: https://verify.daon.network")
+            print(f"\n💡 Help keep DAON free: https://ko-fi.com/greenfieldoverride")
 
 
 def main():

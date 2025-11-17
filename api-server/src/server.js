@@ -15,9 +15,56 @@ import dotenv from 'dotenv';
 import crypto from 'crypto';
 import winston from 'winston';
 import { body, param, validationResult } from 'express-validator';
+import client from 'prom-client';
 
 // Load environment variables
 dotenv.config();
+
+// Initialize Prometheus metrics
+const register = new client.Registry();
+
+// Add default metrics
+client.collectDefaultMetrics({ 
+  register,
+  prefix: 'daon_api_',
+});
+
+// Custom metrics
+const httpRequestDuration = new client.Histogram({
+  name: 'daon_api_http_request_duration_seconds',
+  help: 'Duration of HTTP requests in seconds',
+  labelNames: ['method', 'route', 'status_code'],
+  buckets: [0.1, 0.5, 1, 2, 5]
+});
+
+const httpRequestsTotal = new client.Counter({
+  name: 'daon_api_http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status_code']
+});
+
+const contentProtectionsTotal = new client.Counter({
+  name: 'daon_api_content_protections_total',
+  help: 'Total number of content protections',
+  labelNames: ['license', 'status']
+});
+
+const contentVerificationsTotal = new client.Counter({
+  name: 'daon_api_content_verifications_total',
+  help: 'Total number of content verifications',
+  labelNames: ['status']
+});
+
+const activeConnections = new client.Gauge({
+  name: 'daon_api_active_connections',
+  help: 'Number of active connections'
+});
+
+register.registerMetric(httpRequestDuration);
+register.registerMetric(httpRequestsTotal);
+register.registerMetric(contentProtectionsTotal);
+register.registerMetric(contentVerificationsTotal);
+register.registerMetric(activeConnections);
 
 // Configure logging
 const logger = winston.createLogger({
@@ -83,6 +130,29 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Metrics middleware
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  activeConnections.inc();
+  
+  res.on('finish', () => {
+    const duration = (Date.now() - startTime) / 1000;
+    const route = req.route?.path || req.path;
+    
+    httpRequestDuration
+      .labels(req.method, route, res.statusCode.toString())
+      .observe(duration);
+    
+    httpRequestsTotal
+      .labels(req.method, route, res.statusCode.toString())
+      .inc();
+    
+    activeConnections.dec();
+  });
+  
+  next();
+});
+
 // Request logging middleware
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path} - ${req.ip}`);
@@ -117,13 +187,33 @@ function generateVerificationUrl(contentHash) {
 const protectedContent = new Map();
 const blockchainEnabled = false; // TODO: Enable when blockchain connection ready
 
+// Metrics endpoint for Prometheus
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  } catch (error) {
+    res.status(500).end(error);
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '0.1.0',
-    blockchain: blockchainEnabled ? 'connected' : 'demo-mode'
+    blockchain: blockchainEnabled ? 'connected' : 'demo-mode',
+    metrics: {
+      totalProtected: protectedContent.size,
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      activeConnections: activeConnections.hashMap['']?.value || 0
+    },
+    support: {
+      funding: 'https://ko-fi.com/greenfieldoverride',
+      documentation: 'https://docs.daon.network'
+    }
   });
 });
 
@@ -140,7 +230,12 @@ app.get('/api/v1', (req, res) => {
       'GET /api/v1/stats': 'Get protection statistics'
     },
     documentation: 'https://docs.daon.network/api/',
-    support: 'api-support@daon.network'
+    support: {
+      email: 'api-support@daon.network',
+      discord: 'https://discord.gg/daon',
+      funding: 'https://ko-fi.com/greenfieldoverride'
+    },
+    message: 'Protecting creativity with blockchain technology. Support DAON: https://ko-fi.com/greenfieldoverride'
   });
 });
 
@@ -202,6 +297,9 @@ app.post('/api/v1/protect', [
     
     protectedContent.set(contentHash, protectionRecord);
     
+    // Update metrics
+    contentProtectionsTotal.labels(license, 'success').inc();
+    
     // TODO: Submit to blockchain
     if (blockchainEnabled) {
       // await submitToBlockchain(protectionRecord);
@@ -216,10 +314,15 @@ app.post('/api/v1/protect', [
       timestamp,
       license,
       blockchainTx: blockchainEnabled ? 'tx_hash_here' : null,
-      message: 'Content successfully protected'
+      message: 'Content successfully protected with DAON Liberation License',
+      support: {
+        message: 'Help keep DAON free for creators',
+        funding: 'https://ko-fi.com/greenfieldoverride'
+      }
     });
     
   } catch (error) {
+    contentProtectionsTotal.labels(req.body.license || 'liberation_v1', 'error').inc();
     logger.error('Content protection failed:', error);
     res.status(500).json({
       success: false,
@@ -319,6 +422,7 @@ app.get('/api/v1/verify/:hash', [
     const record = protectedContent.get(hash);
     
     if (!record) {
+      contentVerificationsTotal.labels('not_found').inc();
       return res.status(404).json({
         success: false,
         isValid: false,
@@ -327,6 +431,7 @@ app.get('/api/v1/verify/:hash', [
     }
     
     logger.info(`Content verification: ${hash}`);
+    contentVerificationsTotal.labels('success').inc();
     
     res.json({
       success: true,
@@ -400,7 +505,12 @@ app.use((req, res) => {
     success: false,
     error: 'Endpoint not found',
     message: 'The requested API endpoint does not exist',
-    documentation: 'https://docs.daon.network/api/'
+    documentation: 'https://docs.daon.network/api/',
+    support: {
+      message: 'Help keep DAON free for creators',
+      funding: 'https://ko-fi.com/greenfieldoverride',
+      community: 'https://discord.gg/daon'
+    }
   });
 });
 
@@ -410,7 +520,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     success: false,
     error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+    support: {
+      message: 'If this error persists, please report it to help improve DAON',
+      funding: 'https://ko-fi.com/greenfieldoverride',
+      contact: 'api-support@daon.network'
+    }
   });
 });
 

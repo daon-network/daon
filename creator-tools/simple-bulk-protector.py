@@ -350,6 +350,7 @@ class SimpleBulkProtector:
             print(f"Remove --dry-run to actually protect works")
         else:
             print(f"\n🎉 Protection complete!")
+            print(f"💡 Help keep DAON free for creators: https://ko-fi.com/greenfieldoverride")
         
         # Save results
         if self.results:

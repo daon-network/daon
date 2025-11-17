@@ -105,16 +105,83 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=ccc-admin
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
     networks:
       - ccc-network
+
+  # DAON API Server
+  api-server:
+    build: ../../api-server
+    container_name: daon-api-server
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - BLOCKCHAIN_RPC=http://validator1:26657
+      - LOG_LEVEL=info
+    depends_on:
+      - validator1
+    networks:
+      - ccc-network
+
+  # Node Exporter for system metrics
+  node-exporter:
+    image: prom/node-exporter
+    container_name: ccc-node-exporter
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.rootfs=/host'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - '/:/host:ro,rslave'
+    networks:
+      - ccc-network
+
+  # Alertmanager for notifications
+  alertmanager:
+    image: prom/alertmanager
+    container_name: ccc-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks:
+      - ccc-network
+
+  # Caddy reverse proxy (optional - for public access)
+  # Uncomment and configure for public monitoring access
+  # caddy:
+  #   image: caddy:alpine
+  #   container_name: daon-caddy
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./Caddyfile.monitoring.configured:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #     - /var/log/caddy:/var/log/caddy
+  #   networks:
+  #     - ccc-network
+  #   depends_on:
+  #     - grafana
+  #     - prometheus
+  #     - alertmanager
 
 volumes:
   validator1_data:
   validator2_data:
   prometheus_data:
   grafana_data:
+  # caddy_data:
+  # caddy_config:
 
 networks:
   ccc-network:

@@ -140,9 +140,17 @@ async function protectCurrentWork() {
       // Show verification URL if available
       if (response.verificationUrl) {
         setTimeout(() => {
-          if (confirm('Protection successful! Would you like to view the blockchain verification?')) {
+          const showVerification = confirm('Protection successful! Would you like to view the blockchain verification?');
+          if (showVerification) {
             chrome.tabs.create({ url: response.verificationUrl });
           }
+          
+          // Show support message after a delay
+          setTimeout(() => {
+            if (confirm('🎉 Your work is now protected! Consider supporting DAON to keep this service free for creators. Open Ko-fi?')) {
+              chrome.tabs.create({ url: 'https://ko-fi.com/greenfieldoverride' });
+            }
+          }, 2000);
         }, 1000);
       }
     } else {
