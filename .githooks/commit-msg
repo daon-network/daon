@@ -1,0 +1,51 @@
+#!/bin/sh
+# Git commit-msg hook to enforce conventional commit format
+
+commit_regex='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?(!)?: .{1,}'
+
+error_msg="❌ Invalid commit message format!
+
+Your commit message should follow the Conventional Commits specification:
+
+Format:
+  <type>[optional scope]: <description>
+
+Types:
+  feat:     A new feature
+  fix:      A bug fix  
+  docs:     Documentation changes
+  style:    Code style changes (formatting, etc.)
+  refactor: Code refactoring
+  perf:     Performance improvements
+  test:     Adding or updating tests
+  build:    Build system changes
+  ci:       CI configuration changes
+  chore:    Maintenance tasks
+  revert:   Reverting previous commits
+
+Examples:
+  ✅ feat: add user authentication
+  ✅ fix: resolve memory leak in API
+  ✅ docs: update contributing guidelines
+  ✅ feat(auth)!: breaking change to login API
+
+Your message: $(cat $1)
+
+Please rewrite your commit message and try again.
+Use 'git config --local commit.template .gitmessage' for a helpful template."
+
+# Check if commit message matches conventional format
+if ! grep -qE "$commit_regex" "$1"; then
+    echo "$error_msg" >&2
+    exit 1
+fi
+
+# Check for work-in-progress commits
+if grep -qiE "^(wip|todo|fixme|hack)" "$1"; then
+    echo "❌ Work-in-progress commits detected!" >&2
+    echo "Please complete your work before committing." >&2
+    exit 1
+fi
+
+echo "✅ Commit message format is valid!"
+exit 0

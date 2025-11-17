@@ -1,0 +1,74 @@
+name: Lint Commit Messages
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  commitlint:
+    name: Lint Commit Messages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install commitlint
+        run: |
+          npm install -g @commitlint/cli @commitlint/config-conventional
+
+      - name: Validate commit messages
+        run: |
+          echo "🔍 Checking commit messages in this PR..."
+          
+          # Get commit messages from this PR
+          git log --format="%H %s" origin/main..HEAD > commits.txt
+          
+          # Check each commit message
+          failed=0
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              hash=$(echo "$line" | cut -d' ' -f1)
+              message=$(echo "$line" | cut -d' ' -f2-)
+              echo "📝 Checking: $message"
+              
+              if echo "$message" | npx commitlint; then
+                echo "✅ Valid: $message"
+              else
+                echo "❌ Invalid: $message"
+                failed=1
+              fi
+            fi
+          done < commits.txt
+          
+          if [ $failed -eq 1 ]; then
+            echo ""
+            echo "❌ Some commit messages don't follow conventional format!"
+            echo ""
+            echo "📋 Valid formats:"
+            echo "  feat: add new feature"
+            echo "  fix: resolve bug"  
+            echo "  docs: update documentation"
+            echo "  chore: maintenance tasks"
+            echo ""
+            echo "Please squash/rewrite commits with proper conventional format."
+            exit 1
+          fi
+          
+          echo ""
+          echo "✅ All commit messages are properly formatted!"
+
+      - name: Check for merge commits
+        run: |
+          # Prevent merge commits in PRs
+          if git log --merges origin/main..HEAD | grep -q commit; then
+            echo "❌ Merge commits detected in PR!"
+            echo "Please rebase instead of merging."
+            exit 1
+          fi
