@@ -135,16 +135,18 @@ jobs:
           
           # Deploy application
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-            cd /opt/daon
-            
-            # Caddy configuration is already set up correctly
-            
-            # Create environment file
-            cat > .env << ENVEOF
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            API_KEY_SECRET=${{ secrets.API_KEY_SECRET }}
-            LOG_LEVEL=info
+            # Create environment file with secrets
+            cat > /opt/daon-source/.env << ENVEOF
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          API_KEY_SECRET=${{ secrets.API_KEY_SECRET }}
+          LOG_LEVEL=info
           ENVEOF
+            
+            # Also create in /opt/daon for any services that reference it
+            cp /opt/daon-source/.env /opt/daon/.env
+            
+            # Navigate to source directory where docker-compose.yml is
+            cd /opt/daon-source
             
             # Pull latest API image
             docker pull daonnetwork/api:latest
