@@ -1,0 +1,33 @@
+# Docker Compose Override for API-only deployment
+# This removes blockchain dependencies for initial deployment
+
+version: '3.8'
+
+services:
+  # Override API services to remove blockchain dependency
+  daon-api-1:
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      BLOCKCHAIN_RPC: ""  # No blockchain for now
+      
+  daon-api-2:
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      BLOCKCHAIN_RPC: ""
+      
+  daon-api-3:
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      BLOCKCHAIN_RPC: ""
