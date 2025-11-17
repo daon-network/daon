@@ -149,11 +149,11 @@ jobs:
             # Pull latest API image
             docker pull daonnetwork/api:latest
             
-            # Build blockchain image locally from deployed source
-            docker build -t daon-blockchain:latest /opt/daon-source/daon-core
+            # TODO: Build blockchain image (temporarily disabled until Go 1.23 available on server)
+            # docker build -t daon-blockchain:latest /opt/daon-source/daon-core
             
-            # Deploy with zero-downtime rolling update
-            docker-compose up -d --remove-orphans
+            # Deploy API server only for now
+            docker-compose up -d api-server postgres redis --remove-orphans
             
             # Wait for health checks
             sleep 30

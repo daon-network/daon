@@ -2,7 +2,7 @@
 # This image will be published to Docker Hub for easy validator deployment
 
 # Multi-stage build for optimized production image
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git make gcc musl-dev
