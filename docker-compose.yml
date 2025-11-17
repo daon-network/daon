@@ -3,10 +3,10 @@ version: '3.8'
 services:
   # DAON Blockchain Node
   daon-blockchain:
-    image: daon-blockchain:latest  # Use pre-built image
-    # build:  # Temporarily disabled until Go 1.23 available on server
-    #   context: ./daon-core
-    #   dockerfile: Dockerfile
+    build: 
+      context: ./daon-core
+      dockerfile: Dockerfile
+    image: daon-blockchain:latest
     container_name: daon-blockchain
     restart: unless-stopped
     ports:
