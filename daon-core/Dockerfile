@@ -12,6 +12,8 @@ WORKDIR /src
 # Copy go module files first (for better caching)
 COPY go.mod go.sum ./
 
+# Allow Go to download the correct toolchain version
+ENV GOTOOLCHAIN=auto
 # Download dependencies
 RUN go mod download
 
