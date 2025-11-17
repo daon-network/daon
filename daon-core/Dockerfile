@@ -1,10 +1,10 @@
 # DAON Blockchain Node - Docker Image for Production Deployment
 # Multi-stage build for optimized production image
 
-FROM golang:1.23-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
-# Install build dependencies
-RUN apk add --no-cache git make gcc musl-dev
+# Install build dependencies (git for go mod download)
+RUN apk add --no-cache git
 
 # Set working directory
 WORKDIR /src
@@ -21,6 +21,8 @@ RUN go mod download
 COPY . .
 
 # Build the blockchain binary (Makefile has no build target)
+# Disable CGO to avoid sonic linker bug with Go 1.24
+ENV CGO_ENABLED=0
 RUN mkdir -p /src/build && go build -o /src/build/daond -mod=readonly ./cmd/daon-cored
 
 # Production image

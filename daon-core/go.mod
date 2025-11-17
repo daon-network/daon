@@ -1,6 +1,6 @@
 module github.com/daon-network/daon-core
 
-go 1.23
+go 1.24
 
 replace (
 	// fix upstream GHSA-h395-qcrw-5vmq vulnerability.
