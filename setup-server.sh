@@ -17,7 +17,7 @@ DOMAIN="api.daon.network"
 EMAIL="admin@daon.network"
 DB_NAME="daon"
 DB_USER="daon"
-DOCKER_COMPOSE_VERSION="2.21.0"
+DOCKER_COMPOSE_VERSION="2.24.0"
 
 log() {
     echo -e "${GREEN}[SETUP]${NC} $1"
@@ -68,7 +68,9 @@ sudo mkdir -p /opt/daon/logs
 sudo mkdir -p /opt/daon/config
 sudo mkdir -p /opt/daon/backups
 sudo mkdir -p /opt/daon/caddy
+sudo mkdir -p /opt/daon-source
 sudo chown -R $USER:$USER /opt/daon
+sudo chown -R $USER:$USER /opt/daon-source
 
 # Check for additional volumes (Hetzner volumes for persistence)
 log "Checking for additional volumes..."
@@ -80,12 +82,16 @@ if lsblk | grep -q "sdb"; then
     echo "# This will persist: backups, SSL certs, app data" >> /opt/daon/SETUP_INFO.txt
 fi
 
-# Install Docker
-log "Installing Docker..."
+# Install/Update Docker
+log "Installing/Updating Docker..."
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Ensure Docker daemon is running
+sudo systemctl start docker
+sudo systemctl enable docker
 
 # Add user to docker group
 sudo usermod -aG docker $USER
