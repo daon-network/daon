@@ -1,7 +1,7 @@
 # DAON Blockchain Node - Docker Image for Production Deployment
 # Multi-stage build for optimized production image
 
-FROM golang:1.23-alpine AS builder
+FROM golang:1.24rc1-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git make gcc musl-dev

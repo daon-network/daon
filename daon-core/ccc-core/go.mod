@@ -1,6 +1,6 @@
 module github.com/creative-commons-chain/ccc-core
 
-go 1.23
+go 1.24.0
 
 replace (
 	// fix upstream GHSA-h395-qcrw-5vmq vulnerability.
