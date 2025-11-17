@@ -152,14 +152,14 @@ jobs:
             # TODO: Build blockchain image (temporarily disabled until Go 1.23 available on server)
             # docker build -t daon-blockchain:latest /opt/daon-source/daon-core
             
-            # Deploy API server only for now
-            docker-compose up -d api-server postgres redis --remove-orphans
+            # Deploy API servers and dependencies only for now
+            docker compose up -d daon-api-1 daon-api-2 daon-api-3 postgres redis --remove-orphans
             
             # Wait for health checks
             sleep 30
             
             # Verify deployment
-            docker-compose ps
+            docker compose ps
             curl -f https://api.daon.network/health || exit 1
             
             echo "✅ Deployment successful"
