@@ -20,7 +20,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the blockchain binary
+# Build the blockchain binary (Makefile has no build target)
+RUN mkdir -p /src/build && go build -o /src/build/daond -mod=readonly ./cmd/daon-cored
 RUN make build
 
 # Production image
