@@ -84,7 +84,7 @@ services:
 
   # DAON API Service 1
   daon-api-1:
-    image: daonnetwork/api:latest
+    image: daon-api:latest
     container_name: daon-api-1
     restart: unless-stopped
     ports:
@@ -124,7 +124,7 @@ services:
 
   # DAON API Service 2
   daon-api-2:
-    image: daonnetwork/api:latest
+    image: daon-api:latest
     container_name: daon-api-2
     restart: unless-stopped
     ports:
@@ -164,7 +164,7 @@ services:
 
   # DAON API Service 3
   daon-api-3:
-    image: daonnetwork/api:latest
+    image: daon-api:latest
     container_name: daon-api-3
     restart: unless-stopped
     ports:

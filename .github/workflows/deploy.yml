@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: docker.io
-  API_IMAGE_NAME: daonnetwork/api
+  VALIDATOR_IMAGE_NAME: daonnetwork/validator
 
 jobs:
   # Security and Testing
@@ -42,14 +42,11 @@ jobs:
           fi
           echo "✅ No high severity vulnerabilities found"
 
-  # Build and Test API
-  build-api:
-    name: Build API
+  # Test API (but don't push to Docker Hub)
+  test-api:
+    name: Test API
     runs-on: ubuntu-latest
     needs: [security-audit]
-    outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
-      image-digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -70,6 +67,18 @@ jobs:
           NODE_ENV: test
           SKIP_SERVER_START: 'true'
 
+  # Build and push VALIDATOR image (public for network participants)
+  build-validator:
+    name: Build Validator Image
+    runs-on: ubuntu-latest
+    needs: [security-audit]
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -85,7 +94,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.VALIDATOR_IMAGE_NAME }}
           tags: |
             type=ref,event=branch,prefix=0.1.0-
             type=ref,event=pr,prefix=0.1.0-pr-
@@ -93,11 +102,11 @@ jobs:
             type=raw,value=0.1.0-latest,enable={{is_default_branch}}
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push API image
+      - name: Build and push Validator image
         id: build
         uses: docker/build-push-action@v5
         with:
-          context: ./api-server
+          context: ./daon-core
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -109,7 +118,7 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build-api]
+    needs: [test-api, build-validator]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
     steps:
@@ -148,20 +157,20 @@ jobs:
             # Navigate to source directory where docker-compose.yml is
             cd /opt/daon-source
             
-            # Pull latest API image
-            docker pull daonnetwork/api:latest
+            # Build API locally (not pushed to Docker Hub)
+            docker build -t daon-api:latest ./api-server
             
-            # Build blockchain image with no cache (tool directive now commented out)
-            docker build --no-cache -t daon-blockchain:latest /opt/daon-source/daon-core
+            # Build blockchain image locally
+            docker build -t daon-blockchain:latest ./daon-core
             
-            # Deploy full stack now that blockchain builds
+            # Deploy full stack
             docker compose up -d --remove-orphans
             
             # Wait for health checks
             sleep 30
             
             # Verify deployment
-            docker compose -f docker-compose.yml -f docker-compose.api-only.yml ps
+            docker compose ps
             curl -f https://api.daon.network/health || exit 1
             
             echo "✅ Deployment successful"

@@ -1,0 +1,49 @@
+# DAON Validator Node
+# This is what organizations/creators run to participate in the DAON network
+# 
+# Quick Start:
+#   1. Create .env file with your configuration
+#   2. docker-compose -f validator-node.docker-compose.yml up -d
+#   3. Your node will sync with the network and start validating
+
+version: '3.8'
+
+services:
+  daon-validator:
+    image: daonnetwork/validator:latest
+    container_name: daon-validator
+    restart: unless-stopped
+    ports:
+      - "26656:26656"  # P2P - required for network consensus
+      - "26657:26657"  # RPC - optional, for monitoring
+      - "1317:1317"    # REST API - optional, for queries
+    volumes:
+      - validator_data:/daon/.daon
+    environment:
+      CHAIN_ID: ${CHAIN_ID:-daon-mainnet-1}
+      MONIKER: ${MONIKER:-my-validator}
+      EXTERNAL_ADDRESS: ${EXTERNAL_ADDRESS}
+      PERSISTENT_PEERS: ${PERSISTENT_PEERS}
+    command: ["daond", "start", "--home", "/daon/.daon"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:26657/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '1.0'
+
+volumes:
+  validator_data:
+    driver: local
+
+networks:
+  default:
+    name: daon-network

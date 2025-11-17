@@ -31,36 +31,49 @@ cd daon
 
 ## 📦 Components
 
-| Component | Description | Status |
-|-----------|-------------|--------|
-| **[API Server](api-server/)** | REST API for content protection | ✅ Production |
-| **[Blockchain Core](daon-core/)** | Cosmos SDK blockchain | 🚧 Active Development |
-| **[Browser Extension](browser-extension/)** | Web protection tools | ✅ Ready |
-| **[WordPress Plugin](wordpress-plugin/)** | CMS integration | ✅ Ready |
-| **[Creator Tools](creator-tools/)** | Bulk protection scripts | ✅ Ready |
-| **[Monitoring Stack](docs/MONITORING_GUIDE.md)** | Prometheus + Grafana | ✅ Production |
+| Component | Description | Status | Who Uses It |
+|-----------|-------------|--------|-------------|
+| **[Validator Node](VALIDATOR_SETUP.md)** | Blockchain validator (Docker Hub) | ✅ Ready | Universities, organizations, creators |
+| **[API Server](api-server/)** | REST API for content protection | ✅ Production | Used by DAON SDKs (private service) |
+| **[Blockchain Core](daon-core/)** | Cosmos SDK blockchain | ✅ Production | Powers validator nodes |
+| **[Browser Extension](browser-extension/)** | Web protection tools | ✅ Ready | Individual creators |
+| **[WordPress Plugin](wordpress-plugin/)** | CMS integration | ✅ Ready | Bloggers, content sites |
+| **[Creator Tools](creator-tools/)** | Bulk protection scripts | ✅ Ready | Writers with large backlogs |
+| **[Monitoring Stack](docs/MONITORING_GUIDE.md)** | Prometheus + Grafana | ✅ Production | Network operators |
 
 ## 🛠️ Installation
 
-### **Production Deployment**
+### **For Network Participants** (Run a Validator)
 ```bash
-# Automated server setup
-curl -sSL https://install.daon.network | bash
+# One-command validator setup
+docker run -d --name daon-validator \
+  -p 26656:26656 \
+  -v daon_data:/daon/.daon \
+  daonnetwork/validator:latest
 
-# Manual setup
-git clone https://github.com/daon-network/daon.git
-cd daon
-./setup-server.sh
+# See full setup guide: VALIDATOR_SETUP.md
 ```
 
-### **Development Setup**
+### **For DAON Network Operators** (Private API Infrastructure)
 ```bash
-# Start development environment
-docker-compose up -d
+# Clone repository
+git clone https://github.com/daon-network/daon.git
+cd daon
 
-# Access services
-open http://localhost:3000  # API Server
-open http://localhost:3000  # Grafana Monitoring
+# Run automated server setup
+./setup-server.sh
+
+# Deploy via GitHub Actions
+git push origin main
+```
+
+### **For SDK Users** (Developers Integrating DAON)
+```bash
+# Use the public API
+npm install @daon/sdk
+# Point to: https://api.daon.network
+
+# See SDK documentation in sdks/
 ```
 
 ## 🔗 Quick Links
