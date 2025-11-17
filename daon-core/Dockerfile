@@ -12,6 +12,8 @@ WORKDIR /src
 # Copy go module files first (for better caching)
 COPY go.mod go.sum ./
 
+# Allow Go to auto-download required version (dependencies need 1.24)
+ENV GOTOOLCHAIN=auto
 # Download dependencies
 RUN go mod download
 
