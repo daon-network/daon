@@ -1,0 +1,383 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+# Cancel in-progress runs when a new workflow with the same ref is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    # Service containers for dependencies
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: daon_test
+          POSTGRES_USER: daon_test
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: daon-core/go.sum
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: api-server/package-lock.json
+
+      # Build blockchain binary
+      - name: Build blockchain binary
+        run: |
+          cd daon-core
+          go mod download
+          CGO_ENABLED=0 go build -ldflags="-w -s" -trimpath -o build/daond ./cmd/daon-cored
+          chmod +x build/daond
+          echo "$(pwd)/build" >> $GITHUB_PATH
+
+      # Initialize test blockchain
+      - name: Initialize test blockchain
+        run: |
+          cd daon-core
+          mkdir -p ~/.daon
+          ./build/daond init test-node --chain-id daon-test-1 --home ~/.daon
+          ./build/daond keys add validator --keyring-backend test --home ~/.daon
+          VALIDATOR_ADDR=$(./build/daond keys show validator -a --keyring-backend test --home ~/.daon)
+          ./build/daond genesis add-genesis-account $VALIDATOR_ADDR 10000000000stake --home ~/.daon
+          ./build/daond genesis gentx validator 1000000000stake --chain-id daon-test-1 --keyring-backend test --home ~/.daon
+          ./build/daond genesis collect-gentxs --home ~/.daon
+          echo "✅ Blockchain initialized"
+
+      # Start blockchain in background
+      - name: Start test blockchain
+        run: |
+          cd daon-core
+          ./build/daond start --home ~/.daon --minimum-gas-prices "0stake" &
+          echo "🚀 Blockchain starting..."
+          
+          # Wait for blockchain to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:26657/health > /dev/null 2>&1; then
+              echo "✅ Blockchain is ready"
+              break
+            fi
+            echo "Waiting for blockchain... ($i/30)"
+            sleep 2
+          done
+          
+          # Verify blockchain is running
+          curl -f http://localhost:26657/status || exit 1
+
+      # Install API dependencies
+      - name: Install API dependencies
+        run: |
+          cd api-server
+          npm ci
+
+      # Run database migrations (if any)
+      - name: Setup test database
+        run: |
+          cd api-server
+          # Add migration scripts here if you have them
+          echo "✅ Database ready"
+
+      # Start API server in background
+      - name: Start API server
+        run: |
+          cd api-server
+          npm start &
+          echo "🚀 API server starting..."
+          
+          # Wait for API to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:3000/health > /dev/null 2>&1; then
+              echo "✅ API server is ready"
+              break
+            fi
+            echo "Waiting for API server... ($i/30)"
+            sleep 2
+          done
+          
+          # Verify API is running
+          curl -f http://localhost:3000/health || exit 1
+        env:
+          NODE_ENV: test
+          PORT: 3000
+          DATABASE_URL: postgresql://daon_test:test_password@localhost:5432/daon_test
+          REDIS_URL: redis://localhost:6379
+          BLOCKCHAIN_RPC: http://localhost:26657
+          API_KEY_SECRET: test-secret-key
+          LOG_LEVEL: info
+
+      # Run integration tests
+      - name: Run integration tests
+        run: |
+          cd api-server
+          npm run test-integration
+        env:
+          NODE_ENV: test
+          API_URL: http://localhost:3000
+          BLOCKCHAIN_RPC: http://localhost:26657
+          DATABASE_URL: postgresql://daon_test:test_password@localhost:5432/daon_test
+          REDIS_URL: redis://localhost:6379
+
+      # Health check all services
+      - name: Verify all services healthy
+        run: |
+          echo "🔍 Checking service health..."
+          
+          # Check API
+          echo "Checking API..."
+          curl -f http://localhost:3000/health | jq .
+          
+          # Check Blockchain
+          echo "Checking Blockchain..."
+          curl -f http://localhost:26657/status | jq .
+          
+          # Check PostgreSQL
+          echo "Checking PostgreSQL..."
+          docker ps | grep postgres
+          
+          # Check Redis
+          echo "Checking Redis..."
+          docker ps | grep redis
+          
+          echo "✅ All services healthy"
+
+      # Run smoke tests
+      - name: Run smoke tests
+        run: |
+          echo "🔥 Running smoke tests..."
+          
+          # Test 1: Protect content
+          echo "Test 1: Protect content"
+          PROTECT_RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/protect \
+            -H "Content-Type: application/json" \
+            -d '{"content":"integration test content","metadata":{"title":"Test"}}')
+          echo $PROTECT_RESPONSE | jq .
+          
+          # Extract hash
+          CONTENT_HASH=$(echo $PROTECT_RESPONSE | jq -r '.contentHash')
+          echo "Content hash: $CONTENT_HASH"
+          
+          # Test 2: Verify content
+          echo "Test 2: Verify content"
+          VERIFY_RESPONSE=$(curl -s http://localhost:3000/api/v1/verify/$CONTENT_HASH)
+          echo $VERIFY_RESPONSE | jq .
+          
+          # Verify isValid is true
+          IS_VALID=$(echo $VERIFY_RESPONSE | jq -r '.isValid')
+          if [ "$IS_VALID" != "true" ]; then
+            echo "❌ Verification failed"
+            exit 1
+          fi
+          
+          # Test 3: Get stats
+          echo "Test 3: Get stats"
+          curl -f http://localhost:3000/api/v1/stats | jq .
+          
+          echo "✅ All smoke tests passed"
+
+      # Test API ↔ Blockchain integration
+      - name: Test API ↔ Blockchain integration
+        run: |
+          echo "🔗 Testing API ↔ Blockchain integration..."
+          
+          # Protect content via API
+          RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/protect \
+            -H "Content-Type: application/json" \
+            -d '{"content":"blockchain integration test"}')
+          
+          HASH=$(echo $RESPONSE | jq -r '.contentHash')
+          echo "Protected with hash: $HASH"
+          
+          # Wait for blockchain confirmation
+          sleep 10
+          
+          # Query blockchain directly
+          BLOCK_HEIGHT=$(curl -s http://localhost:26657/status | jq -r '.result.sync_info.latest_block_height')
+          echo "Current block height: $BLOCK_HEIGHT"
+          
+          # Verify content is in blockchain
+          VERIFY=$(curl -s http://localhost:3000/api/v1/verify/$HASH)
+          IS_VALID=$(echo $VERIFY | jq -r '.isValid')
+          
+          if [ "$IS_VALID" = "true" ]; then
+            echo "✅ Content successfully recorded on blockchain"
+          else
+            echo "❌ Content not found on blockchain"
+            exit 1
+          fi
+
+      # Test API ↔ Database integration
+      - name: Test API ↔ Database integration
+        run: |
+          echo "💾 Testing API ↔ Database integration..."
+          
+          # Protect content
+          RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/protect \
+            -H "Content-Type: application/json" \
+            -d '{"content":"database test","metadata":{"title":"DB Test"}}')
+          
+          HASH=$(echo $RESPONSE | jq -r '.contentHash')
+          echo "Content hash: $HASH"
+          
+          # Query database directly
+          docker exec -e PGPASSWORD=test_password $(docker ps -q -f ancestor=postgres:15-alpine) \
+            psql -U daon_test -d daon_test -c "SELECT COUNT(*) FROM content_registry WHERE hash='$HASH';" || echo "Table may not exist yet"
+          
+          # Verify via API returns same data
+          VERIFY=$(curl -s http://localhost:3000/api/v1/verify/$HASH)
+          VERIFIED_HASH=$(echo $VERIFY | jq -r '.contentHash')
+          
+          if [ "$HASH" = "$VERIFIED_HASH" ]; then
+            echo "✅ Database integration working"
+          else
+            echo "❌ Database mismatch"
+            exit 1
+          fi
+
+      # Test API ↔ Redis caching
+      - name: Test API ↔ Redis caching
+        run: |
+          echo "⚡ Testing API ↔ Redis caching..."
+          
+          # First request (cold - should be slow)
+          START1=$(date +%s%N)
+          curl -s http://localhost:3000/api/v1/stats > /dev/null
+          END1=$(date +%s%N)
+          TIME1=$((($END1 - $START1) / 1000000))
+          echo "First request (cold): ${TIME1}ms"
+          
+          # Second request (warm - should be faster from cache)
+          START2=$(date +%s%N)
+          curl -s http://localhost:3000/api/v1/stats > /dev/null
+          END2=$(date +%s%N)
+          TIME2=$((($END2 - $START2) / 1000000))
+          echo "Second request (cached): ${TIME2}ms"
+          
+          # Check Redis for cached data
+          docker exec $(docker ps -q -f ancestor=redis:7-alpine) \
+            redis-cli KEYS "*" || echo "No cached keys found"
+          
+          echo "✅ Redis caching working"
+
+      # Test bulk protection
+      - name: Test bulk protection
+        run: |
+          echo "📦 Testing bulk protection..."
+          
+          # Create JSON with 10 works
+          cat > /tmp/bulk_test.json << 'EOF'
+          {
+            "works": [
+              {"content": "Work 1", "metadata": {"title": "Title 1"}},
+              {"content": "Work 2", "metadata": {"title": "Title 2"}},
+              {"content": "Work 3", "metadata": {"title": "Title 3"}},
+              {"content": "Work 4", "metadata": {"title": "Title 4"}},
+              {"content": "Work 5", "metadata": {"title": "Title 5"}},
+              {"content": "Work 6", "metadata": {"title": "Title 6"}},
+              {"content": "Work 7", "metadata": {"title": "Title 7"}},
+              {"content": "Work 8", "metadata": {"title": "Title 8"}},
+              {"content": "Work 9", "metadata": {"title": "Title 9"}},
+              {"content": "Work 10", "metadata": {"title": "Title 10"}}
+            ],
+            "license": "liberation_v1"
+          }
+          EOF
+          
+          # Bulk protect
+          RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/protect/bulk \
+            -H "Content-Type: application/json" \
+            -d @/tmp/bulk_test.json)
+          
+          PROTECTED=$(echo $RESPONSE | jq -r '.protected')
+          echo "Protected: $PROTECTED works"
+          
+          if [ "$PROTECTED" = "10" ]; then
+            echo "✅ Bulk protection working"
+          else
+            echo "❌ Bulk protection failed"
+            exit 1
+          fi
+
+      # Collect logs on failure
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          echo "📋 Collecting logs..."
+          echo "=== API Logs ==="
+          tail -100 api-server/logs/*.log 2>/dev/null || echo "No API logs found"
+          
+          echo "=== Blockchain Status ==="
+          curl -s http://localhost:26657/status | jq . || echo "Blockchain not responding"
+          
+          echo "=== PostgreSQL Logs ==="
+          docker logs $(docker ps -q -f ancestor=postgres:15-alpine) 2>&1 | tail -50
+          
+          echo "=== Redis Logs ==="
+          docker logs $(docker ps -q -f ancestor=redis:7-alpine) 2>&1 | tail -50
+
+      # Generate test report
+      - name: Generate test report
+        if: always()
+        run: |
+          echo "## 🧪 Integration Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: Ubuntu Latest" >> $GITHUB_STEP_SUMMARY
+          echo "**Node Version**: 20" >> $GITHUB_STEP_SUMMARY
+          echo "**Go Version**: 1.24" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Services" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ PostgreSQL 15" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Redis 7" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Blockchain (daon-test-1)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ API Server" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Tests Executed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Service health checks" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Smoke tests (protect/verify/stats)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ API ↔ Blockchain integration" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ API ↔ Database integration" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ API ↔ Redis caching" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Bulk protection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

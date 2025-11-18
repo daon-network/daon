@@ -9,6 +9,8 @@
     "dev": "node --watch src/server.js",
     "test": "node --test src/test/simple-health.test.js",
     "test-full": "node --test src/test/*.test.js",
+    "test-integration": "node --test src/test/integration.test.js",
+    "test-all": "node --test src/test/*.test.js",
     "lint": "eslint src/",
     "format": "prettier --write src/"
   },
