@@ -17,13 +17,28 @@ services:
     environment:
       CHAIN_ID: daon-mainnet-1
       MONIKER: daon-validator-1
-    command: ["daond", "start", "--home", "/daon/.daon"]
+    # Use entrypoint to check initialization before starting
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ ! -f /daon/.daon/config/genesis.json ]; then
+          echo "🔧 First run detected - initializing blockchain..."
+          daond init $${MONIKER} --chain-id $${CHAIN_ID} --home /daon/.daon
+          daond keys add validator --keyring-backend test --home /daon/.daon
+          VALIDATOR_ADDR=$$(daond keys show validator -a --keyring-backend test --home /daon/.daon)
+          daond genesis add-genesis-account $$VALIDATOR_ADDR 10000000000stake --home /daon/.daon
+          daond genesis gentx validator 1000000000stake --chain-id $${CHAIN_ID} --keyring-backend test --home /daon/.daon
+          daond genesis collect-gentxs --home /daon/.daon
+          echo "✅ Blockchain initialized!"
+        fi
+        echo "🚀 Starting blockchain..."
+        exec daond start --home /daon/.daon
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:26657/status || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 120s
     deploy:
       resources:
         limits:
