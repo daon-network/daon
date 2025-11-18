@@ -41,7 +41,7 @@ services:
         fi
         
         echo "🚀 Starting blockchain..."
-        exec daond start --home /daon/.daon --log_level info
+        exec daond start --home /daon/.daon --log_level info --minimum-gas-prices "0stake"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:26657/health || curl -f http://localhost:26657/status || exit 1"]
       interval: 30s
