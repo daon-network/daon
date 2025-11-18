@@ -161,6 +161,10 @@ jobs:
             # Navigate to source directory where docker-compose.yml is
             cd /opt/daon-source
             
+            # Fix blockchain volume permissions (UID 1000 = daon user in container)
+            sudo mkdir -p /opt/daon-database/blockchain
+            sudo chown -R 1000:1000 /opt/daon-database/blockchain
+            
             # Build API locally (not pushed to Docker Hub)
             docker build -t daon-api:latest ./api-server
             
