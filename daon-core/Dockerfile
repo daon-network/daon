@@ -34,17 +34,15 @@ RUN apk add --no-cache ca-certificates curl jq
 # Create non-root user for security
 RUN adduser -D -s /bin/sh daon
 
-# Set working directory
-WORKDIR /daon
-
 # Copy binary from builder stage
 COPY --from=builder /src/build/daond /usr/local/bin/
 
-# Create data directory
-RUN mkdir -p /daon/.daon && chown -R daon:daon /daon
+# Set working directory - owned by daon user
+WORKDIR /daon
+RUN chown -R daon:daon /daon
 
-# Switch to non-root user
-USER daon
+# Don't switch to non-root user yet - docker-compose will handle permissions
+# USER daon will be set in docker-compose after volume is mounted
 
 # Expose ports
 EXPOSE 26656 26657 1317 9090

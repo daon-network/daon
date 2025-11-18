@@ -9,6 +9,7 @@ services:
     image: daon-blockchain:latest
     container_name: daon-blockchain
     restart: unless-stopped
+    user: "1000:1000"  # Run as daon user (UID 1000)
     ports:
       - "127.0.0.1:26657:26657"  # RPC
       - "127.0.0.1:26656:26656"  # P2P
@@ -21,6 +22,9 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
+        # Ensure directory exists with correct permissions
+        mkdir -p /daon/.daon/config /daon/.daon/data
+        
         if [ ! -f /daon/.daon/config/genesis.json ]; then
           echo "🔧 First run detected - initializing blockchain..."
           daond init $${MONIKER} --chain-id $${CHAIN_ID} --home /daon/.daon
