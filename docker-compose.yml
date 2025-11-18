@@ -22,27 +22,32 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
+        set -e
+        
         # Ensure directory exists with correct permissions
         mkdir -p /daon/.daon/config /daon/.daon/data
         
         if [ ! -f /daon/.daon/config/genesis.json ]; then
           echo "🔧 First run detected - initializing blockchain..."
-          daond init $${MONIKER} --chain-id $${CHAIN_ID} --home /daon/.daon
-          daond keys add validator --keyring-backend test --home /daon/.daon
-          VALIDATOR_ADDR=$$(daond keys show validator -a --keyring-backend test --home /daon/.daon)
-          daond genesis add-genesis-account $$VALIDATOR_ADDR 10000000000stake --home /daon/.daon
-          daond genesis gentx validator 1000000000stake --chain-id $${CHAIN_ID} --keyring-backend test --home /daon/.daon
+          daond init "${MONIKER}" --chain-id "${CHAIN_ID}" --home /daon/.daon
+          daond keys add validator --keyring-backend test --home /daon/.daon 2>&1 || echo "Key already exists"
+          VALIDATOR_ADDR=$(daond keys show validator -a --keyring-backend test --home /daon/.daon)
+          daond genesis add-genesis-account "$VALIDATOR_ADDR" 10000000000stake --home /daon/.daon
+          daond genesis gentx validator 1000000000stake --chain-id "${CHAIN_ID}" --keyring-backend test --home /daon/.daon
           daond genesis collect-gentxs --home /daon/.daon
           echo "✅ Blockchain initialized!"
+        else
+          echo "✅ Blockchain already initialized"
         fi
+        
         echo "🚀 Starting blockchain..."
-        exec daond start --home /daon/.daon
+        exec daond start --home /daon/.daon --log_level info
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:26657/status || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:26657/health || curl -f http://localhost:26657/status || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 120s
+      retries: 10
+      start_period: 180s
     deploy:
       resources:
         limits:
