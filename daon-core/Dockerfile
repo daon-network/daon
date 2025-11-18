@@ -3,8 +3,8 @@
 
 FROM golang:1.24-alpine AS builder
 
-# Install build dependencies (git for go mod download)
-RUN apk add --no-cache git
+# Install build dependencies
+RUN apk add --no-cache git ca-certificates
 
 # Set working directory
 WORKDIR /src
@@ -12,18 +12,18 @@ WORKDIR /src
 # Copy go module files first (for better caching)
 COPY go.mod go.sum ./
 
-# Allow Go to auto-download required version (dependencies need 1.24)
-ENV GOTOOLCHAIN=auto
 # Download dependencies
 RUN go mod download
 
 # Copy source code
 COPY . .
 
-# Build the blockchain binary (Makefile has no build target)
-# Disable CGO to avoid sonic linker bug with Go 1.24
+# Build the blockchain binary
+# CGO_ENABLED=0 for static binary (no C dependencies)
+# -ldflags="-w -s" strips debug info for smaller binary
 ENV CGO_ENABLED=0
-RUN mkdir -p /src/build && go build -o /src/build/daond -mod=readonly ./cmd/daon-cored
+RUN mkdir -p /src/build && \
+    go build -ldflags="-w -s" -trimpath -o /src/build/daond ./cmd/daon-cored
 
 # Production image
 FROM alpine:latest
