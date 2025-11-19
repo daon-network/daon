@@ -16,6 +16,7 @@ import crypto from 'crypto';
 import winston from 'winston';
 import { body, param, validationResult } from 'express-validator';
 import client from 'prom-client';
+import blockchainClient from './blockchain.js';
 
 // Load environment variables
 dotenv.config();
@@ -185,10 +186,21 @@ function generateVerificationUrl(contentHash) {
   return `${baseUrl}/sha256:${contentHash}`;
 }
 
-// In-memory storage for demo purposes
-// TODO: Replace with actual blockchain integration
+// Blockchain integration
+const blockchainEnabled = process.env.BLOCKCHAIN_ENABLED === 'true';
+
+// Fallback in-memory storage (used when blockchain is disabled)
 const protectedContent = new Map();
-const blockchainEnabled = false; // TODO: Enable when blockchain connection ready
+
+// Initialize blockchain connection
+if (blockchainEnabled) {
+  blockchainClient.connect().then(() => {
+    logger.info('✅ Blockchain client connected');
+  }).catch(err => {
+    logger.error('❌ Failed to connect to blockchain:', err);
+    logger.warn('⚠️  Falling back to in-memory storage');
+  });
+}
 
 // Metrics endpoint for Prometheus
 app.get('/metrics', async (req, res) => {
@@ -201,13 +213,23 @@ app.get('/metrics', async (req, res) => {
 });
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  const blockchainStatus = blockchainEnabled ? await blockchainClient.getStatus() : null;
+  
   res.json({
     status: 'healthy',
     instance: process.env.INSTANCE_ID || 'unknown',
     timestamp: new Date().toISOString(),
     version: '0.1.0',
-    blockchain: blockchainEnabled ? 'connected' : 'demo-mode',
+    blockchain: blockchainEnabled ? {
+      enabled: true,
+      connected: blockchainStatus?.connected || false,
+      chainId: blockchainStatus?.chainId,
+      height: blockchainStatus?.height,
+    } : {
+      enabled: false,
+      mode: 'in-memory-fallback'
+    },
     metrics: {
       totalProtected: protectedContent.size,
       uptime: process.uptime(),
@@ -268,22 +290,54 @@ app.post('/api/v1/protect', [
     const timestamp = new Date().toISOString();
     const verificationUrl = generateVerificationUrl(contentHash);
     
-    // Check if content already protected
-    if (protectedContent.has(contentHash)) {
-      const existing = protectedContent.get(contentHash);
-      logger.info(`Content already protected: ${contentHash}`);
-      return res.json({
-        success: true,
-        contentHash,
-        verificationUrl,
-        timestamp: existing.timestamp,
-        license: existing.license,
-        message: 'Content already protected',
-        existing: true
-      });
+    let blockchainTx = null;
+    let existing = false;
+    
+    // If blockchain enabled, use it as source of truth
+    if (blockchainEnabled && blockchainClient.connected) {
+      try {
+        // Check if already exists on blockchain
+        const existingOnChain = await blockchainClient.contentExists(contentHash);
+        
+        if (existingOnChain) {
+          logger.info(`Content already protected on blockchain: ${contentHash}`);
+          const verification = await blockchainClient.verifyContent(contentHash);
+          
+          contentProtectionsTotal.labels(license, 'existing').inc();
+          
+          return res.json({
+            success: true,
+            contentHash,
+            verificationUrl,
+            timestamp: new Date(verification.timestamp * 1000).toISOString(),
+            license: verification.license,
+            message: 'Content already protected on blockchain',
+            existing: true,
+            blockchain: {
+              enabled: true,
+              creator: verification.creator
+            }
+          });
+        }
+        
+        // Register on blockchain
+        const result = await blockchainClient.registerContent(
+          contentHash,
+          metadata,
+          license
+        );
+        
+        blockchainTx = result.txHash;
+        logger.info(`Content registered on blockchain: ${contentHash} (tx: ${blockchainTx})`);
+        
+      } catch (blockchainError) {
+        logger.error('Blockchain registration failed:', blockchainError);
+        // Fall back to in-memory storage if blockchain fails
+        logger.warn('Falling back to in-memory storage');
+      }
     }
     
-    // Store protection record
+    // Also store in memory for quick access (cache)
     const protectionRecord = {
       contentHash,
       timestamp,
@@ -295,6 +349,7 @@ app.post('/api/v1/protect', [
         ...metadata
       },
       verificationUrl,
+      blockchainTx,
       ip: req.ip,
       userAgent: req.get('User-Agent')
     };
@@ -304,12 +359,7 @@ app.post('/api/v1/protect', [
     // Update metrics
     contentProtectionsTotal.labels(license, 'success').inc();
     
-    // TODO: Submit to blockchain
-    if (blockchainEnabled) {
-      // await submitToBlockchain(protectionRecord);
-    }
-    
-    logger.info(`Content protected: ${contentHash} (${license})`);
+    logger.info(`Content protected: ${contentHash} (${license})${blockchainTx ? ' [blockchain]' : ' [memory]'}`);
     
     res.status(201).json({
       success: true,
@@ -317,8 +367,14 @@ app.post('/api/v1/protect', [
       verificationUrl,
       timestamp,
       license,
-      blockchainTx: blockchainEnabled ? 'tx_hash_here' : null,
-      message: 'Content successfully protected with DAON Liberation License',
+      blockchainTx,
+      blockchain: {
+        enabled: blockchainEnabled,
+        tx: blockchainTx
+      },
+      message: blockchainTx 
+        ? 'Content successfully protected on DAON blockchain'
+        : 'Content protected (blockchain pending)',
       support: {
         message: 'Help keep DAON free for creators',
         funding: 'https://ko-fi.com/greenfieldoverride'
@@ -420,10 +476,39 @@ app.get('/api/v1/verify/:hash', [
     .isLength({ min: 64, max: 64 })
     .withMessage('Invalid SHA-256 hash'),
   handleValidationErrors
-], (req, res) => {
+], async (req, res) => {
   try {
     const { hash } = req.params;
-    const record = protectedContent.get(hash);
+    let record = null;
+    let source = 'memory';
+    
+    // Try blockchain first if enabled
+    if (blockchainEnabled && blockchainClient.connected) {
+      try {
+        const blockchainRecord = await blockchainClient.verifyContent(hash);
+        
+        if (blockchainRecord.verified) {
+          record = {
+            contentHash: hash,
+            timestamp: new Date(blockchainRecord.timestamp * 1000).toISOString(),
+            license: blockchainRecord.license,
+            creator: blockchainRecord.creator,
+            blockchain: true
+          };
+          source = 'blockchain';
+        }
+      } catch (blockchainError) {
+        logger.warn('Blockchain verification failed, checking memory:', blockchainError.message);
+      }
+    }
+    
+    // Fall back to in-memory if not found on blockchain
+    if (!record) {
+      record = protectedContent.get(hash);
+      if (record) {
+        source = 'memory-cache';
+      }
+    }
     
     if (!record) {
       contentVerificationsTotal.labels('not_found').inc();
@@ -434,7 +519,7 @@ app.get('/api/v1/verify/:hash', [
       });
     }
     
-    logger.info(`Content verification: ${hash}`);
+    logger.info(`Content verification: ${hash} [${source}]`);
     contentVerificationsTotal.labels('success').inc();
     
     res.json({
@@ -444,8 +529,12 @@ app.get('/api/v1/verify/:hash', [
       timestamp: record.timestamp,
       license: record.license,
       metadata: record.metadata,
-      verificationUrl: record.verificationUrl,
-      blockchain: blockchainEnabled ? 'verified' : 'demo-mode'
+      verificationUrl: record.verificationUrl || generateVerificationUrl(hash),
+      blockchain: {
+        enabled: blockchainEnabled,
+        verified: source === 'blockchain',
+        source: source
+      }
     });
     
   } catch (error) {
