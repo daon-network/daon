@@ -4,9 +4,65 @@
  * Handles all blockchain interactions for content registration and verification
  */
 
-import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import { SigningStargateClient, StargateClient } from '@cosmjs/stargate';
+import { DirectSecp256k1HdWallet, Registry } from '@cosmjs/proto-signing';
+import { SigningStargateClient, StargateClient, defaultRegistryTypes } from '@cosmjs/stargate';
 import { stringToPath } from '@cosmjs/crypto';
+
+// Define custom registry types for DAON blockchain
+const daonRegistryTypes = [
+  ['/daoncore.contentregistry.v1.MsgRegisterContent', {
+    // Custom message type definition
+    encode: (message) => {
+      // Simple encoding for now - the chain will decode it
+      const fields = {
+        1: { name: 'creator', type: 'string' },
+        2: { name: 'content_hash', type: 'string' },
+        3: { name: 'license', type: 'string' },
+        4: { name: 'fingerprint', type: 'string' },
+        5: { name: 'platform', type: 'string' },
+      };
+      
+      // Build protobuf bytes manually
+      const parts = [];
+      if (message.creator) parts.push(encodeField(1, 2, message.creator));
+      if (message.contentHash) parts.push(encodeField(2, 2, message.contentHash));
+      if (message.license) parts.push(encodeField(3, 2, message.license));
+      if (message.fingerprint) parts.push(encodeField(4, 2, message.fingerprint));
+      if (message.platform) parts.push(encodeField(5, 2, message.platform));
+      
+      return new Uint8Array(parts.flat());
+    },
+    decode: (input) => {
+      // Decode not needed for sending transactions
+      return {};
+    }
+  }]
+];
+
+// Helper to encode protobuf field
+function encodeField(fieldNum, wireType, value) {
+  const tag = (fieldNum << 3) | wireType;
+  const tagBytes = encodeVarint(tag);
+  
+  if (wireType === 2) { // String/bytes
+    const strBytes = new TextEncoder().encode(value);
+    const lenBytes = encodeVarint(strBytes.length);
+    return [...tagBytes, ...lenBytes, ...strBytes];
+  }
+  
+  return tagBytes;
+}
+
+// Encode varint
+function encodeVarint(value) {
+  const bytes = [];
+  while (value > 0x7f) {
+    bytes.push((value & 0x7f) | 0x80);
+    value >>= 7;
+  }
+  bytes.push(value & 0x7f);
+  return bytes;
+}
 
 class BlockchainClient {
   constructor() {
@@ -67,11 +123,15 @@ class BlockchainClient {
     const [firstAccount] = await this.wallet.getAccounts();
     this.address = firstAccount.address;
 
-    // Create signing client
+    // Create custom registry with DAON types
+    const registry = new Registry([...defaultRegistryTypes, ...daonRegistryTypes]);
+    
+    // Create signing client with custom registry
     this.signingClient = await SigningStargateClient.connectWithSigner(
       this.rpcEndpoint,
       this.wallet,
       {
+        registry,
         gasPrice: { denom: 'stake', amount: '0.025' }
       }
     );
