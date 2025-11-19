@@ -201,6 +201,7 @@ app.get('/metrics', async (req, res) => {
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
+    instance: process.env.INSTANCE_ID || 'unknown',
     timestamp: new Date().toISOString(),
     version: '0.1.0',
     blockchain: blockchainEnabled ? 'connected' : 'demo-mode',
