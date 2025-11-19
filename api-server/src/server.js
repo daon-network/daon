@@ -102,9 +102,12 @@ app.use(cors({
 
 // Rate limiting (disabled in test mode)
 if (process.env.NODE_ENV !== 'test') {
+  // Adjust limits based on environment
+  const isLoadTesting = process.env.LOAD_TEST_MODE === 'true';
+  
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: isLoadTesting ? 10000 : 100, // Higher limit for load testing
     message: {
       error: 'Too many requests from this IP, please try again later.',
       retryAfter: '15 minutes'
@@ -115,7 +118,7 @@ if (process.env.NODE_ENV !== 'test') {
 
   const protectLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: 10, // Limit content protection to 10 per minute per IP
+    max: isLoadTesting ? 1000 : 10, // Higher limit for load testing
     message: {
       error: 'Content protection rate limit exceeded. Please wait before protecting more content.',
       retryAfter: '1 minute'
