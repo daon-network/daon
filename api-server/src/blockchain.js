@@ -8,61 +8,65 @@ import { DirectSecp256k1HdWallet, Registry } from '@cosmjs/proto-signing';
 import { SigningStargateClient, StargateClient, defaultRegistryTypes } from '@cosmjs/stargate';
 import { stringToPath } from '@cosmjs/crypto';
 
+// Protobuf encoding helper
+class ProtobufEncoder {
+  static encodeString(fieldNumber, value) {
+    if (!value) return new Uint8Array(0);
+    
+    const fieldTag = (fieldNumber << 3) | 2; // Wire type 2 for strings
+    const strBytes = new TextEncoder().encode(value);
+    
+    const tagBytes = this.encodeVarint(fieldTag);
+    const lengthBytes = this.encodeVarint(strBytes.length);
+    
+    const result = new Uint8Array(tagBytes.length + lengthBytes.length + strBytes.length);
+    result.set(tagBytes, 0);
+    result.set(lengthBytes, tagBytes.length);
+    result.set(strBytes, tagBytes.length + lengthBytes.length);
+    
+    return result;
+  }
+  
+  static encodeVarint(value) {
+    const bytes = [];
+    while (value > 0x7f) {
+      bytes.push((value & 0x7f) | 0x80);
+      value = Math.floor(value / 128);
+    }
+    bytes.push(value & 0x7f);
+    return new Uint8Array(bytes);
+  }
+  
+  static concat(...arrays) {
+    const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
+    const result = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const arr of arrays) {
+      result.set(arr, offset);
+      offset += arr.length;
+    }
+    return result;
+  }
+}
+
 // Define custom registry types for DAON blockchain
 const daonRegistryTypes = [
   ['/daoncore.contentregistry.v1.MsgRegisterContent', {
-    // Custom message type definition
     encode: (message) => {
-      // Simple encoding for now - the chain will decode it
-      const fields = {
-        1: { name: 'creator', type: 'string' },
-        2: { name: 'content_hash', type: 'string' },
-        3: { name: 'license', type: 'string' },
-        4: { name: 'fingerprint', type: 'string' },
-        5: { name: 'platform', type: 'string' },
-      };
-      
-      // Build protobuf bytes manually
-      const parts = [];
-      if (message.creator) parts.push(encodeField(1, 2, message.creator));
-      if (message.contentHash) parts.push(encodeField(2, 2, message.contentHash));
-      if (message.license) parts.push(encodeField(3, 2, message.license));
-      if (message.fingerprint) parts.push(encodeField(4, 2, message.fingerprint));
-      if (message.platform) parts.push(encodeField(5, 2, message.platform));
-      
-      return new Uint8Array(parts.flat());
+      return ProtobufEncoder.concat(
+        ProtobufEncoder.encodeString(1, message.creator),
+        ProtobufEncoder.encodeString(2, message.content_hash),
+        ProtobufEncoder.encodeString(3, message.license),
+        ProtobufEncoder.encodeString(4, message.fingerprint),
+        ProtobufEncoder.encodeString(5, message.platform)
+      );
     },
     decode: (input) => {
-      // Decode not needed for sending transactions
+      // Decode not needed for transactions
       return {};
     }
   }]
 ];
-
-// Helper to encode protobuf field
-function encodeField(fieldNum, wireType, value) {
-  const tag = (fieldNum << 3) | wireType;
-  const tagBytes = encodeVarint(tag);
-  
-  if (wireType === 2) { // String/bytes
-    const strBytes = new TextEncoder().encode(value);
-    const lenBytes = encodeVarint(strBytes.length);
-    return [...tagBytes, ...lenBytes, ...strBytes];
-  }
-  
-  return tagBytes;
-}
-
-// Encode varint
-function encodeVarint(value) {
-  const bytes = [];
-  while (value > 0x7f) {
-    bytes.push((value & 0x7f) | 0x80);
-    value >>= 7;
-  }
-  bytes.push(value & 0x7f);
-  return bytes;
-}
 
 class BlockchainClient {
   constructor() {
@@ -154,16 +158,18 @@ class BlockchainClient {
       ? contentHash 
       : `sha256:${contentHash}`;
 
-    // Create the message
+    // Create properly encoded protobuf message
+    const msgValue = {
+      creator: this.address,
+      content_hash: formattedHash,  // Use snake_case as in proto
+      license: license || 'liberation_v1',
+      fingerprint: metadata.fingerprint || '',
+      platform: metadata.platform || 'api',
+    };
+
     const msg = {
       typeUrl: '/daoncore.contentregistry.v1.MsgRegisterContent',
-      value: {
-        creator: this.address,
-        contentHash: formattedHash,
-        license: license || 'liberation_v1',
-        fingerprint: metadata.fingerprint || '',
-        platform: metadata.platform || 'api',
-      },
+      value: msgValue,
     };
 
     try {
