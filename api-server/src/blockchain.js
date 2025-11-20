@@ -6,7 +6,8 @@
  */
 
 import { DirectSecp256k1HdWallet, Registry } from '@cosmjs/proto-signing';
-import { SigningStargateClient, defaultRegistryTypes } from '@cosmjs/stargate';
+import { SigningStargateClient, defaultRegistryTypes, QueryClient } from '@cosmjs/stargate';
+import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
 
 class BlockchainClient {
   constructor() {
@@ -99,9 +100,12 @@ class BlockchainClient {
         ['/daoncore.contentregistry.v1.MsgRegisterContent', MsgRegisterContentType]
       ]);
 
-      // Create signing client with custom registry, zero gas price, and custom prefix
-      this.client = await SigningStargateClient.connectWithSigner(
-        this.rpcEndpoint,
+      // Create Tendermint client first
+      const tmClient = await Tendermint34Client.connect(this.rpcEndpoint);
+      
+      // Create signing client with custom registry and account parser that handles daon prefix
+      this.client = await SigningStargateClient.createWithSigner(
+        tmClient,
         this.wallet,
         {
           registry: customRegistry,
@@ -109,7 +113,17 @@ class BlockchainClient {
             denom: 'stake',
             amount: '0'
           },
-          prefix: 'daon',  // Use daon prefix instead of default cosmos
+          accountParser: (input) => {
+            // Custom account parser that handles daon addresses
+            const value = input.typeUrl === '/cosmos.auth.v1beta1.BaseAccount' ? 
+              input.value : input;
+            return {
+              address: value.address || '',
+              pubkey: value.pubKey || value.pubkey || null,
+              accountNumber: value.accountNumber || 0,
+              sequence: value.sequence || 0,
+            };
+          },
         }
       );
       
