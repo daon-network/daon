@@ -19,6 +19,11 @@ class BlockchainClient {
     this.wallet = null;
     this.address = null;
     this.connected = false;
+    
+    // Sequence manager to handle concurrent transactions
+    this.sequenceCache = null;
+    this.sequenceLock = Promise.resolve();
+    this.lastSequenceUpdate = 0;
   }
 
   /**
@@ -142,6 +147,87 @@ class BlockchainClient {
   }
 
   /**
+   * Get next sequence number with locking for concurrent transactions
+   * Manages sequence locally and refreshes from chain periodically
+   */
+  async getNextSequence(address) {
+    // Acquire lock to prevent race conditions
+    const releaseLock = await this.acquireSequenceLock();
+    
+    try {
+      const now = Date.now();
+      const cacheAge = now - this.lastSequenceUpdate;
+      
+      // Refresh from chain if cache is stale (>10 seconds) or doesn't exist
+      if (this.sequenceCache === null || cacheAge > 10000) {
+        console.log('Refreshing sequence from blockchain...');
+        
+        // Try REST API first (faster)
+        const restEndpoint = this.rpcEndpoint.replace(':26657', ':1317');
+        try {
+          const restResponse = await fetch(
+            `${restEndpoint}/cosmos/auth/v1beta1/accounts/${address}`,
+            { signal: AbortSignal.timeout(3000) }
+          );
+          
+          if (restResponse.ok) {
+            const data = await restResponse.json();
+            if (data.account) {
+              this.sequenceCache = {
+                accountNumber: parseInt(data.account.account_number || 0),
+                sequence: parseInt(data.account.sequence || 0),
+              };
+              this.lastSequenceUpdate = now;
+              console.log(`Sequence refreshed from REST API: ${this.sequenceCache.sequence}`);
+            }
+          } else if (restResponse.status === 404) {
+            // New account
+            this.sequenceCache = { accountNumber: 0, sequence: 0 };
+            this.lastSequenceUpdate = now;
+            console.log('New account, starting at sequence 0');
+          }
+        } catch (restError) {
+          console.log('REST API not available, using fallback...');
+          // If REST fails, assume new account or keep existing cache
+          if (this.sequenceCache === null) {
+            this.sequenceCache = { accountNumber: 0, sequence: 0 };
+            this.lastSequenceUpdate = now;
+          }
+        }
+      }
+      
+      // Return current sequence and increment for next call
+      const current = this.sequenceCache.sequence;
+      this.sequenceCache.sequence++;
+      
+      console.log(`Using sequence ${current}, next will be ${this.sequenceCache.sequence}`);
+      
+      return {
+        accountNumber: this.sequenceCache.accountNumber,
+        sequence: current,
+      };
+    } finally {
+      releaseLock();
+    }
+  }
+  
+  /**
+   * Acquire lock for sequence management
+   */
+  async acquireSequenceLock() {
+    let release;
+    const lockPromise = new Promise(resolve => {
+      release = resolve;
+    });
+    
+    const previousLock = this.sequenceLock;
+    this.sequenceLock = previousLock.then(() => lockPromise);
+    
+    await previousLock;
+    return release;
+  }
+
+  /**
    * Manually sign and broadcast transaction
    * Bypasses CosmJS's getAccount() which has address prefix validation issues
    */
@@ -151,11 +237,10 @@ class BlockchainClient {
       const accounts = await this.wallet.getAccounts();
       const signerAddress = accounts[0].address;
       
-      // Use sequence 0 for new account (blockchain will validate)
-      const accountNumber = 0;
-      const sequence = 0;
+      // Get next sequence number (with locking for concurrent requests)
+      const { accountNumber, sequence } = await this.getNextSequence(signerAddress);
       
-      console.log(`Signing with account: ${signerAddress} (accountNumber: ${accountNumber}, sequence: ${sequence})`);
+      console.log(`Signing tx with sequence ${sequence}`);
       
       // Create TxBodyEncodeObject
       const txBody = {
@@ -201,9 +286,20 @@ class BlockchainClient {
       const txRawBytes = TxRaw.encode(txRaw).finish();
       const result = await this.client.broadcastTx(txRawBytes);
       
+      // If transaction failed due to sequence mismatch, invalidate cache
+      if (result.code === 32) { // sequence mismatch error code
+        console.warn('Sequence mismatch detected, invalidating cache');
+        this.sequenceCache = null;
+        throw new Error('Sequence mismatch - please retry');
+      }
+      
       return result;
     } catch (error) {
       console.error('Manual sign and broadcast failed:', error);
+      // Invalidate sequence cache on error to force refresh
+      if (error.message.includes('sequence')) {
+        this.sequenceCache = null;
+      }
       throw error;
     }
   }
