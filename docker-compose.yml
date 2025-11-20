@@ -142,6 +142,7 @@ services:
       BLOCKCHAIN_ENABLED: ${BLOCKCHAIN_ENABLED:-true}
       BLOCKCHAIN_RPC: http://daon-blockchain:26657
       CHAIN_ID: daon-mainnet-1
+      API_MNEMONIC: ${API_MNEMONIC}
       API_KEY_SECRET: ${API_KEY_SECRET}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-1"
@@ -184,6 +185,7 @@ services:
       BLOCKCHAIN_ENABLED: ${BLOCKCHAIN_ENABLED:-true}
       BLOCKCHAIN_RPC: http://daon-blockchain:26657
       CHAIN_ID: daon-mainnet-1
+      API_MNEMONIC: ${API_MNEMONIC}
       API_KEY_SECRET: ${API_KEY_SECRET}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-2"
@@ -226,6 +228,7 @@ services:
       BLOCKCHAIN_ENABLED: ${BLOCKCHAIN_ENABLED:-true}
       BLOCKCHAIN_RPC: http://daon-blockchain:26657
       CHAIN_ID: daon-mainnet-1
+      API_MNEMONIC: ${API_MNEMONIC}
       API_KEY_SECRET: ${API_KEY_SECRET}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-3"
