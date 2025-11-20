@@ -9,6 +9,7 @@ import { DirectSecp256k1HdWallet, Registry, makeAuthInfoBytes, makeSignDoc } fro
 import { SigningStargateClient, defaultRegistryTypes, QueryClient, StargateClient } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
 import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx.js';
+import { Writer } from 'protobufjs/minimal.js';
 
 class BlockchainClient {
   constructor() {
@@ -53,8 +54,8 @@ class BlockchainClient {
       // Create a proper GeneratedType for CosmJS Registry
       // This must match the protobuf Writer interface that CosmJS expects
       const MsgRegisterContentType = {
-        // Encode method - receives message object and protobuf writer
-        encode: (message, writer) => {
+        // Encode method - receives message object and optionally a protobuf writer
+        encode: (message, writer = Writer.create()) => {
           // Field 1: creator (string)
           if (message.creator) {
             writer.uint32(10).string(message.creator);
