@@ -8,7 +8,7 @@
 import { DirectSecp256k1HdWallet, Registry, makeAuthInfoBytes, makeSignDoc } from '@cosmjs/proto-signing';
 import { SigningStargateClient, defaultRegistryTypes, QueryClient, StargateClient } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
-import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx.js';
+import { TxRaw, TxBody } from 'cosmjs-types/cosmos/tx/v1beta1/tx.js';
 import { BinaryWriter } from 'cosmjs-types/binary.js';
 
 class BlockchainClient {
@@ -243,16 +243,19 @@ class BlockchainClient {
       
       console.log(`Signing tx with sequence ${sequence}`);
       
-      // Create TxBody message
-      const txBody = {
-        typeUrl: '/cosmos.tx.v1beta1.TxBody',
-        value: {
-          messages: messages,
-          memo: memo,
-        },
-      };
+      // Encode messages as Any types
+      const encodedMessages = messages.map(msg => ({
+        typeUrl: msg.typeUrl,
+        value: this.client.registry.encode(msg),
+      }));
       
-      const txBodyBytes = this.client.registry.encode(txBody);
+      // Create and encode TxBody
+      const txBody = TxBody.fromPartial({
+        messages: encodedMessages,
+        memo: memo,
+      });
+      
+      const txBodyBytes = TxBody.encode(txBody).finish();
       
       // Create SignDoc
       const gasLimit = 200000;
