@@ -24,6 +24,7 @@
   "author": "DAON Network",
   "license": "MIT",
   "dependencies": {
+    "@bufbuild/protobuf": "^2.10.1",
     "@cosmjs/crypto": "^0.32.2",
     "@cosmjs/proto-signing": "^0.32.2",
     "@cosmjs/stargate": "^0.32.2",

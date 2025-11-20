@@ -10,7 +10,7 @@ import { SigningStargateClient, defaultRegistryTypes, QueryClient, StargateClien
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
 import { TxRaw, TxBody } from 'cosmjs-types/cosmos/tx/v1beta1/tx.js';
 import { Any } from 'cosmjs-types/google/protobuf/any.js';
-import { BinaryWriter } from 'cosmjs-types/binary.js';
+import { MsgRegisterContent } from './types/daoncore/contentregistry/v1/tx.js';
 
 class BlockchainClient {
   constructor() {
@@ -52,60 +52,10 @@ class BlockchainClient {
       const [firstAccount] = await this.wallet.getAccounts();
       this.address = firstAccount.address;
 
-      // Create a proper GeneratedType for CosmJS Registry
-      // This must match the protobuf Writer interface that CosmJS expects
-      const MsgRegisterContentType = {
-        // Encode method - receives message object and optionally a protobuf writer
-        encode: (message, writer = BinaryWriter.create()) => {
-          // Field 1: creator (string)
-          if (message.creator) {
-            writer.uint32(10).string(message.creator);
-          }
-          // Field 2: content_hash (string)  
-          if (message.contentHash) {
-            writer.uint32(18).string(message.contentHash);
-          }
-          // Field 3: license (string)
-          if (message.license) {
-            writer.uint32(26).string(message.license);
-          }
-          // Field 4: fingerprint (string)
-          if (message.fingerprint) {
-            writer.uint32(34).string(message.fingerprint);
-          }
-          // Field 5: platform (string)
-          if (message.platform) {
-            writer.uint32(42).string(message.platform);
-          }
-          return writer;
-        },
-        
-        // Decode method - receives protobuf reader
-        decode: (input, length) => {
-          return {
-            creator: '',
-            contentHash: '',
-            license: '',
-            fingerprint: '',
-            platform: '',
-          };
-        },
-        
-        // FromPartial - converts partial object to full message
-        fromPartial: (object) => {
-          return {
-            creator: object.creator || '',
-            contentHash: object.contentHash || '',
-            license: object.license || '',
-            fingerprint: object.fingerprint || '',
-            platform: object.platform || '',
-          };
-        },
-      };
-
+      // Register generated protobuf types
       const customRegistry = new Registry([
         ...defaultRegistryTypes,
-        ['/ccccore.contentregistry.v1.MsgRegisterContent', MsgRegisterContentType]
+        ['/daoncore.contentregistry.v1.MsgRegisterContent', MsgRegisterContent]
       ]);
 
       // Create Tendermint client first
@@ -330,9 +280,9 @@ class BlockchainClient {
       : `sha256:${contentHash}`;
 
     try {
-      // Create the message - Registry will encode it using our custom type
+      // Create the message using generated types
       const msg = {
-        typeUrl: '/ccccore.contentregistry.v1.MsgRegisterContent',
+        typeUrl: '/daoncore.contentregistry.v1.MsgRegisterContent',
         value: {
           creator: this.address,
           contentHash: formattedHash,
@@ -383,7 +333,7 @@ class BlockchainClient {
 
     try {
       // Query via ABCI query (direct RPC call)
-      const queryPath = `/ccccore.contentregistry.v1.Query/VerifyContent`;
+      const queryPath = `/daoncore.contentregistry.v1.Query/VerifyContent`;
       
       // Encode query data (content_hash field)
       const queryData = Buffer.from(
