@@ -9,6 +9,7 @@ import { DirectSecp256k1HdWallet, Registry, makeAuthInfoBytes, makeSignDoc } fro
 import { SigningStargateClient, defaultRegistryTypes, QueryClient, StargateClient } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
 import { TxRaw, TxBody } from 'cosmjs-types/cosmos/tx/v1beta1/tx.js';
+import { Any } from 'cosmjs-types/google/protobuf/any.js';
 import { BinaryWriter } from 'cosmjs-types/binary.js';
 
 class BlockchainClient {
@@ -243,11 +244,14 @@ class BlockchainClient {
       
       console.log(`Signing tx with sequence ${sequence}`);
       
-      // Encode messages as Any types
-      const encodedMessages = messages.map(msg => ({
-        typeUrl: msg.typeUrl,
-        value: this.client.registry.encode(msg),
-      }));
+      // Encode messages as google.protobuf.Any
+      const encodedMessages = messages.map(msg => {
+        const msgBytes = this.client.registry.encode(msg);
+        return Any.fromPartial({
+          typeUrl: msg.typeUrl,
+          value: msgBytes,
+        });
+      });
       
       // Create and encode TxBody
       const txBody = TxBody.fromPartial({
