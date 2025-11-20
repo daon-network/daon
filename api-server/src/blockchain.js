@@ -105,7 +105,7 @@ class BlockchainClient {
 
       const customRegistry = new Registry([
         ...defaultRegistryTypes,
-        ['/daoncore.contentregistry.v1.MsgRegisterContent', MsgRegisterContentType]
+        ['/ccccore.contentregistry.v1.MsgRegisterContent', MsgRegisterContentType]
       ]);
 
       // Create Tendermint client first
@@ -332,7 +332,7 @@ class BlockchainClient {
     try {
       // Create the message - Registry will encode it using our custom type
       const msg = {
-        typeUrl: '/daoncore.contentregistry.v1.MsgRegisterContent',
+        typeUrl: '/ccccore.contentregistry.v1.MsgRegisterContent',
         value: {
           creator: this.address,
           contentHash: formattedHash,
@@ -383,7 +383,7 @@ class BlockchainClient {
 
     try {
       // Query via ABCI query (direct RPC call)
-      const queryPath = `/daoncore.contentregistry.v1.Query/VerifyContent`;
+      const queryPath = `/ccccore.contentregistry.v1.Query/VerifyContent`;
       
       // Encode query data (content_hash field)
       const queryData = Buffer.from(
