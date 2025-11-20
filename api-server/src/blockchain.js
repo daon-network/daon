@@ -2,20 +2,21 @@
  * DAON Blockchain Client
  * 
  * Handles all blockchain interactions for content registration and verification
- * Uses CLI-based approach for reliable transaction submission
+ * Uses RPC-based approach with manual protobuf encoding
  */
 
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { SigningStargateClient } from '@cosmjs/stargate';
+import { stringToPath } from '@cosmjs/crypto';
 
 class BlockchainClient {
   constructor() {
     this.rpcEndpoint = process.env.BLOCKCHAIN_RPC || 'http://localhost:26657';
-    this.restEndpoint = process.env.BLOCKCHAIN_REST || 'http://localhost:1317';
     this.chainId = process.env.CHAIN_ID || 'daon-mainnet-1';
-    this.address = process.env.API_ADDRESS || 'daon1sjprvykgf0yj59f4nzjpwjyekj85a6gtl3qx3n';
+    this.mnemonic = process.env.API_MNEMONIC || 'blur cause boost pass stick allow hundred odor level erosion umbrella urban need indicate inject funny anchor kiss rain equal among unhappy sad dutch';
+    this.client = null;
+    this.wallet = null;
+    this.address = null;
     this.connected = false;
   }
 
@@ -31,15 +32,30 @@ class BlockchainClient {
       
       const data = await response.json();
       
-      if (data && data.result) {
-        this.connected = true;
-        console.log(`✅ Connected to blockchain at ${this.rpcEndpoint}`);
-        console.log(`   Chain ID: ${this.chainId}`);
-        console.log(`   API Address: ${this.address}`);
-        return true;
+      if (!data || !data.result) {
+        throw new Error('Invalid blockchain response');
       }
+
+      // Initialize wallet
+      this.wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.mnemonic, {
+        prefix: 'daon',
+      });
+
+      const [firstAccount] = await this.wallet.getAccounts();
+      this.address = firstAccount.address;
+
+      // Create signing client (without custom registry - we'll broadcast raw)
+      this.client = await SigningStargateClient.connectWithSigner(
+        this.rpcEndpoint,
+        this.wallet
+      );
       
-      throw new Error('Invalid blockchain response');
+      this.connected = true;
+      console.log(`✅ Connected to blockchain at ${this.rpcEndpoint}`);
+      console.log(`   Chain ID: ${this.chainId}`);
+      console.log(`   API Address: ${this.address}`);
+      
+      return true;
     } catch (error) {
       console.error('❌ Failed to connect to blockchain:', error.message);
       this.connected = false;
@@ -48,7 +64,63 @@ class BlockchainClient {
   }
 
   /**
-   * Register content on blockchain using CLI
+   * Manual protobuf encoding for MsgRegisterContent
+   * Encodes the message according to the proto3 specification
+   */
+  encodeMsgRegisterContent(creator, contentHash, license, fingerprint, platform) {
+    const encodeString = (fieldNumber, value) => {
+      if (!value) return new Uint8Array(0);
+      
+      const fieldTag = (fieldNumber << 3) | 2; // Wire type 2 for string
+      const strBytes = new TextEncoder().encode(value);
+      
+      const result = [];
+      
+      // Encode field tag
+      let tag = fieldTag;
+      while (tag > 0x7f) {
+        result.push((tag & 0x7f) | 0x80);
+        tag = tag >>> 7;
+      }
+      result.push(tag & 0x7f);
+      
+      // Encode length
+      let len = strBytes.length;
+      while (len > 0x7f) {
+        result.push((len & 0x7f) | 0x80);
+        len = len >>> 7;
+      }
+      result.push(len & 0x7f);
+      
+      // Append string bytes
+      result.push(...strBytes);
+      
+      return new Uint8Array(result);
+    };
+
+    // Encode each field
+    const field1 = encodeString(1, creator);       // creator
+    const field2 = encodeString(2, contentHash);    // content_hash
+    const field3 = encodeString(3, license);        // license
+    const field4 = encodeString(4, fingerprint);    // fingerprint
+    const field5 = encodeString(5, platform);       // platform
+
+    // Concatenate all fields
+    const totalLength = field1.length + field2.length + field3.length + field4.length + field5.length;
+    const result = new Uint8Array(totalLength);
+    let offset = 0;
+    
+    result.set(field1, offset); offset += field1.length;
+    result.set(field2, offset); offset += field2.length;
+    result.set(field3, offset); offset += field3.length;
+    result.set(field4, offset); offset += field4.length;
+    result.set(field5, offset);
+
+    return result;
+  }
+
+  /**
+   * Register content on blockchain
    * @param {string} contentHash - SHA256 hash of content (with sha256: prefix)
    * @param {object} metadata - Content metadata
    * @param {string} license - License type
@@ -65,33 +137,36 @@ class BlockchainClient {
       : `sha256:${contentHash}`;
 
     try {
-      // Use docker exec to run the CLI command directly on the blockchain container
-      const cmd = `docker exec daon-blockchain daon-cored tx contentregistry register-content ` +
-        `"${formattedHash}" ` +
-        `"${license || 'liberation_v1'}" ` +
-        `"${metadata.fingerprint || ''}" ` +
-        `"${metadata.platform || 'api'}" ` +
-        `--from api-wallet ` +
-        `--chain-id ${this.chainId} ` +
-        `--keyring-backend test ` +
-        `--yes ` +
-        `--output json`;
+      // Encode the message manually
+      const msgValue = this.encodeMsgRegisterContent(
+        this.address,
+        formattedHash,
+        license || 'liberation_v1',
+        metadata.fingerprint || '',
+        metadata.platform || 'api'
+      );
 
-      const { stdout, stderr } = await execAsync(cmd);
-      
-      if (stderr && !stderr.includes('gas estimate')) {
-        console.warn('Blockchain stderr:', stderr);
-      }
+      // Create the message with type URL and encoded value
+      const msg = {
+        typeUrl: '/daoncore.contentregistry.v1.MsgRegisterContent',
+        value: msgValue,
+      };
 
-      const result = JSON.parse(stdout);
-      
-      if (result.code && result.code !== 0) {
-        throw new Error(`Transaction failed: ${result.raw_log || result.logs}`);
+      // Sign and broadcast
+      const result = await this.client.signAndBroadcast(
+        this.address,
+        [msg],
+        'auto',
+        `Register content: ${metadata.title || 'Untitled'}`
+      );
+
+      if (result.code !== 0) {
+        throw new Error(`Transaction failed: ${result.rawLog}`);
       }
 
       return {
         success: true,
-        txHash: result.txhash || result.transactionHash,
+        txHash: result.transactionHash,
         height: result.height,
       };
     } catch (error) {
@@ -101,7 +176,7 @@ class BlockchainClient {
   }
 
   /**
-   * Verify content on blockchain using CLI query
+   * Verify content on blockchain using RPC query
    * @param {string} contentHash - SHA256 hash to verify
    * @returns {Promise<object>} Verification result
    */
@@ -116,22 +191,39 @@ class BlockchainClient {
       : `sha256:${contentHash}`;
 
     try {
-      // Use docker exec to query the blockchain
-      const cmd = `docker exec daon-blockchain daon-cored query contentregistry verify "${formattedHash}" --output json`;
+      // Query via ABCI query (direct RPC call)
+      const queryPath = `/daoncore.contentregistry.v1.Query/VerifyContent`;
       
-      const { stdout, stderr } = await execAsync(cmd);
-      
-      if (stderr && !stderr.includes('not found')) {
-        console.warn('Query stderr:', stderr);
+      // Encode query data (content_hash field)
+      const queryData = Buffer.from(
+        JSON.stringify({ content_hash: formattedHash })
+      ).toString('base64');
+
+      const response = await fetch(`${this.rpcEndpoint}/abci_query?path="${queryPath}"&data="${queryData}"`, {
+        signal: AbortSignal.timeout(5000)
+      });
+
+      const data = await response.json();
+
+      if (data.result && data.result.response && data.result.response.value) {
+        // Decode base64 response
+        const decoded = JSON.parse(
+          Buffer.from(data.result.response.value, 'base64').toString('utf8')
+        );
+
+        return {
+          verified: decoded.verified || false,
+          creator: decoded.creator || null,
+          license: decoded.license || null,
+          timestamp: decoded.timestamp || null,
+        };
       }
 
-      const result = JSON.parse(stdout);
-
       return {
-        verified: result.verified || false,
-        creator: result.creator || null,
-        license: result.license || null,
-        timestamp: result.timestamp || null,
+        verified: false,
+        creator: null,
+        license: null,
+        timestamp: null,
       };
     } catch (error) {
       // If content not found, return unverified
@@ -198,6 +290,9 @@ class BlockchainClient {
    * Disconnect from blockchain
    */
   async disconnect() {
+    if (this.client) {
+      this.client.disconnect();
+    }
     this.connected = false;
     console.log('Disconnected from blockchain');
   }
