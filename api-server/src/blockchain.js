@@ -44,10 +44,16 @@ class BlockchainClient {
       const [firstAccount] = await this.wallet.getAccounts();
       this.address = firstAccount.address;
 
-      // Create signing client (without custom registry - we'll broadcast raw)
+      // Create signing client with zero gas price (blockchain has no fees)
       this.client = await SigningStargateClient.connectWithSigner(
         this.rpcEndpoint,
-        this.wallet
+        this.wallet,
+        {
+          gasPrice: {
+            denom: 'stake',
+            amount: '0'
+          }
+        }
       );
       
       this.connected = true;
