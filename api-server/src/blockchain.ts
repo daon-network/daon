@@ -301,11 +301,16 @@ class BlockchainClient {
         },
       };
 
-      console.log('Submitting transaction with manual signing...');
+      console.log('Submitting transaction with CosmJS signAndBroadcast...');
       
-      // Use manual signing to bypass getAccount()
-      const result = await this.signAndBroadcastManual(
+      // Try standard CosmJS method now that we have correct prefix
+      const result = await this.client.signAndBroadcast(
+        this.address,
         [msg],
+        {
+          amount: [],
+          gas: '200000',
+        },
         `Register content: ${metadata.title || 'Untitled'}`
       );
 
