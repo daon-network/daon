@@ -9,13 +9,12 @@ services:
     image: daon-blockchain:latest
     container_name: daon-blockchain
     restart: unless-stopped
-    user: "1000:1000"  # Run as daon user (UID 1000)
     ports:
       - "127.0.0.1:26657:26657"  # RPC
       - "127.0.0.1:26656:26656"  # P2P
       - "127.0.0.1:1317:1317"    # REST API
     volumes:
-      - /opt/daon-database/blockchain:/daon/.daon
+      - daon-blockchain-data:/daon/.daon
     environment:
       CHAIN_ID: daon-mainnet-1
       MONIKER: daon-validator-1
@@ -49,11 +48,11 @@ services:
           fi
           API_ADDR=$(daond keys show api-wallet -a --keyring-backend test --home /daon/.daon)
           
-          # Add both accounts to genesis
+          # Add both accounts to genesis (using key names, not addresses)
           echo "💰 Adding validator to genesis with 10B stake..."
-          daond genesis add-genesis-account "$VALIDATOR_ADDR" 10000000000stake --home /daon/.daon
+          daond genesis add-genesis-account validator 10000000000stake --keyring-backend test --home /daon/.daon
           echo "💰 Adding API wallet to genesis with 5B stake..."
-          daond genesis add-genesis-account "$API_ADDR" 5000000000stake --home /daon/.daon
+          daond genesis add-genesis-account api-wallet 5000000000stake --keyring-backend test --home /daon/.daon
           
           # Create validator genesis transaction
           daond genesis gentx validator 1000000000stake --chain-id "${CHAIN_ID}" --keyring-backend test --home /daon/.daon
@@ -62,6 +61,8 @@ services:
           # Enable REST API (port 1317)
           sed -i 's/enable = false/enable = true/g' /daon/.daon/config/app.toml
           sed -i 's/swagger = false/swagger = true/g' /daon/.daon/config/app.toml
+          sed -i 's|address = "tcp://localhost:1317"|address = "tcp://0.0.0.0:1317"|g' /daon/.daon/config/app.toml
+          sed -i 's|laddr = "tcp://127.0.0.1:26657"|laddr = "tcp://0.0.0.0:26657"|g' /daon/.daon/config/config.toml
           
           echo "✅ Blockchain initialized with daon prefix!"
           echo "   Validator: $VALIDATOR_ADDR"
@@ -98,7 +99,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - /opt/daon-database/postgres:/var/lib/postgresql/data
+      - daon-postgres-data:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5432:5432"
     healthcheck:
@@ -157,7 +158,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-1"
     volumes:
-      - /opt/daon-app/logs:/app/logs
+      - daon-api-logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -200,7 +201,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-2"
     volumes:
-      - /opt/daon-app/logs:/app/logs
+      - daon-api-logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -243,7 +244,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-3"
     volumes:
-      - /opt/daon-app/logs:/app/logs
+      - daon-api-logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -271,3 +272,8 @@ services:
 networks:
   default:
     name: daon-network
+
+volumes:
+  daon-blockchain-data:
+  daon-postgres-data:
+  daon-api-logs:
