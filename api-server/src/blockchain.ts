@@ -45,8 +45,9 @@ class BlockchainClient {
       }
 
       // Initialize wallet
+      // NOTE: Blockchain uses 'cosmos' prefix, not 'daon'
       this.wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.mnemonic, {
-        prefix: 'daon',
+        prefix: 'cosmos',
       });
 
       const [firstAccount] = await this.wallet.getAccounts();
@@ -248,6 +249,8 @@ class BlockchainClient {
       
       // Encode and broadcast
       const txRawBytes = TxRaw.encode(txRaw).finish();
+      console.log('TxRaw bytes length:', txRawBytes.length);
+      console.log('TxRaw hex (first 200 bytes):', Buffer.from(txRawBytes).toString('hex').substring(0, 200));
       const result = await this.client.broadcastTx(txRawBytes);
       
       // If transaction failed due to sequence mismatch, invalidate cache
