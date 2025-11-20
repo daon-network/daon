@@ -197,12 +197,16 @@ class BlockchainClient {
       // Encode messages as google.protobuf.Any
       // Use MsgRegisterContent.encode directly instead of registry
       const encodedMessages = messages.map(msg => {
+        console.log('Message to encode:', JSON.stringify(msg));
         // Encode the message value using the generated type encoder
         const msgBytes = MsgRegisterContent.encode(msg.value).finish();
-        return Any.fromPartial({
+        console.log('Encoded message bytes length:', msgBytes.length);
+        const anyMsg = Any.fromPartial({
           typeUrl: msg.typeUrl,
           value: msgBytes,
         });
+        console.log('Any message:', JSON.stringify({ typeUrl: anyMsg.typeUrl, valueLength: anyMsg.value.length }));
+        return anyMsg;
       });
       
       // Create and encode TxBody
