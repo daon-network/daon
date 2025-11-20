@@ -44,10 +44,9 @@ class BlockchainClient {
         throw new Error('Invalid blockchain response');
       }
 
-      // Initialize wallet
-      // NOTE: Blockchain uses 'cosmos' prefix, not 'daon'
+      // Initialize wallet with daon prefix
       this.wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.mnemonic, {
-        prefix: 'cosmos',
+        prefix: 'daon',
       });
 
       const [firstAccount] = await this.wallet.getAccounts();
@@ -140,13 +139,10 @@ class BlockchainClient {
             console.log('New account, starting at sequence 0');
           }
         } catch (restError) {
-          console.log('REST API not available, querying via CLI fallback...');
-          // If REST fails, try querying via blockchain CLI or use cache
+          console.log('REST API not available, using fallback sequence 0...');
+          // If REST fails, assume new account
           if (this.sequenceCache === null) {
-            // For production, query the blockchain for current sequence
-            // This is a temporary fallback until REST API is enabled
-            console.log('No cache available, defaulting to sequence 1 (account was funded via CLI)');
-            this.sequenceCache = { accountNumber: 7, sequence: 1 };
+            this.sequenceCache = { accountNumber: 0, sequence: 0 };
             this.lastSequenceUpdate = now;
           }
         }
