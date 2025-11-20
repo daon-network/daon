@@ -5,9 +5,10 @@
  * Uses RPC-based approach with manual protobuf encoding
  */
 
-import { DirectSecp256k1HdWallet, Registry, makeAuthInfoBytes, makeSignDoc, TxRaw } from '@cosmjs/proto-signing';
+import { DirectSecp256k1HdWallet, Registry, makeAuthInfoBytes, makeSignDoc } from '@cosmjs/proto-signing';
 import { SigningStargateClient, defaultRegistryTypes, QueryClient, StargateClient } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
+import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx.js';
 
 class BlockchainClient {
   constructor() {
