@@ -99,7 +99,7 @@ class BlockchainClient {
         ['/daoncore.contentregistry.v1.MsgRegisterContent', MsgRegisterContentType]
       ]);
 
-      // Create signing client with custom registry and zero gas price
+      // Create signing client with custom registry, zero gas price, and custom prefix
       this.client = await SigningStargateClient.connectWithSigner(
         this.rpcEndpoint,
         this.wallet,
@@ -108,7 +108,8 @@ class BlockchainClient {
           gasPrice: {
             denom: 'stake',
             amount: '0'
-          }
+          },
+          prefix: 'daon',  // Use daon prefix instead of default cosmos
         }
       );
       
