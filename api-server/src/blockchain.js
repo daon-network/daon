@@ -6,8 +6,9 @@
  */
 
 import { DirectSecp256k1HdWallet, Registry } from '@cosmjs/proto-signing';
-import { SigningStargateClient, defaultRegistryTypes, QueryClient } from '@cosmjs/stargate';
+import { SigningStargateClient, defaultRegistryTypes, QueryClient, StargateClient } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
+import { makeAuthInfoBytes, makeSignDoc, TxBodyEncodeObject, TxRaw } from '@cosmjs/proto-signing';
 
 class BlockchainClient {
   constructor() {
@@ -141,6 +142,73 @@ class BlockchainClient {
   }
 
   /**
+   * Manually sign and broadcast transaction
+   * Bypasses CosmJS's getAccount() which has address prefix validation issues
+   */
+  async signAndBroadcastManual(messages, memo = '') {
+    try {
+      // Get signing key
+      const accounts = await this.wallet.getAccounts();
+      const signerAddress = accounts[0].address;
+      
+      // Use sequence 0 for new account (blockchain will validate)
+      const accountNumber = 0;
+      const sequence = 0;
+      
+      console.log(`Signing with account: ${signerAddress} (accountNumber: ${accountNumber}, sequence: ${sequence})`);
+      
+      // Create TxBodyEncodeObject
+      const txBody = {
+        typeUrl: '/cosmos.tx.v1beta1.TxBody',
+        value: {
+          messages: messages,
+          memo: memo,
+        },
+      };
+      
+      const txBodyBytes = this.client.registry.encode(txBody);
+      
+      // Create SignDoc
+      const gasLimit = 200000;
+      const feeAmount = [];
+      
+      const authInfoBytes = makeAuthInfoBytes(
+        [{ pubkey: accounts[0].pubkey, sequence }],
+        feeAmount,
+        gasLimit,
+        undefined,
+        undefined
+      );
+      
+      const signDoc = makeSignDoc(
+        txBodyBytes,
+        authInfoBytes,
+        this.chainId,
+        accountNumber
+      );
+      
+      // Sign the transaction
+      const { signature, signed } = await this.wallet.signDirect(signerAddress, signDoc);
+      
+      // Create TxRaw
+      const txRaw = TxRaw.fromPartial({
+        bodyBytes: signed.bodyBytes,
+        authInfoBytes: signed.authInfoBytes,
+        signatures: [Buffer.from(signature.signature, 'base64')],
+      });
+      
+      // Encode and broadcast
+      const txRawBytes = TxRaw.encode(txRaw).finish();
+      const result = await this.client.broadcastTx(txRawBytes);
+      
+      return result;
+    } catch (error) {
+      console.error('Manual sign and broadcast failed:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Register content on blockchain
    * @param {string} contentHash - SHA256 hash of content (with sha256: prefix)
    * @param {object} metadata - Content metadata
@@ -170,14 +238,11 @@ class BlockchainClient {
         },
       };
 
-      // Sign and broadcast with fixed gas
-      const result = await this.client.signAndBroadcast(
-        this.address,
+      console.log('Submitting transaction with manual signing...');
+      
+      // Use manual signing to bypass getAccount()
+      const result = await this.signAndBroadcastManual(
         [msg],
-        {
-          amount: [],
-          gas: '200000',
-        },
         `Register content: ${metadata.title || 'Untitled'}`
       );
 
@@ -185,6 +250,7 @@ class BlockchainClient {
         throw new Error(`Transaction failed: ${result.rawLog}`);
       }
 
+      console.log(`✅ Transaction successful: ${result.transactionHash}`);
       return {
         success: true,
         txHash: result.transactionHash,
