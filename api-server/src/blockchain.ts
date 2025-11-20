@@ -195,8 +195,10 @@ class BlockchainClient {
       console.log(`Signing tx with sequence ${sequence}`);
       
       // Encode messages as google.protobuf.Any
+      // Use MsgRegisterContent.encode directly instead of registry
       const encodedMessages = messages.map(msg => {
-        const msgBytes = this.client.registry.encode(msg);
+        // Encode the message value using the generated type encoder
+        const msgBytes = MsgRegisterContent.encode(msg.value).finish();
         return Any.fromPartial({
           typeUrl: msg.typeUrl,
           value: msgBytes,
