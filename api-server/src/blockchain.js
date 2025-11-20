@@ -5,9 +5,8 @@
  * Uses RPC-based approach with manual protobuf encoding
  */
 
-import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import { SigningStargateClient } from '@cosmjs/stargate';
-import { stringToPath } from '@cosmjs/crypto';
+import { DirectSecp256k1HdWallet, Registry } from '@cosmjs/proto-signing';
+import { SigningStargateClient, defaultRegistryTypes } from '@cosmjs/stargate';
 
 class BlockchainClient {
   constructor() {
@@ -44,11 +43,68 @@ class BlockchainClient {
       const [firstAccount] = await this.wallet.getAccounts();
       this.address = firstAccount.address;
 
-      // Create signing client with zero gas price (blockchain has no fees)
+      // Create a proper GeneratedType for CosmJS Registry
+      // This must match the protobuf Writer interface that CosmJS expects
+      const MsgRegisterContentType = {
+        // Encode method - receives message object and protobuf writer
+        encode: (message, writer) => {
+          // Field 1: creator (string)
+          if (message.creator) {
+            writer.uint32(10).string(message.creator);
+          }
+          // Field 2: content_hash (string)  
+          if (message.contentHash) {
+            writer.uint32(18).string(message.contentHash);
+          }
+          // Field 3: license (string)
+          if (message.license) {
+            writer.uint32(26).string(message.license);
+          }
+          // Field 4: fingerprint (string)
+          if (message.fingerprint) {
+            writer.uint32(34).string(message.fingerprint);
+          }
+          // Field 5: platform (string)
+          if (message.platform) {
+            writer.uint32(42).string(message.platform);
+          }
+          return writer;
+        },
+        
+        // Decode method - receives protobuf reader
+        decode: (input, length) => {
+          return {
+            creator: '',
+            contentHash: '',
+            license: '',
+            fingerprint: '',
+            platform: '',
+          };
+        },
+        
+        // FromPartial - converts partial object to full message
+        fromPartial: (object) => {
+          return {
+            creator: object.creator || '',
+            contentHash: object.contentHash || '',
+            license: object.license || '',
+            fingerprint: object.fingerprint || '',
+            platform: object.platform || '',
+          };
+        },
+      };
+
+      const customRegistry = new Registry([
+        ...defaultRegistryTypes,
+        ['/daoncore.contentregistry.v1.MsgRegisterContent', MsgRegisterContentType]
+      ]);
+
+      // Create signing client with custom registry and zero gas price
       this.client = await SigningStargateClient.connectWithSigner(
         this.rpcEndpoint,
         this.wallet,
         {
+          registry: customRegistry,
           gasPrice: {
             denom: 'stake',
             amount: '0'
@@ -70,62 +126,6 @@ class BlockchainClient {
   }
 
   /**
-   * Manual protobuf encoding for MsgRegisterContent
-   * Encodes the message according to the proto3 specification
-   */
-  encodeMsgRegisterContent(creator, contentHash, license, fingerprint, platform) {
-    const encodeString = (fieldNumber, value) => {
-      if (!value) return new Uint8Array(0);
-      
-      const fieldTag = (fieldNumber << 3) | 2; // Wire type 2 for string
-      const strBytes = new TextEncoder().encode(value);
-      
-      const result = [];
-      
-      // Encode field tag
-      let tag = fieldTag;
-      while (tag > 0x7f) {
-        result.push((tag & 0x7f) | 0x80);
-        tag = tag >>> 7;
-      }
-      result.push(tag & 0x7f);
-      
-      // Encode length
-      let len = strBytes.length;
-      while (len > 0x7f) {
-        result.push((len & 0x7f) | 0x80);
-        len = len >>> 7;
-      }
-      result.push(len & 0x7f);
-      
-      // Append string bytes
-      result.push(...strBytes);
-      
-      return new Uint8Array(result);
-    };
-
-    // Encode each field
-    const field1 = encodeString(1, creator);       // creator
-    const field2 = encodeString(2, contentHash);    // content_hash
-    const field3 = encodeString(3, license);        // license
-    const field4 = encodeString(4, fingerprint);    // fingerprint
-    const field5 = encodeString(5, platform);       // platform
-
-    // Concatenate all fields
-    const totalLength = field1.length + field2.length + field3.length + field4.length + field5.length;
-    const result = new Uint8Array(totalLength);
-    let offset = 0;
-    
-    result.set(field1, offset); offset += field1.length;
-    result.set(field2, offset); offset += field2.length;
-    result.set(field3, offset); offset += field3.length;
-    result.set(field4, offset); offset += field4.length;
-    result.set(field5, offset);
-
-    return result;
-  }
-
-  /**
    * Register content on blockchain
    * @param {string} contentHash - SHA256 hash of content (with sha256: prefix)
    * @param {object} metadata - Content metadata
@@ -143,26 +143,26 @@ class BlockchainClient {
       : `sha256:${contentHash}`;
 
     try {
-      // Encode the message manually
-      const msgValue = this.encodeMsgRegisterContent(
-        this.address,
-        formattedHash,
-        license || 'liberation_v1',
-        metadata.fingerprint || '',
-        metadata.platform || 'api'
-      );
-
-      // Create the message with type URL and encoded value
+      // Create the message - Registry will encode it using our custom type
       const msg = {
         typeUrl: '/daoncore.contentregistry.v1.MsgRegisterContent',
-        value: msgValue,
+        value: {
+          creator: this.address,
+          contentHash: formattedHash,
+          license: license || 'liberation_v1',
+          fingerprint: metadata.fingerprint || '',
+          platform: metadata.platform || 'api',
+        },
       };
 
-      // Sign and broadcast
+      // Sign and broadcast with fixed gas
       const result = await this.client.signAndBroadcast(
         this.address,
         [msg],
-        'auto',
+        {
+          amount: [],
+          gas: '200000',
+        },
         `Register content: ${metadata.title || 'Untitled'}`
       );
 
