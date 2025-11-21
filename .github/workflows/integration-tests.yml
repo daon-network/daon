@@ -163,7 +163,8 @@ jobs:
             exit 1
           fi
         env:
-          NODE_ENV: production
+          NODE_ENV: test
+          START_SERVER: 'true'
           PORT: 3000
           DATABASE_URL: postgresql://daon_test:test_password@localhost:5432/daon_test
           REDIS_URL: redis://localhost:6379

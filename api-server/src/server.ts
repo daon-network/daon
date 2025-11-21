@@ -633,8 +633,11 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Start server only if not in test mode or if explicitly required
-if (process.env.NODE_ENV !== 'test' && !process.env.SKIP_SERVER_START) {
+// Start server only if not being imported for testing or if START_SERVER is explicitly set
+const shouldStartServer = process.env.START_SERVER === 'true' || 
+                         (process.env.NODE_ENV !== 'test' && !process.env.SKIP_SERVER_START);
+
+if (shouldStartServer) {
   app.listen(PORT, () => {
     logger.info(`🚀 DAON API Server running on port ${PORT}`);
     logger.info(`📊 Health check: http://localhost:${PORT}/health`);
