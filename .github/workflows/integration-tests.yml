@@ -112,6 +112,13 @@ jobs:
           cd api-server
           npm ci
 
+      # Build API server
+      - name: Build API server
+        run: |
+          cd api-server
+          npm run build
+          echo "✅ API server built"
+
       # Run database migrations (if any)
       - name: Setup test database
         run: |
@@ -123,8 +130,11 @@ jobs:
       - name: Start API server
         run: |
           cd api-server
-          npm start &
-          echo "🚀 API server starting..."
+          
+          # Start API server and redirect output to log file
+          node dist/server.js > api-server.log 2>&1 &
+          API_PID=$!
+          echo "🚀 API server starting (PID: $API_PID)..."
           
           # Wait for API to be ready
           for i in {1..30}; do
@@ -132,14 +142,29 @@ jobs:
               echo "✅ API server is ready"
               break
             fi
+            
+            # Check if process is still running
+            if ! kill -0 $API_PID 2>/dev/null; then
+              echo "❌ API server process died!"
+              echo "=== API Server Logs ==="
+              cat api-server.log
+              exit 1
+            fi
+            
             echo "Waiting for API server... ($i/30)"
             sleep 2
           done
           
           # Verify API is running
-          curl -f http://localhost:3000/health || exit 1
+          if ! curl -f http://localhost:3000/health; then
+            echo "❌ API server health check failed"
+            echo "=== API Server Logs ==="
+            cat api-server.log
+            exit 1
+          fi
         env:
           NODE_ENV: test
+          START_SERVER: 'true'
           PORT: 3000
           DATABASE_URL: postgresql://daon_test:test_password@localhost:5432/daon_test
           REDIS_URL: redis://localhost:6379

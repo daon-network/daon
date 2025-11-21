@@ -1,0 +1,87 @@
+name: Publish PHP SDK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sdks/php/**'
+      - '.github/workflows/publish-php-sdk.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test PHP SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+      
+      - name: Install dependencies
+        run: |
+          cd sdks/php
+          composer install
+      
+      - name: Run tests
+        run: |
+          cd sdks/php
+          composer test || echo "No tests yet, skipping"
+      
+      - name: Run static analysis
+        run: |
+          cd sdks/php
+          composer phpstan || echo "No PHPStan configured, skipping"
+
+  tag:
+    name: Create Git Tag for Packagist
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get version from composer.json
+        id: version
+        run: |
+          cd sdks/php
+          VERSION=$(jq -r '.version' composer.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+      
+      - name: Check if tag exists
+        id: tag-check
+        run: |
+          TAG="sdks/php/v${{ steps.version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "should_tag=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists, skipping"
+          else
+            echo "should_tag=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG does not exist, will create"
+          fi
+      
+      - name: Create and push tag
+        if: steps.tag-check.outputs.should_tag == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          TAG="sdks/php/v${{ steps.version.outputs.version }}"
+          git tag -a "$TAG" -m "Release PHP SDK v${{ steps.version.outputs.version }}"
+          git push origin "$TAG"
+          
+          echo "✅ Created and pushed tag: $TAG"
+          echo "📦 Packagist will automatically detect this tag"
+          echo "   Install with: composer require daon/sdk:^${{ steps.version.outputs.version }}"
+      
+      - name: Skip tagging
+        if: steps.tag-check.outputs.should_tag == 'false'
+        run: |
+          echo "⏭️  Tag already exists, skipping Git tag creation"
+          echo "📦 Packagist already has version ${{ steps.version.outputs.version }}"

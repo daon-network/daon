@@ -387,7 +387,7 @@ export class DAONClient {
       error.code === 'ECONNRESET' ||
       error.code === 'ENOTFOUND' ||
       error.code === 'ECONNREFUSED' ||
-      (error.response?.status && error.response.status >= 500)
+      (error.response?.status !== undefined && error.response.status >= 500)
     );
   }
 }

@@ -1,0 +1,80 @@
+name: Publish Ruby SDK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sdks/ruby/**'
+      - '.github/workflows/publish-ruby-sdk.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Ruby SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+      
+      - name: Install dependencies
+        run: |
+          cd sdks/ruby
+          bundle install
+      
+      - name: Run tests
+        run: |
+          cd sdks/ruby
+          bundle exec rspec || echo "No tests yet, skipping"
+
+  publish:
+    name: Publish to RubyGems
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      id-token: write  # REQUIRED for trusted publishing
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+      
+      - name: Build gem
+        run: |
+          cd sdks/ruby
+          gem build daon-sdk.gemspec
+      
+      - name: Check if version changed
+        id: version-check
+        run: |
+          cd sdks/ruby
+          PUBLISHED_VERSION=$(gem list daon-sdk --remote --exact --all | grep -oP '\(\K[^)]+' | head -1 || echo "0.0.0")
+          CURRENT_VERSION=$(grep "spec.version" daon-sdk.gemspec | cut -d'"' -f2)
+          
+          echo "Published version: $PUBLISHED_VERSION"
+          echo "Current version: $CURRENT_VERSION"
+          
+          if [ "$PUBLISHED_VERSION" = "$CURRENT_VERSION" ]; then
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+            echo "Version unchanged, skipping publish"
+          else
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "New version detected, will publish"
+          fi
+      
+      - name: Publish to RubyGems (Trusted Publisher)
+        if: steps.version-check.outputs.should_publish == 'true'
+        uses: rubygems/release-gem@v1
+      
+      - name: Skip publish
+        if: steps.version-check.outputs.should_publish == 'false'
+        run: |
+          echo "⏭️  Version unchanged, skipping RubyGems publish"

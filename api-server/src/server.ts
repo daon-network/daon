@@ -234,7 +234,7 @@ app.get('/health', async (req, res) => {
       totalProtected: protectedContent.size,
       uptime: process.uptime(),
       memory: process.memoryUsage(),
-      activeConnections: activeConnections.hashMap['']?.value || 0
+      activeConnections: (activeConnections as any).hashMap?.['']?.value || 0
     },
     support: {
       funding: 'https://ko-fi.com/greenfieldoverride',
@@ -559,7 +559,7 @@ app.get('/api/v1/stats', (req, res) => {
         'cc-by-sa': 0
       },
       recentProtections: Array.from(protectedContent.values())
-        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 10)
         .map(record => ({
           contentHash: record.contentHash,
@@ -633,8 +633,11 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Start server only if not in test mode or if explicitly required
-if (process.env.NODE_ENV !== 'test' && !process.env.SKIP_SERVER_START) {
+// Start server only if not being imported for testing or if START_SERVER is explicitly set
+const shouldStartServer = process.env.START_SERVER === 'true' || 
+                         (process.env.NODE_ENV !== 'test' && !process.env.SKIP_SERVER_START);
+
+if (shouldStartServer) {
   app.listen(PORT, () => {
     logger.info(`🚀 DAON API Server running on port ${PORT}`);
     logger.info(`📊 Health check: http://localhost:${PORT}/health`);
