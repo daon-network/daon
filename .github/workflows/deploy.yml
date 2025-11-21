@@ -195,6 +195,9 @@ jobs:
             cat > /opt/daon-source/.env << ENVEOF
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           API_KEY_SECRET=${{ secrets.API_KEY_SECRET }}
+          API_MNEMONIC=${{ secrets.API_MNEMONIC }}
+          CHAIN_ID=daon-mainnet-1
+          MONIKER=daon-validator-1
           LOG_LEVEL=info
           ENVEOF
             
