@@ -40,6 +40,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      id-token: write  # REQUIRED for npm provenance
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
@@ -77,11 +80,11 @@ jobs:
             echo "New version detected, will publish"
           fi
       
-      - name: Publish to npm
+      - name: Publish to npm (with provenance)
         if: steps.version-check.outputs.should_publish == 'true'
         run: |
           cd sdks/node
-          npm publish
+          npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       

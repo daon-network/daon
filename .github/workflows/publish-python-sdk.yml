@@ -36,6 +36,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      id-token: write  # REQUIRED for trusted publishing
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
@@ -46,7 +49,7 @@ jobs:
       
       - name: Install build tools
         run: |
-          pip install build twine
+          pip install build
       
       - name: Build package
         run: |
@@ -71,14 +74,11 @@ jobs:
             echo "New version detected, will publish"
           fi
       
-      - name: Publish to PyPI
+      - name: Publish to PyPI (Trusted Publisher)
         if: steps.version-check.outputs.should_publish == 'true'
-        run: |
-          cd sdks/python
-          python -m twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: sdks/python/dist/
       
       - name: Skip publish
         if: steps.version-check.outputs.should_publish == 'false'
