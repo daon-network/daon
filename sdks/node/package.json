@@ -1,5 +1,5 @@
 {
-  "name": "@daon/sdk",
+  "name": "daon-sdk",
   "version": "1.0.0",
   "description": "DAON Creator Protection SDK for Node.js applications",
   "main": "dist/index.js",
