@@ -50,14 +50,14 @@ jobs:
       - name: Build gem
         run: |
           cd sdks/ruby
-          gem build daon.gemspec
+          gem build daon-sdk.gemspec
       
       - name: Check if version changed
         id: version-check
         run: |
           cd sdks/ruby
-          PUBLISHED_VERSION=$(gem list daon --remote --exact --all | grep -oP '\(\K[^)]+' | head -1 || echo "0.0.0")
-          CURRENT_VERSION=$(grep "spec.version" daon.gemspec | cut -d'"' -f2)
+          PUBLISHED_VERSION=$(gem list daon-sdk --remote --exact --all | grep -oP '\(\K[^)]+' | head -1 || echo "0.0.0")
+          CURRENT_VERSION=$(grep "spec.version" daon-sdk.gemspec | cut -d'"' -f2)
           
           echo "Published version: $PUBLISHED_VERSION"
           echo "Current version: $CURRENT_VERSION"
