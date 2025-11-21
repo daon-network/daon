@@ -1,6 +1,13 @@
 name: Deploy DAON Production
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'api-server/**'
+      - 'daon-core/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
     inputs:
       environment:

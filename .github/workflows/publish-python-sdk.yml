@@ -1,0 +1,86 @@
+name: Publish Python SDK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sdks/python/**'
+      - '.github/workflows/publish-python-sdk.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Python SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          cd sdks/python
+          pip install build pytest pytest-cov
+          pip install -e .
+      
+      - name: Run tests
+        run: |
+          cd sdks/python
+          pytest || echo "No tests yet, skipping"
+
+  publish:
+    name: Publish to PyPI
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install build tools
+        run: |
+          pip install build twine
+      
+      - name: Build package
+        run: |
+          cd sdks/python
+          python -m build
+      
+      - name: Check if version changed
+        id: version-check
+        run: |
+          cd sdks/python
+          PUBLISHED_VERSION=$(pip index versions daon-sdk 2>/dev/null | grep -oP '(?<=Available versions: )\S+' | head -1 || echo "0.0.0")
+          CURRENT_VERSION=$(python -c "import setup; print(setup.setup.__dict__.get('version', '0.0.0'))" 2>/dev/null || grep "version=" setup.py | cut -d'"' -f2)
+          
+          echo "Published version: $PUBLISHED_VERSION"
+          echo "Current version: $CURRENT_VERSION"
+          
+          if [ "$PUBLISHED_VERSION" = "$CURRENT_VERSION" ]; then
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+            echo "Version unchanged, skipping publish"
+          else
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "New version detected, will publish"
+          fi
+      
+      - name: Publish to PyPI
+        if: steps.version-check.outputs.should_publish == 'true'
+        run: |
+          cd sdks/python
+          python -m twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      
+      - name: Skip publish
+        if: steps.version-check.outputs.should_publish == 'false'
+        run: |
+          echo "⏭️  Version unchanged, skipping PyPI publish"

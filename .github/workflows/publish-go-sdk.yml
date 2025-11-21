@@ -1,0 +1,86 @@
+name: Publish Go SDK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sdks/go/**'
+      - '.github/workflows/publish-go-sdk.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Go SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Download dependencies
+        run: |
+          cd sdks/go
+          go mod download
+      
+      - name: Run tests
+        run: |
+          cd sdks/go
+          go test -v ./...
+      
+      - name: Build
+        run: |
+          cd sdks/go
+          go build -v ./...
+
+  tag:
+    name: Create Git Tag
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get version from go.mod
+        id: version
+        run: |
+          cd sdks/go
+          # Extract version from go.mod or use default
+          VERSION=$(grep "^module" go.mod | awk '{print $2}' | grep -oP 'v\d+\.\d+\.\d+' || echo "v0.1.0")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+      
+      - name: Check if tag exists
+        id: tag-check
+        run: |
+          cd sdks/go
+          TAG="sdks/go/${{ steps.version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "should_tag=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists, skipping"
+          else
+            echo "should_tag=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG does not exist, will create"
+          fi
+      
+      - name: Create and push tag
+        if: steps.tag-check.outputs.should_tag == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          TAG="sdks/go/${{ steps.version.outputs.version }}"
+          git tag -a "$TAG" -m "Release Go SDK ${{ steps.version.outputs.version }}"
+          git push origin "$TAG"
+          
+          echo "✅ Created and pushed tag: $TAG"
+          echo "Go modules will now be available at: github.com/daon-network/daon/sdks/go@${{ steps.version.outputs.version }}"
+      
+      - name: Skip tagging
+        if: steps.tag-check.outputs.should_tag == 'false'
+        run: |
+          echo "⏭️  Tag already exists, skipping Git tag creation"
