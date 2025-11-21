@@ -32,7 +32,7 @@
     "ai-protection"
   ],
   "author": "DAON Network",
-  "license": "MIT",
+  "license": "SEE LICENSE IN ../../LICENSE.md",
   "homepage": "https://github.com/daon-network/node-sdk",
   "repository": {
     "type": "git",

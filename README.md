@@ -3,7 +3,7 @@
 **Decentralized Autonomous Organization for Creators - Protecting Creative Works with Blockchain Technology**
 
 [![Support DAON on Ko-fi](https://img.shields.io/badge/Support%20DAON-Ko--fi-FF5E5B?style=flat&logo=ko-fi)](https://ko-fi.com/greenfieldoverride)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Liberation v1.0](https://img.shields.io/badge/License-Liberation%20v1.0-blue.svg)](https://github.com/liberationlicense/license)
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://docker.com)
 
 ## 🌟 Mission

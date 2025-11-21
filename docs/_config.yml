@@ -125,8 +125,8 @@ social:
     - "https://github.com/daon-network"
     - "https://discord.gg/daon"
 
-# Analytics (when ready)
-# google_analytics: "G-XXXXXXXXXX"
+# Analytics (disabled - can add later if needed)
+# google_analytics: ""
 
 # Exclude from build
 exclude:

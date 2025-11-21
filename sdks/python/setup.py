@@ -12,15 +12,17 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/daon-network/python-sdk",
+    license="Liberation License v1.0",
     project_urls={
         "Bug Tracker": "https://github.com/daon-network/python-sdk/issues",
         "Documentation": "https://docs.daon.network/python",
         "Homepage": "https://daon.network",
+        "License": "https://github.com/liberationlicense/license",
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
+        "License :: Other/Proprietary License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",

@@ -7,7 +7,8 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{DAON Creator Protection SDK for Ruby/Rails applications}
   spec.description   = %q{Easy integration with DAON blockchain for creator content protection. Perfect for AO3 and other fanfiction platforms.}
   spec.homepage      = "https://github.com/daon-network/ruby-sdk"
-  spec.license       = "MIT"
+  spec.license       = "Liberation-1.0"
+  spec.metadata["license_uri"] = "https://github.com/liberationlicense/license"
 
   spec.required_ruby_version = ">= 2.7.0"
 
