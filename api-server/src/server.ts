@@ -234,7 +234,7 @@ app.get('/health', async (req, res) => {
       totalProtected: protectedContent.size,
       uptime: process.uptime(),
       memory: process.memoryUsage(),
-      activeConnections: activeConnections.hashMap['']?.value || 0
+      activeConnections: (activeConnections as any).hashMap?.['']?.value || 0
     },
     support: {
       funding: 'https://ko-fi.com/greenfieldoverride',
@@ -559,7 +559,7 @@ app.get('/api/v1/stats', (req, res) => {
         'cc-by-sa': 0
       },
       recentProtections: Array.from(protectedContent.values())
-        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 10)
         .map(record => ({
           contentHash: record.contentHash,

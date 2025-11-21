@@ -14,6 +14,17 @@ import { BaseAccount } from 'cosmjs-types/cosmos/auth/v1beta1/auth.js';
 import { MsgRegisterContent } from './types/daoncore/contentregistry/v1/tx.js';
 
 class BlockchainClient {
+  rpcEndpoint;
+  chainId;
+  mnemonic;
+  client;
+  wallet;
+  address;
+  connected;
+  sequenceCache;
+  sequenceLock;
+  lastSequenceUpdate;
+
   constructor() {
     this.rpcEndpoint = process.env.BLOCKCHAIN_RPC || 'http://localhost:26657';
     this.chainId = process.env.CHAIN_ID || 'daon-mainnet-1';
@@ -56,8 +67,8 @@ class BlockchainClient {
       // Register generated protobuf types
       const customRegistry = new Registry([
         ...defaultRegistryTypes,
-        ['/daoncore.contentregistry.v1.MsgRegisterContent', MsgRegisterContent]
-      ]);
+        ['/daoncore.contentregistry.v1.MsgRegisterContent', MsgRegisterContent as any]
+      ] as any);
 
       // Create Tendermint client first
       const tmClient = await Tendermint34Client.connect(this.rpcEndpoint);
@@ -82,10 +93,10 @@ class BlockchainClient {
             }
             // Fallback for already decoded accounts
             return {
-              address: input.address || '',
-              pubkey: input.pubKey || input.pubkey || null,
-              accountNumber: parseInt(input.accountNumber?.toString() || '0', 10),
-              sequence: parseInt(input.sequence?.toString() || '0', 10),
+              address: (input as any).address || '',
+              pubkey: (input as any).pubKey || (input as any).pubkey || null,
+              accountNumber: parseInt((input as any).accountNumber?.toString() || '0', 10),
+              sequence: parseInt((input as any).sequence?.toString() || '0', 10),
             };
           },
         }
