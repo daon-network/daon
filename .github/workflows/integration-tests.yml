@@ -112,6 +112,13 @@ jobs:
           cd api-server
           npm ci
 
+      # Build API server
+      - name: Build API server
+        run: |
+          cd api-server
+          npm run build
+          echo "✅ API server built"
+
       # Run database migrations (if any)
       - name: Setup test database
         run: |
