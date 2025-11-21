@@ -88,6 +88,7 @@ jobs:
         with:
           context: ./api-server
           push: false
+          load: true
           tags: daonnetwork/api:pr-${{ github.event.number }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -95,7 +96,7 @@ jobs:
       - name: Test Docker image
         run: |
           docker run --rm -d -p 3000:3000 --name api-test daonnetwork/api:pr-${{ github.event.number }}
-          sleep 10
+          sleep 15
           curl -f http://localhost:3000/health || exit 1
           docker stop api-test
 
