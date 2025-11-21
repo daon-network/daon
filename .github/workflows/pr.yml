@@ -116,12 +116,12 @@ jobs:
         run: |
           cd daon-core
           go mod download
-          make build || go build -o build/daond ./cmd/daond
+          make install || go build -o build/daon-cored ./cmd/daon-cored
 
       - name: Test blockchain binary
         run: |
           cd daon-core
-          ./build/daond version || echo "Binary created successfully"
+          ./build/daon-cored version || echo "Binary created successfully"
 
   # PR Summary
   pr-summary:
