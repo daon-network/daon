@@ -132,7 +132,7 @@ jobs:
           cd api-server
           
           # Start API server and redirect output to log file
-          npm start > api-server.log 2>&1 &
+          node dist/server.js > api-server.log 2>&1 &
           API_PID=$!
           echo "🚀 API server starting (PID: $API_PID)..."
           
@@ -163,7 +163,7 @@ jobs:
             exit 1
           fi
         env:
-          NODE_ENV: test
+          NODE_ENV: production
           PORT: 3000
           DATABASE_URL: postgresql://daon_test:test_password@localhost:5432/daon_test
           REDIS_URL: redis://localhost:6379
