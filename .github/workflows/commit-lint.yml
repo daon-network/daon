@@ -66,9 +66,12 @@ jobs:
 
       - name: Check for merge commits
         run: |
-          # Prevent merge commits in PRs
-          if git log --merges origin/main..HEAD | grep -q commit; then
+          # Prevent merge commits in PRs (excluding GitHub's temporary PR merge commits)
+          merge_count=$(git log --merges --format="%s" origin/main..HEAD | grep -v "^Merge [0-9a-f]\+ into [0-9a-f]\+$" | wc -l)
+          if [ "$merge_count" -gt 0 ]; then
             echo "❌ Merge commits detected in PR!"
             echo "Please rebase instead of merging."
+            git log --merges --format="%H %s" origin/main..HEAD | grep -v "^[0-9a-f]\+ Merge [0-9a-f]\+ into [0-9a-f]\+$"
             exit 1
           fi
+          echo "✅ No merge commits found"
