@@ -27,7 +27,7 @@
   "license": "SEE LICENSE IN ../LICENSE.md",
   "dependencies": {
     "@bufbuild/protobuf": "^2.10.1",
-    "@cosmjs/crypto": "^0.32.2",
+    "@cosmjs/crypto": "^0.37.0",
     "@cosmjs/proto-signing": "^0.32.2",
     "@cosmjs/stargate": "^0.32.2",
     "cors": "^2.8.5",
