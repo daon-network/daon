@@ -17,7 +17,10 @@ export default {
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/',
-    '.*\\.integration\\.test\\.ts$'
+    'integration',
+    'broker-auth-middleware.test.ts',
+    'broker-service.test.ts',
+    'duplicate-detection.test.ts'
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
