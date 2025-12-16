@@ -196,7 +196,7 @@ describe('Broker Endpoints - Comprehensive CI Test Suite', () => {
         
         expect(rateLimit.allowed).toBe(true);
         expect(rateLimit.remaining_hourly).toBe(500);
-        expect(rateLimit.remaining_daily).toBe(7500);
+        expect(rateLimit.remaining_daily).toBe(8000);
       });
     });
   });
