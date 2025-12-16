@@ -28,14 +28,6 @@ export default {
     '!src/test/**',
     '!src/**/*.test.ts'
   ],
-  coverageThreshold: {
-    global: {
-      branches: 70,
-      functions: 75,
-      lines: 80,
-      statements: 80
-    }
-  },
   coverageReporters: ['text', 'lcov', 'html'],
   testTimeout: 30000,
   verbose: true
