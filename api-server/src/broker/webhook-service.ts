@@ -63,9 +63,16 @@ export class WebhookService {
   ): Promise<number> {
     try {
       // Validate URL
-      new URL(url); // Throws if invalid
+      const parsedUrl = new URL(url); // Throws if invalid
+      if (parsedUrl.protocol !== 'https:') {
+        throw new Error('Webhook URL must use HTTPS');
+      }
       
       // Validate events
+      if (!events || events.length === 0) {
+        throw new Error('Events array cannot be empty');
+      }
+      
       const validEvents = [
         'content.protected',
         'content.transferred',
@@ -374,11 +381,20 @@ export class WebhookService {
    * Verify webhook signature
    */
   verifySignature(payload: string, signature: string, secret: string): boolean {
-    const expectedSignature = this.generateSignature(JSON.parse(payload), secret);
-    return crypto.timingSafeEqual(
-      Buffer.from(signature),
-      Buffer.from(expectedSignature)
-    );
+    try {
+      const expectedSignature = this.generateSignature(JSON.parse(payload), secret);
+      const sigBuffer = Buffer.from(signature);
+      const expectedBuffer = Buffer.from(expectedSignature);
+      
+      // timingSafeEqual requires same length buffers
+      if (sigBuffer.length !== expectedBuffer.length) {
+        return false;
+      }
+      
+      return crypto.timingSafeEqual(sigBuffer, expectedBuffer);
+    } catch (error) {
+      return false;
+    }
   }
 
   /**

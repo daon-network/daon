@@ -188,14 +188,15 @@ describe('Broker Endpoints - Comprehensive CI Test Suite', () => {
       
       it('should handle concurrent requests within rate limit', async () => {
         mockDb.query = jest.fn()
-          .mockResolvedValue({ rows: [{ rate_limit_per_hour: 1000, rate_limit_per_day: 10000 }] })
-          .mockResolvedValue({ rows: [{ request_count: 999 }] })
-          .mockResolvedValue({ rows: [{ request_count: 999 }] });
+          .mockResolvedValueOnce({ rows: [{ rate_limit_per_hour: 1000, rate_limit_per_day: 10000 }] }) // Get broker limits
+          .mockResolvedValueOnce({ rows: [{ request_count: 500 }] }) // Hourly insert/update
+          .mockResolvedValueOnce({ rows: [{ request_count: 2000 }] }); // Daily insert/update
         
         const rateLimit = await brokerService.checkRateLimit(1, '/test');
         
         expect(rateLimit.allowed).toBe(true);
-        expect(rateLimit.remaining_hourly).toBe(1);
+        expect(rateLimit.remaining_hourly).toBe(500);
+        expect(rateLimit.remaining_daily).toBe(7500);
       });
     });
   });
