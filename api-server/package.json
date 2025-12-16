@@ -13,7 +13,7 @@
     "pretest": "npm run build",
     "test": "npm run test:jest && npm run test:node",
     "test:jest": "jest --coverage",
-    "test:node": "node --test src/test/broker-auth-middleware.test.ts src/test/broker-service.test.ts src/test/duplicate-detection.test.ts",
+    "test:node": "tsx --test src/test/broker-auth-middleware.test.ts src/test/broker-service.test.ts src/test/duplicate-detection.test.ts",
     "test:unit": "jest src/test/broker-*.test.ts --coverage",
     "test:integration": "jest src/test/broker-integration-full.test.ts --runInBand",
     "test:ci": "jest src/test/broker-endpoints-ci.test.ts --coverage --ci",
