@@ -18,9 +18,10 @@ export default {
     '/node_modules/',
     '/dist/',
     '\\.integration\\.test\\.ts$',
-    'broker-auth-middleware.test.ts',
-    'broker-service.test.ts',
-    'duplicate-detection.test.ts'
+    'broker-integration-full\\.test\\.ts$',
+    'broker-auth-middleware\\.test\\.ts$',
+    'broker-service\\.test\\.ts$',
+    'duplicate-detection\\.test\\.ts$'
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
