@@ -15,7 +15,7 @@
     "test:jest": "jest --coverage",
     "test:node": "tsx --test src/test/broker-auth-middleware.test.ts src/test/broker-service.test.ts src/test/duplicate-detection.test.ts",
     "test:unit": "jest src/test/broker-*.test.ts --coverage",
-    "test:integration": "jest src/test/broker-integration-full.test.ts --runInBand",
+    "test:integration": "jest src/test/broker-integration-full.test.ts --runInBand --testPathIgnorePatterns=/node_modules/ --testPathIgnorePatterns=/dist/",
     "test:ci": "jest src/test/broker-endpoints-ci.test.ts --coverage --ci",
     "test:all": "npm run test:jest && npm run test:node",
     "test:watch": "jest --watch",
