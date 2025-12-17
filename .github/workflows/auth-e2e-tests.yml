@@ -44,7 +44,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check if frontend exists
+        id: check_frontend
+        run: |
+          if [ -d "daon-frontend" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Frontend directory not found, skipping E2E tests"
+            exit 0
+          fi
+
       - name: Setup Node.js
+        if: steps.check_frontend.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -54,18 +66,22 @@ jobs:
             daon-frontend/package-lock.json
 
       - name: Install API server dependencies
+        if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./api-server
         run: npm ci
 
       - name: Install frontend dependencies
+        if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./daon-frontend
         run: npm ci
 
       - name: Install Playwright browsers
+        if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./daon-frontend
         run: npx playwright install --with-deps chromium webkit firefox
 
       - name: Setup database schema
+        if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./api-server
         env:
           DB_HOST: localhost
@@ -77,6 +93,7 @@ jobs:
           PGPASSWORD=daon_test_password psql -h localhost -U daon_user -d daon_db -f src/database/schema.sql
 
       - name: Start API server
+        if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./api-server
         env:
           NODE_ENV: test
@@ -102,6 +119,7 @@ jobs:
           timeout 30 bash -c 'until curl -f http://localhost:3000/api/v1/health; do sleep 1; done'
 
       - name: Start frontend dev server
+        if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./daon-frontend
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3000
@@ -112,13 +130,14 @@ jobs:
           timeout 60 bash -c 'until curl -f http://localhost:4000; do sleep 1; done'
 
       - name: Run E2E tests
+        if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./daon-frontend
         env:
           CI: true
         run: npx playwright test
 
       - name: Upload test results
-        if: always()
+        if: always() && steps.check_frontend.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -126,7 +145,7 @@ jobs:
           retention-days: 7
 
       - name: Upload test screenshots
-        if: failure()
+        if: failure() && steps.check_frontend.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-screenshots
@@ -134,7 +153,7 @@ jobs:
           retention-days: 7
 
       - name: Stop servers
-        if: always()
+        if: always() && steps.check_frontend.outputs.exists == 'true'
         run: |
           [ -f /tmp/api-server.pid ] && kill $(cat /tmp/api-server.pid) || true
           [ -f /tmp/frontend.pid ] && kill $(cat /tmp/frontend.pid) || true
