@@ -58,7 +58,7 @@ describe('Broker API - Full Integration Tests', () => {
         expect(data.broker).toBeDefined();
         expect(data.broker.domain).toBeDefined();
         expect(data.api_key.scopes).toBeDefined();
-        expect(data.rate_limit).toBeDefined();
+        expect(data.rate_limits).toBeDefined();
       });
     });
     
