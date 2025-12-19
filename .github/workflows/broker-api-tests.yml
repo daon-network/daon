@@ -76,49 +76,80 @@ jobs:
       working-directory: ./api-server
       run: npm ci
     
+    - name: Build application
+      working-directory: ./api-server
+      run: npm run build
+    
     - name: Run database migrations
       working-directory: ./api-server
       run: |
-        npm install -g db-migrate db-migrate-pg
-        psql -h localhost -U daon -d daon_api_test -f src/database/migrations/001_initial_schema.sql
-        psql -h localhost -U daon -d daon_api_test -f src/database/migrations/002_add_broker_system.sql
-        psql -h localhost -U daon -d daon_api_test -f src/database/migrations/003_add_webhook_system.sql
-      env:
-        PGPASSWORD: test_password
+        PGPASSWORD=test_password psql -h localhost -U daon -d daon_api_test -f src/database/migrations/001_initial_schema.sql
+        PGPASSWORD=test_password psql -h localhost -U daon -d daon_api_test -f src/database/migrations/002_add_broker_system.sql
+        PGPASSWORD=test_password psql -h localhost -U daon -d daon_api_test -f src/database/migrations/003_add_webhook_system.sql
     
-    - name: Create test broker
+    - name: Create test broker and API key
       working-directory: ./api-server
       run: |
-        psql -h localhost -U daon -d daon_api_test <<EOF
-        INSERT INTO brokers (domain, name, certification_tier, certification_status, rate_limit_per_hour, rate_limit_per_day, enabled)
-        VALUES ('test-broker.local', 'Test Broker', 'standard', 'active', 1000, 10000, true)
-        RETURNING id;
+        PGPASSWORD=test_password psql -h localhost -U daon -d daon_api_test <<'EOF'
+        -- Insert test broker
+        INSERT INTO brokers (id, domain, name, certification_tier, certification_status, rate_limit_per_hour, rate_limit_per_day, enabled)
+        VALUES (1, 'test-broker.local', 'Test Broker', 'standard', 'active', 1000, 10000, true);
+        
+        -- Insert test API key
+        INSERT INTO broker_api_keys (broker_id, api_key, scopes, enabled)
+        VALUES (1, 'DAON_BR_test_79288052216c62602e1353f529ec99d6d63a8e8947d132be', ARRAY['content:protect', 'content:transfer', 'webhook:manage'], true);
         EOF
-      env:
-        PGPASSWORD: test_password
     
     - name: Start API server
       working-directory: ./api-server
       run: |
-        npm run dev &
-        sleep 10
+        node dist/server.js > api-server.log 2>&1 &
+        API_PID=$!
+        echo $API_PID > /tmp/api-server.pid
+        
+        # Wait for server to be ready
+        echo "Waiting for API server to start..."
+        for i in {1..30}; do
+          if curl -f http://localhost:3000/api/v1/health > /dev/null 2>&1; then
+            echo "✅ API server is ready"
+            break
+          fi
+          if ! kill -0 $API_PID 2>/dev/null; then
+            echo "❌ API server process died"
+            cat api-server.log
+            exit 1
+          fi
+          echo "Attempt $i/30..."
+          sleep 2
+        done
       env:
         NODE_ENV: test
         DATABASE_URL: postgresql://daon:test_password@localhost:5432/daon_api_test
         PORT: 3000
+        JWT_ACCESS_SECRET: test_jwt_access_secret_min_32_chars
+        JWT_REFRESH_SECRET: test_jwt_refresh_secret_min_32_chars
     
     - name: Run integration tests
       working-directory: ./api-server
       run: npm run test:integration
       env:
         TEST_API_URL: http://localhost:3000
+        TEST_BROKER_API_KEY: DAON_BR_test_79288052216c62602e1353f529ec99d6d63a8e8947d132be
         DATABASE_URL: postgresql://daon:test_password@localhost:5432/daon_api_test
     
-    - name: Run API endpoint tests
+    - name: Show server logs on failure
+      if: failure()
       working-directory: ./api-server
-      run: bash scripts/test-all-broker-endpoints.sh
-      env:
-        API_URL: http://localhost:3000
+      run: |
+        echo "=== API Server Logs ==="
+        cat api-server.log || echo "No log file found"
+    
+    - name: Stop API server
+      if: always()
+      run: |
+        if [ -f /tmp/api-server.pid ]; then
+          kill $(cat /tmp/api-server.pid) || true
+        fi
 
   security-scan:
     name: Security Scan
