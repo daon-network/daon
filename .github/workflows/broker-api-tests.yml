@@ -99,12 +99,12 @@ jobs:
         
         PGPASSWORD=test_password psql -h localhost -U daon -d daon_api_test <<EOF
         -- Insert test broker
-        INSERT INTO brokers (id, domain, name, certification_tier, certification_status, rate_limit_per_hour, rate_limit_per_day, enabled)
-        VALUES (1, 'test-broker.local', 'Test Broker', 'standard', 'active', 1000, 10000, true);
+        INSERT INTO brokers (id, domain, name, contact_email, certification_tier, certification_status, rate_limit_per_hour, rate_limit_per_day, enabled)
+        VALUES (1, 'test-broker.local', 'Test Broker', 'test@test-broker.local', 'standard', 'active', 1000, 10000, true);
         
         -- Insert test API key with bcrypt hash
-        INSERT INTO broker_api_keys (broker_id, key_prefix, key_hash, scopes, enabled)
-        VALUES (1, '$KEY_PREFIX', '$KEY_HASH', ARRAY['content:protect', 'content:transfer', 'webhook:manage'], true);
+        INSERT INTO broker_api_keys (broker_id, key_prefix, key_hash, key_name, scopes)
+        VALUES (1, '$KEY_PREFIX', '$KEY_HASH', 'Test API Key', ARRAY['content:protect', 'content:transfer', 'webhook:manage']);
         EOF
     
     - name: Start API server
