@@ -91,9 +91,9 @@ jobs:
       working-directory: ./api-server
       run: |
         PGPASSWORD=test_password psql -h localhost -U daon -d daon_api_test <<'EOF'
-        -- Insert test broker
-        INSERT INTO brokers (id, domain, name, contact_email, certification_tier, certification_status, rate_limit_per_hour, rate_limit_per_day, enabled)
-        VALUES (1, 'test-broker.local', 'Test Broker', 'test@test-broker.local', 'standard', 'active', 1000, 10000, true);
+        -- Insert test broker (api_key_hash is legacy field, using dummy value)
+        INSERT INTO brokers (id, domain, name, contact_email, api_key_hash, certification_tier, certification_status, rate_limit_per_hour, rate_limit_per_day, enabled)
+        VALUES (1, 'test-broker.local', 'Test Broker', 'test@test-broker.local', 'legacy_placeholder', 'standard', 'active', 1000, 10000, true);
         
         -- Insert test API key with pre-generated bcrypt hash
         -- API Key: DAON_BR_test_79288052216c62602e1353f529ec99d6d63a8e8947d132be
