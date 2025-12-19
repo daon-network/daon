@@ -46,8 +46,6 @@ jobs:
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
-    # Skip on PRs - integration tests need running API server
-    if: github.event_name != 'pull_request'
     
     services:
       postgres:
@@ -182,19 +180,20 @@ jobs:
     - name: Check test results
       run: |
         if [ "${{ needs.unit-tests.result }}" == "success" ] && \
+           [ "${{ needs.integration-tests.result }}" == "success" ] && \
            [ "${{ needs.security-scan.result }}" == "success" ] && \
            [ "${{ needs.lint.result }}" == "success" ]; then
-          echo "✅ All required tests passed!"
+          echo "✅ All tests passed!"
           echo ""
           echo "Unit Tests: ${{ needs.unit-tests.result }}"
-          echo "Integration Tests: ${{ needs.integration-tests.result }} (skipped on PRs)"
+          echo "Integration Tests: ${{ needs.integration-tests.result }}"
           echo "Security Scan: ${{ needs.security-scan.result }}"
           echo "Lint: ${{ needs.lint.result }}"
           exit 0
         else
-          echo "❌ Required tests failed"
+          echo "❌ Some tests failed"
           echo "Unit Tests: ${{ needs.unit-tests.result }}"
-          echo "Integration Tests: ${{ needs.integration-tests.result }} (skipped on PRs)"
+          echo "Integration Tests: ${{ needs.integration-tests.result }}"
           echo "Security Scan: ${{ needs.security-scan.result }}"
           echo "Lint: ${{ needs.lint.result }}"
           exit 1

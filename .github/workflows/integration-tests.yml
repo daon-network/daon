@@ -17,8 +17,6 @@ jobs:
     name: Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Skip on PRs - requires full infrastructure (blockchain, API server, postgres, redis)
-    if: github.event_name != 'pull_request'
     
     # Service containers for dependencies
     services:
