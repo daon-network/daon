@@ -103,7 +103,7 @@ jobs:
     - name: Start API server
       working-directory: ./api-server
       run: |
-        node dist/server.js > api-server.log 2>&1 &
+        npx tsx src/server.ts > api-server.log 2>&1 &
         API_PID=$!
         echo $API_PID > /tmp/api-server.pid
         
