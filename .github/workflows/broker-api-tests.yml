@@ -124,10 +124,12 @@ jobs:
         done
       env:
         NODE_ENV: test
+        START_SERVER: 'true'
         DATABASE_URL: postgresql://daon:test_password@localhost:5432/daon_api_test
         PORT: 3000
         JWT_ACCESS_SECRET: test_jwt_access_secret_min_32_chars
         JWT_REFRESH_SECRET: test_jwt_refresh_secret_min_32_chars
+        BLOCKCHAIN_ENABLED: 'false'
     
     - name: Run integration tests
       working-directory: ./api-server
