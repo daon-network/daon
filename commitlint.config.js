@@ -21,6 +21,7 @@ module.exports = {
         'perf',     // Performance improvements
         'revert',   // Revert a previous commit
         'build',    // Changes that affect the build system
+        'merge',    // Merge commits
       ],
     ],
   },
