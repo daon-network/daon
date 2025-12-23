@@ -131,8 +131,8 @@ jobs:
         run: |
           cd api-server
           
-          # Start API server and redirect output to log file
-          node dist/server.js > api-server.log 2>&1 &
+          # Start API server using tsx and redirect output to log file
+          npx tsx src/server.ts > api-server.log 2>&1 &
           API_PID=$!
           echo "🚀 API server starting (PID: $API_PID)..."
           

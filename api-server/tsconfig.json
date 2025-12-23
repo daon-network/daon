@@ -12,7 +12,8 @@
     "resolveJsonModule": true,
     "noEmit": false,
     "strict": false,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "types": ["node", "jest", "@jest/globals"]
   },
   "include": [
     "src/**/*"

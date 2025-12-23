@@ -1,0 +1,159 @@
+name: Auth E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'daon-frontend/**'
+      - 'api-server/**'
+      - '.github/workflows/auth-e2e-tests.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'daon-frontend/**'
+      - 'api-server/**'
+
+jobs:
+  e2e-tests:
+    name: E2E Authentication Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: daon_db
+          POSTGRES_USER: daon_user
+          POSTGRES_PASSWORD: daon_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      mailhog:
+        image: mailhog/mailhog
+        ports:
+          - 1025:1025
+          - 8025:8025
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if frontend exists
+        id: check_frontend
+        run: |
+          if [ -d "daon-frontend" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Frontend directory not found, skipping E2E tests"
+            exit 0
+          fi
+
+      - name: Setup Node.js
+        if: steps.check_frontend.outputs.exists == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            api-server/package-lock.json
+            daon-frontend/package-lock.json
+
+      - name: Install API server dependencies
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./api-server
+        run: npm ci
+
+      - name: Install frontend dependencies
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./daon-frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./daon-frontend
+        run: npx playwright install --with-deps chromium webkit firefox
+
+      - name: Setup database schema
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./api-server
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: daon_db
+          DB_USER: daon_user
+          DB_PASSWORD: daon_test_password
+        run: |
+          PGPASSWORD=daon_test_password psql -h localhost -U daon_user -d daon_db -f src/database/schema.sql
+
+      - name: Start API server
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./api-server
+        env:
+          NODE_ENV: test
+          PORT: 3000
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: daon_db
+          DB_USER: daon_user
+          DB_PASSWORD: daon_test_password
+          JWT_ACCESS_SECRET: test_access_secret_key_min_32_chars_long
+          JWT_REFRESH_SECRET: test_refresh_secret_key_min_32_chars_long
+          SMTP_HOST: localhost
+          SMTP_PORT: 1025
+          SMTP_FROM: noreply@daon.network
+          SMTP_USER: ''
+          SMTP_PASS: ''
+          TOTP_ISSUER: DAON
+          FRONTEND_URL: http://localhost:4000
+        run: |
+          npm start &
+          echo $! > /tmp/api-server.pid
+          # Wait for API to be ready
+          timeout 30 bash -c 'until curl -f http://localhost:3000/api/v1/health; do sleep 1; done'
+
+      - name: Start frontend dev server
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./daon-frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3000
+        run: |
+          npm run dev &
+          echo $! > /tmp/frontend.pid
+          # Wait for frontend to be ready
+          timeout 60 bash -c 'until curl -f http://localhost:4000; do sleep 1; done'
+
+      - name: Run E2E tests
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./daon-frontend
+        env:
+          CI: true
+        run: npx playwright test
+
+      - name: Upload test results
+        if: always() && steps.check_frontend.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: daon-frontend/playwright-report/
+          retention-days: 7
+
+      - name: Upload test screenshots
+        if: failure() && steps.check_frontend.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: daon-frontend/test-results/
+          retention-days: 7
+
+      - name: Stop servers
+        if: always() && steps.check_frontend.outputs.exists == 'true'
+        run: |
+          [ -f /tmp/api-server.pid ] && kill $(cat /tmp/api-server.pid) || true
+          [ -f /tmp/frontend.pid ] && kill $(cat /tmp/frontend.pid) || true

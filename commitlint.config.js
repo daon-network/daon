@@ -4,6 +4,7 @@ module.exports = {
     // Allow merge commits (for GitHub merge queue)
     'subject-case': [0],
     'body-max-line-length': [0],
+    'header-max-length': [2, 'always', 150], // Allow up to 150 chars for detailed commit messages
     // More lenient for now
     'type-enum': [
       2,
@@ -20,6 +21,7 @@ module.exports = {
         'perf',     // Performance improvements
         'revert',   // Revert a previous commit
         'build',    // Changes that affect the build system
+        'merge',    // Merge commits
       ],
     ],
   },
