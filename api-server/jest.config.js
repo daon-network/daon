@@ -21,7 +21,9 @@ export default {
     'broker-integration-full\\.test\\.ts$',
     'broker-auth-middleware\\.test\\.ts$',
     'broker-service\\.test\\.ts$',
-    'duplicate-detection\\.test\\.ts$'
+    'duplicate-detection\\.test\\.ts$',
+    'admin-auth\\.test\\.ts$',
+    'broker-registration-admin\\.test\\.ts$'
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
