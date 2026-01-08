@@ -110,6 +110,49 @@ Each test MUST:
 | Security | 6 | No auth, invalid token, non-admin, missing fields, invalid domain, invalid tier, invalid email |
 | Functional | 1 | Valid admin request |
 
+#### `transfer-endpoint.test.ts`
+**Status:** GOOD  
+**Runner:** Node.js native test runner  
+**Coverage:** Content ownership transfer endpoint
+
+| Test Group | Tests | Description |
+|------------|-------|-------------|
+| Authentication | 2 | No auth, scope validation |
+| Input validation | 6 | Hash format, identity format, reason length |
+| Business logic | 3 | Domain matching, content existence, owner verification |
+| Domain parsing | 3 | Identity parsing edge cases |
+| Error messages | 2 | Clear errors, no sensitive info leaks |
+
+#### `usage-endpoint.test.ts`
+**Status:** GOOD  
+**Runner:** Node.js native test runner  
+**Coverage:** API usage statistics endpoint
+
+| Test Group | Tests | Description |
+|------------|-------|-------------|
+| Authentication | 3 | No auth, invalid key, valid key |
+| Date filtering | 5 | Start date, end date, both, ISO formats |
+| Limit parameter | 4 | Default, various values, negative, large |
+| Response structure | 4 | Usage array, broker info, totals, hourly breakdown |
+| Data aggregation | 3 | Endpoint/method grouping, counts, response times |
+| Empty results | 1 | Future date range |
+| Edge cases | 4 | Large limits, invalid dates, ordering, negative |
+| Performance | 1 | Response time |
+
+#### `webhook-delivery.test.ts`
+**Status:** GOOD  
+**Runner:** Node.js native test runner  
+**Coverage:** Webhook HTTP delivery with mocking
+
+| Test Group | Tests | Description |
+|------------|-------|-------------|
+| Signature generation | 4 | HMAC SHA-256, consistency, secret variation, payload variation |
+| Signature verification | 4 | Valid signature, invalid, wrong secret, timing-safe |
+| HTTP delivery | 4 | POST request, signature header, event/timestamp, Content-Type |
+| Retry logic | 4 | Network failure, exponential backoff, backoff cap, max retries |
+| Error handling | 5 | 4xx responses, 5xx responses, timeouts, logging, no throws |
+| Event filtering | 1 | Subscribed events only |
+
 #### `broker-integration-full.test.ts`
 **Status:** NEEDS REVIEW  
 **Runner:** Jest  
@@ -125,19 +168,19 @@ Each test MUST:
 | Performance | 2 | Good |
 
 #### `broker-endpoints-ci.test.ts`
-**Status:** NEEDS CLEANUP  
+**Status:** GOOD (FIXED)  
 **Runner:** Jest  
 **Coverage:** CI pipeline tests
 
-| Test Group | Status | Issues |
-|------------|--------|--------|
+| Test Group | Status | Notes |
+|------------|--------|-------|
 | Broker verification | GOOD | Real tests |
-| Content protection | MIXED | Some placeholders in edge cases |
-| Transfer ownership | BAD | ALL tests are placeholders |
+| Content protection | GOOD | Real tests (placeholders removed) |
+| Transfer ownership | GOOD | Validation tests (full tests in transfer-endpoint.test.ts) |
 | Webhook management | GOOD | Real tests |
-| Usage statistics | BAD | Placeholders |
-| Webhook delivery | BAD | Placeholders |
-| Security tests | MIXED | Some real, some placeholders |
+| Usage statistics | GOOD | Validation tests (full tests in usage-endpoint.test.ts) |
+| Webhook delivery | GOOD | Logic tests (full tests in webhook-delivery.test.ts) |
+| Security tests | GOOD | Real tests |
 
 ### Files NOT in test suite (untracked):
 - `backup-codes.test.ts`
@@ -145,12 +188,19 @@ Each test MUST:
 - `jwt.test.ts`
 - `totp.test.ts`
 
-## Test Gaps
+## Test Gaps (RESOLVED)
 
-1. **Transfer ownership** - No real tests for POST /broker/transfer endpoint
-2. **Usage statistics** - No real tests for GET /broker/usage endpoint  
-3. **Webhook delivery** - No tests for actual HTTP delivery
-4. **Admin broker registration** - Limited functional tests (needs DB)
+~~1. **Transfer ownership** - No real tests for POST /broker/transfer endpoint~~ ✅ FIXED: `transfer-endpoint.test.ts`
+~~2. **Usage statistics** - No real tests for GET /broker/usage endpoint~~ ✅ FIXED: `usage-endpoint.test.ts`
+~~3. **Webhook delivery** - No tests for actual HTTP delivery~~ ✅ FIXED: `webhook-delivery.test.ts`
+4. **Admin broker registration** - Limited functional tests (needs DB with seeded admin user)
+
+## Current Test Count
+
+- **Unit tests:** ~120 tests across 7 files
+- **Integration tests:** ~80 tests across 5 files
+- **Total:** ~200 tests
+- **Placeholder tests:** 0 (all removed/fixed)
 
 ## Running Tests
 
