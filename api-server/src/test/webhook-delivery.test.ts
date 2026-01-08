@@ -77,7 +77,9 @@ describe('Webhook Delivery System', () => {
     test('should generate different signatures for different secrets', () => {
       const payload = {
         event: 'content.protected',
-        data: {}
+        timestamp: '2025-01-01T00:00:00Z',
+        data: {},
+        broker_id: 1
       };
 
       const db = createMockDb();
@@ -94,8 +96,18 @@ describe('Webhook Delivery System', () => {
       const db = createMockDb();
       const service = new WebhookService(db);
 
-      const sig1 = service['generateSignature']({ event: 'event1' }, secret);
-      const sig2 = service['generateSignature']({ event: 'event2' }, secret);
+      const sig1 = service['generateSignature']({ 
+        event: 'event1', 
+        timestamp: '2025-01-01T00:00:00Z', 
+        data: {}, 
+        broker_id: 1 
+      }, secret);
+      const sig2 = service['generateSignature']({ 
+        event: 'event2', 
+        timestamp: '2025-01-01T00:00:00Z', 
+        data: {}, 
+        broker_id: 1 
+      }, secret);
 
       assert.notEqual(sig1, sig2);
     });
@@ -106,7 +118,8 @@ describe('Webhook Delivery System', () => {
       const payload = {
         event: 'content.protected',
         timestamp: '2025-01-01T00:00:00Z',
-        data: {}
+        data: {},
+        broker_id: 1
       };
       const secret = 'test-secret-key-minimum-32-chars-long';
 
@@ -123,7 +136,9 @@ describe('Webhook Delivery System', () => {
     test('should reject invalid signature', () => {
       const payload = JSON.stringify({
         event: 'content.protected',
-        data: {}
+        timestamp: '2025-01-01T00:00:00Z',
+        data: {},
+        broker_id: 1
       });
       const secret = 'test-secret-key-minimum-32-chars-long';
 
