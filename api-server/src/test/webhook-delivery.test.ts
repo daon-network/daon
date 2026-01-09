@@ -154,7 +154,9 @@ describe('Webhook Delivery System', () => {
     test('should reject signature with wrong secret', () => {
       const payload = {
         event: 'content.protected',
-        data: {}
+        timestamp: '2025-01-01T00:00:00Z',
+        data: {},
+        broker_id: 1
       };
       const secret1 = 'secret1-minimum-32-characters-long';
       const secret2 = 'secret2-minimum-32-characters-long';
