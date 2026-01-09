@@ -19,6 +19,7 @@ import client from 'prom-client';
 import blockchainClient from './blockchain.js';
 import { DatabaseClient } from './database/client.js';
 import { createAuthRoutes } from './auth/auth-routes.js';
+import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
 import healthRoutes from './routes/health.js';
 import { BrokerService } from './broker/broker-service.js';
 import { createBrokerAuthMiddleware } from './broker/broker-auth-middleware.js';
@@ -894,10 +895,10 @@ app.get('/api/v1/broker/usage',
  * Broker Registration Endpoint (Admin Only)
  * 
  * Register a new broker platform
- * TODO: Add admin authentication middleware
+ * Requires admin authentication
  */
 app.post('/api/v1/broker/register',
-  // TODO: Add admin authentication middleware
+  requireAdminAuth(dbClient),
   [
     body('domain')
       .notEmpty()
@@ -973,7 +974,24 @@ app.post('/api/v1/broker/register',
         ['broker:register', 'broker:verify', 'broker:transfer']
       );
       
-      logger.info(`New broker registered: ${domain} (${certification_tier})`);
+      logger.info(`New broker registered: ${domain} (${certification_tier}) by admin user ${req.userId}`);
+      
+      // Log admin action for audit trail
+      await logAdminAction(dbClient, {
+        user_id: req.userId!,
+        action_type: 'create',
+        resource_type: 'broker',
+        resource_id: newBroker.id,
+        details: {
+          domain,
+          name,
+          certification_tier,
+          contact_email,
+          has_public_key: !!public_key,
+          rate_limits: { hourly: rateLimitPerHour, daily: rateLimitPerDay }
+        },
+        ip_address: req.ip
+      });
       
       res.status(201).json({
         success: true,

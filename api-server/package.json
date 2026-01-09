@@ -39,6 +39,7 @@
     "@cosmjs/stargate": "^0.32.2",
     "@types/qrcode": "^1.5.6",
     "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.1",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
