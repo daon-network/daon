@@ -34,7 +34,7 @@ export function generateBackupCodes(count: number = CODE_COUNT): string[] {
  */
 function generateSingleCode(): string {
   // Use base32 alphabet (no ambiguous chars: 0/O, 1/I/L)
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   let code = '';
   
   for (let i = 0; i < CODE_LENGTH; i++) {
@@ -125,7 +125,7 @@ export function isValidBackupCodeFormat(code: string): boolean {
     return false;
   }
   
-  const validChars = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]+$/;
+  const validChars = /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]+$/;
   return validChars.test(normalized);
 }
 

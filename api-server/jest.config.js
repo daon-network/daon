@@ -21,9 +21,13 @@ export default {
     'broker-integration-full\\.test\\.ts$',
     'broker-auth-middleware\\.test\\.ts$',
     'broker-service\\.test\\.ts$',
+    'broker-endpoints-ci\\.test\\.ts$',
     'duplicate-detection\\.test\\.ts$',
     'admin-auth\\.test\\.ts$',
-    'broker-registration-admin\\.test\\.ts$'
+    'broker-registration-admin\\.test\\.ts$',
+    'transfer-endpoint\\.test\\.ts$',
+    'usage-endpoint\\.test\\.ts$',
+    'webhook-delivery\\.test\\.ts$'
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
