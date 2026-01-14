@@ -1,0 +1,67 @@
+{
+  "name": "@greenfieldoverride/liberation-ui",
+  "version": "1.0.0",
+  "description": "Liberation Platform UI Components - Values-aligned design system for building ethical technology",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "components": "ladle serve",
+    "components:build": "ladle build",
+    "lint": "eslint . --ext .ts,.tsx",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "liberation",
+    "react",
+    "components",
+    "ui",
+    "design-system",
+    "ethical-tech",
+    "privacy-first",
+    "liberation-platform"
+  ],
+  "author": "Greenfield Override",
+  "license": "Liberation-1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thegreenfieldoverride/liberation-platform",
+    "directory": "packages/liberation-ui"
+  },
+  "homepage": "https://ko-fi.com/greenfieldoverride",
+  "funding": {
+    "type": "ko-fi",
+    "url": "https://ko-fi.com/greenfieldoverride"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.462.0"
+  },
+  "devDependencies": {
+    "@ladle/react": "^5.1.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^14.3.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^8.57.1",
+    "happy-dom": "^20.0.10",
+    "jsdom": "^23.2.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2",
+    "vitest": "^1.6.1"
+  }
+}

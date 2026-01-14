@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#A855F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Shield outline -->
+  <path d="M100 20 L160 50 L160 100 Q160 150 100 180 Q40 150 40 100 L40 50 Z"
+        fill="url(#gradient)"
+        stroke="none"/>
+
+  <!-- Inner shield -->
+  <path d="M100 35 L150 58 L150 100 Q150 140 100 165 Q50 140 50 100 L50 58 Z"
+        fill="white"
+        stroke="none"/>
+
+  <!-- Liberation symbol (stylized "L" for Liberation License) -->
+  <g fill="url(#gradient)">
+    <rect x="75" y="70" width="8" height="50" rx="2"/>
+    <rect x="75" y="112" width="35" height="8" rx="2"/>
+  </g>
+
+  <!-- Blockchain link/chain symbol -->
+  <g fill="url(#gradient)" opacity="0.8">
+    <!-- Left link -->
+    <ellipse cx="90" cy="85" rx="10" ry="8" fill="none" stroke="url(#gradient)" stroke-width="3"/>
+    <!-- Right link -->
+    <ellipse cx="110" cy="95" rx="10" ry="8" fill="none" stroke="url(#gradient)" stroke-width="3"/>
+    <!-- Connecting bar -->
+    <rect x="95" y="87" width="10" height="6" rx="2"/>
+  </g>
+</svg>
