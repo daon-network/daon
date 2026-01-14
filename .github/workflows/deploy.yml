@@ -6,6 +6,7 @@ on:
     paths:
       - 'api-server/**'
       - 'daon-core/**'
+      - 'daon-frontend/**'
       - 'docker-compose.yml'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
@@ -213,10 +214,13 @@ jobs:
             
             # Build API locally (not pushed to Docker Hub)
             docker build -t daon-api:latest ./api-server
-            
+
+            # Build frontend locally
+            docker build -t daon-frontend:latest ./daon-frontend
+
             # Build blockchain image locally
             docker build -t daon-blockchain:latest ./daon-core
-            
+
             # Deploy full stack
             docker compose up -d --remove-orphans
             
