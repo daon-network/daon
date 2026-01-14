@@ -9,13 +9,13 @@
  */
 
 import crypto from 'crypto';
-import { DatabaseClient } from '../database/client';
-import { generateAccessToken, generateRefreshToken, getAccessTokenLifetime, getRefreshTokenLifetime } from '../utils/jwt';
-import { generateTotpSecret, verifyTotpCode, generateTotpUrl, formatTotpSecret } from '../utils/totp';
-import { generateQRCodeUrl } from '../utils/qr-code';
-import { generateBackupCodes, hashBackupCodes, verifyBackupCode, markBackupCodeUsed } from '../utils/backup-codes';
-import { encryptTotpSecret, decryptTotpSecret } from '../utils/encryption';
-import { sendMagicLinkEmail, sendEmailChangeConfirmation, sendEmailChangeVerification, sendNewDeviceNotification } from '../utils/email';
+import { DatabaseClient } from '../database/client.js';
+import { generateAccessToken, generateRefreshToken, getAccessTokenLifetime, getRefreshTokenLifetime } from '../utils/jwt.js';
+import { generateTotpSecret, verifyTotpCode, generateTotpUrl, formatTotpSecret } from '../utils/totp.js';
+import { generateQRCodeUrl } from '../utils/qr-code.js';
+import { generateBackupCodes, hashBackupCodes, verifyBackupCode, markBackupCodeUsed } from '../utils/backup-codes.js';
+import { encryptTotpSecret, decryptTotpSecret } from '../utils/encryption.js';
+import { sendMagicLinkEmail, sendEmailChangeConfirmation, sendEmailChangeVerification, sendNewDeviceNotification } from '../utils/email.js';
 
 const DEVICE_TRUST_LIFETIME = parseInt(process.env.DEVICE_TRUST_LIFETIME || '2592000', 10); // 30 days
 const MAGIC_LINK_LIFETIME = 1800; // 30 minutes

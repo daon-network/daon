@@ -5,8 +5,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { verifyEmailConfig } from '../utils/email';
-import { DatabaseClient } from '../database/client';
+import { verifyEmailConfig } from '../utils/email.js';
+import { DatabaseClient } from '../database/client.js';
 
 const router = Router();
 const db = new DatabaseClient();

@@ -5,9 +5,9 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { AuthService, DeviceInfo } from './auth-service';
-import { DatabaseClient } from '../database/client';
-import { verifyAccessToken } from '../utils/jwt';
+import { AuthService, DeviceInfo } from './auth-service.js';
+import { DatabaseClient } from '../database/client.js';
+import { verifyAccessToken } from '../utils/jwt.js';
 
 const router = Router();
 
