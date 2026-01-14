@@ -73,7 +73,7 @@ function createTestJSON(items: number): string {
   return filePath;
 }
 
-test.describe.skip('Bulk Registration - Navigation', () => {
+test.describe('Bulk Registration - Navigation', () => {
   test('should navigate to bulk registration tab', async ({ page }) => {
     await setupMockedAuth(page);
     await setupProtectMock(page);
@@ -100,7 +100,7 @@ test.describe.skip('Bulk Registration - Navigation', () => {
   });
 });
 
-test.describe.skip('Bulk Registration - CSV Upload', () => {
+test.describe('Bulk Registration - CSV Upload', () => {
   test('should upload CSV file successfully', async ({ page }) => {
     await setupMockedAuth(page);
     await setupProtectMock(page);
@@ -196,7 +196,7 @@ test.describe.skip('Bulk Registration - CSV Upload', () => {
   });
 });
 
-test.describe.skip('Bulk Registration - JSON Upload', () => {
+test.describe('Bulk Registration - JSON Upload', () => {
   test('should upload JSON file successfully', async ({ page }) => {
     await setupMockedAuth(page);
     await setupProtectMock(page);
@@ -271,7 +271,7 @@ test.describe.skip('Bulk Registration - JSON Upload', () => {
   });
 });
 
-test.describe.skip('Bulk Registration - Processing', () => {
+test.describe('Bulk Registration - Processing', () => {
   test('should process items sequentially', async ({ page }) => {
     await setupMockedAuth(page);
     await setupProtectMock(page);
@@ -408,7 +408,7 @@ test.describe.skip('Bulk Registration - Processing', () => {
   });
 });
 
-test.describe.skip('Bulk Registration - Results', () => {
+test.describe('Bulk Registration - Results', () => {
   test('should allow downloading results', async ({ page }) => {
     await setupMockedAuth(page);
     await setupProtectMock(page);
@@ -465,7 +465,7 @@ test.describe.skip('Bulk Registration - Results', () => {
   });
 });
 
-test.describe.skip('Bulk Registration - Limits', () => {
+test.describe('Bulk Registration - Limits', () => {
   test('should enforce maximum 100 items limit', async ({ page }) => {
     await setupMockedAuth(page);
     await setupProtectMock(page);

@@ -12,7 +12,7 @@ import * as speakeasy from 'speakeasy';
  * 4. Device trust expiration
  */
 
-test.describe.skip('Device Management - Navigation', () => {
+test.describe('Device Management - Navigation', () => {
   test('should navigate to devices page from settings', async ({ page }) => {
     await setupMockedAuth(page);
 
@@ -51,7 +51,7 @@ test.describe.skip('Device Management - Navigation', () => {
   });
 });
 
-test.describe.skip('Device Management - Display Devices', () => {
+test.describe('Device Management - Display Devices', () => {
   test('should display current trusted device', async ({ page }) => {
     await setupMockedAuth(page);
 
@@ -89,7 +89,7 @@ test.describe.skip('Device Management - Display Devices', () => {
   });
 });
 
-test.describe.skip('Device Management - Rename Device', () => {
+test.describe('Device Management - Rename Device', () => {
   test('should show rename button for each device', async ({ page }) => {
     await setupMockedAuth(page);
 
@@ -154,7 +154,7 @@ test.describe.skip('Device Management - Rename Device', () => {
   });
 });
 
-test.describe.skip('Device Management - Revoke Device Trust', () => {
+test.describe('Device Management - Revoke Device Trust', () => {
   test('should show revoke button for each device', async ({ page }) => {
     await setupMockedAuth(page);
 
@@ -224,7 +224,7 @@ test.describe.skip('Device Management - Revoke Device Trust', () => {
   });
 });
 
-test.describe.skip('Device Management - Trust Expiration', () => {
+test.describe('Device Management - Trust Expiration', () => {
   test('should display days until expiry', async ({ page }) => {
     await setupMockedAuth(page);
 
@@ -242,7 +242,7 @@ test.describe.skip('Device Management - Trust Expiration', () => {
   });
 });
 
-test.describe.skip('Device Management - Multiple Devices', () => {
+test.describe('Device Management - Multiple Devices', () => {
   test('should display all trusted devices', async ({ page, browser }) => {
     // Login from first device
     const { email, totpSecret } = await setupMockedAuth(page);

@@ -14,7 +14,7 @@ import * as speakeasy from 'speakeasy';
 const API_BASE = 'http://localhost:3000/api/v1';
 
 
-test.describe.skip('Settings Page - Account Settings', () => {
+test.describe('Settings Page - Account Settings', () => {
   test('should display current email', async ({ page }) => {
     const { email } = await setupMockedAuth(page);
 
@@ -94,7 +94,7 @@ test.describe.skip('Settings Page - Account Settings', () => {
   });
 });
 
-test.describe.skip('Settings Page - Security Settings', () => {
+test.describe('Settings Page - Security Settings', () => {
   test('should display 2FA status as enabled', async ({ page }) => {
     await setupMockedAuth(page);
 
@@ -186,7 +186,7 @@ test.describe.skip('Settings Page - Security Settings', () => {
   });
 });
 
-test.describe.skip('Settings Page - Session Management', () => {
+test.describe('Settings Page - Session Management', () => {
   test('should display current session info', async ({ page }) => {
     await setupMockedAuth(page);
 
@@ -247,7 +247,7 @@ test.describe.skip('Settings Page - Session Management', () => {
   });
 });
 
-test.describe.skip('Settings Page - Navigation', () => {
+test.describe('Settings Page - Navigation', () => {
   test('should load settings page for authenticated user', async ({ page }) => {
     await setupMockedAuth(page);
 

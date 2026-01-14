@@ -10,7 +10,7 @@ import { test, expect } from '@playwright/test';
  * 4. Development vs production error display
  */
 
-test.describe.skip('Error Boundaries - Root Level', () => {
+test.describe('Error Boundaries - Root Level', () => {
   test('should display root error boundary on JavaScript error', async ({ page }) => {
     // Navigate to a page
     await page.goto('http://localhost:4000');
@@ -47,7 +47,7 @@ test.describe.skip('Error Boundaries - Root Level', () => {
   });
 });
 
-test.describe.skip('Error Boundaries - Network Error Handling', () => {
+test.describe('Error Boundaries - Network Error Handling', () => {
   test('should handle API errors gracefully', async ({ page }) => {
     // Navigate to assets page
     await page.goto('http://localhost:4000/assets');
@@ -127,7 +127,7 @@ test.describe.skip('Error Boundaries - Network Error Handling', () => {
   });
 });
 
-test.describe.skip('Error Boundaries - Form Validation', () => {
+test.describe('Error Boundaries - Form Validation', () => {
   test('should show validation error for empty content', async ({ page }) => {
     await page.goto('http://localhost:4000/assets');
 
@@ -145,7 +145,7 @@ test.describe.skip('Error Boundaries - Form Validation', () => {
   });
 });
 
-test.describe.skip('Error Boundaries - Recovery Mechanisms', () => {
+test.describe('Error Boundaries - Recovery Mechanisms', () => {
   test('should clear error state when navigating away', async ({ page }) => {
     await page.goto('http://localhost:4000');
 
@@ -207,7 +207,7 @@ test.describe.skip('Error Boundaries - Recovery Mechanisms', () => {
   });
 });
 
-test.describe.skip('Error Boundaries - Console Error Detection', () => {
+test.describe('Error Boundaries - Console Error Detection', () => {
   test('should not have console errors on normal page load', async ({ page }) => {
     const consoleErrors: string[] = [];
 
@@ -247,7 +247,7 @@ test.describe.skip('Error Boundaries - Console Error Detection', () => {
   });
 });
 
-test.describe.skip('Error Boundaries - Loading States', () => {
+test.describe('Error Boundaries - Loading States', () => {
   test('should show loading state during API calls', async ({ page }) => {
     await page.goto('http://localhost:4000/assets');
 
@@ -288,7 +288,7 @@ test.describe.skip('Error Boundaries - Loading States', () => {
   });
 });
 
-test.describe.skip('Error Boundaries - Edge Cases', () => {
+test.describe('Error Boundaries - Edge Cases', () => {
   test('should handle rapid navigation', async ({ page }) => {
     // Navigate rapidly between pages
     await page.goto('http://localhost:4000');
