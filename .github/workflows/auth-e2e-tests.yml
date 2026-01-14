@@ -102,6 +102,7 @@ jobs:
         working-directory: ./api-server
         env:
           NODE_ENV: test
+          START_SERVER: 'true'
           PORT: 3000
           DATABASE_URL: postgresql://daon_user:daon_test_password@localhost:5432/daon_db
           DB_HOST: localhost
