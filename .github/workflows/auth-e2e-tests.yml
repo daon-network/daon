@@ -70,6 +70,11 @@ jobs:
         working-directory: ./api-server
         run: npm ci
 
+      - name: Build API server
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./api-server
+        run: npm run build
+
       - name: Install frontend dependencies
         if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./daon-frontend
