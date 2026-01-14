@@ -154,7 +154,7 @@ test.describe.skip('Complete Auth Flow - New User', () => {
   });
 });
 
-test.describe.skip('Complete Auth Flow - Existing User', () => {
+test.describe('Complete Auth Flow - Existing User', () => {
   const testEmail = `existinguser-${Date.now()}@example.com`;
   let totpSecret: string;
   
@@ -253,7 +253,7 @@ test.describe.skip('Complete Auth Flow - Existing User', () => {
   });
 });
 
-test.describe.skip('Session Persistence', () => {
+test.describe('Session Persistence', () => {
   const testEmail = `persistence-${Date.now()}@example.com`;
   
   test('session persists across page reloads', async ({ page }) => {
@@ -336,7 +336,7 @@ test.describe.skip('Session Persistence', () => {
   });
 });
 
-test.describe.skip('UI/UX Regression Tests', () => {
+test.describe('UI/UX Regression Tests', () => {
   test('no light-on-light text in TOTP inputs', async ({ page }) => {
     await page.goto('/auth/login');
     const testEmail = `uitest-${Date.now()}@example.com`;
@@ -424,7 +424,7 @@ test.describe.skip('UI/UX Regression Tests', () => {
   });
 });
 
-test.describe.skip('Error Handling', () => {
+test.describe('Error Handling', () => {
   test('handles expired magic link gracefully', async ({ page, context }) => {
     await page.goto('/auth/verify?token=invalid_or_expired_token');
     
@@ -469,7 +469,7 @@ test.describe.skip('Error Handling', () => {
   });
 });
 
-test.describe.skip('Security Tests', () => {
+test.describe('Security Tests', () => {
   test('cannot access dashboard without authentication', async ({ page }) => {
     await page.goto('/dashboard');
     await page.waitForURL(/\/auth\/login/, { timeout: 5000 });
