@@ -106,6 +106,36 @@ services:
     networks:
       - daon-network
 
+  # DAON Frontend - Web Portal
+  daon-frontend:
+    build:
+      context: ./daon-frontend
+      dockerfile: Dockerfile
+    image: daon-frontend:latest
+    container_name: daon-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://api-server:3000
+    depends_on:
+      api-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    networks:
+      - daon-network
+
   # Nginx - Reverse proxy with SSL termination
   nginx:
     image: nginx:alpine
@@ -120,6 +150,7 @@ services:
       - nginx-cache:/var/cache/nginx
     depends_on:
       - api-server
+      - daon-frontend
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
       interval: 30s

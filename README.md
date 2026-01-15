@@ -14,10 +14,12 @@ DAON Network empowers creators to protect their intellectual property through bl
 
 ### **For Creators**
 ```bash
-# Install DAON CLI
-npm install -g @daon/cli
+# Option 1: Use Web Portal (Easiest)
+# Visit https://app.daon.network
+# Sign in and protect content through the UI
 
-# Protect your content
+# Option 2: Use CLI (Advanced)
+npm install -g @daon/cli
 daon protect "My Creative Work" --license liberation_v1
 ```
 
@@ -33,12 +35,13 @@ cd daon
 
 | Component | Description | Status | Who Uses It |
 |-----------|-------------|--------|-------------|
+| **[Web Portal](daon-frontend/)** | Secure web interface for content protection | ✅ Production | All creators |
 | **[Validator Node](VALIDATOR_SETUP.md)** | Blockchain validator (Docker Hub) | ✅ Ready | Universities, organizations, creators |
 | **[API Server](api-server/)** | REST API for content protection | ✅ Production | Used by DAON SDKs (private service) |
 | **[Blockchain Core](daon-core/)** | Cosmos SDK blockchain | ✅ Production | Powers validator nodes |
-| **[Browser Extension](browser-extension/)** | Web protection tools | ✅ Ready | Individual creators |
-| **[WordPress Plugin](wordpress-plugin/)** | CMS integration | ✅ Ready | Bloggers, content sites |
-| **[Creator Tools](creator-tools/)** | Bulk protection scripts | ✅ Ready | Writers with large backlogs |
+| **[Browser Extension](browser-extension/)** | Browser-based protection tools | ✅ Ready | Individual creators |
+| **[WordPress Plugin](wordpress-plugin/)** | CMS integration | 🚧 In Development | Bloggers, content sites |
+| **[Creator Tools](creator-tools/)** | Python bulk protection scripts | ⚠️ Beta | Writers with large backlogs |
 | **[Monitoring Stack](docs/MONITORING_GUIDE.md)** | Prometheus + Grafana | ✅ Production | Network operators |
 
 ## 🛠️ Installation

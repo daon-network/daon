@@ -1,6 +1,8 @@
-# DAON Frontend
+# DAON Web Portal (Production - Deployed)
 
-Production-ready Next.js application for the DAON Network - empowering creators to protect their intellectual property through blockchain-verified Liberation Licenses.
+**Status**: ✅ Live at https://app.daon.network
+
+Production Next.js application for the DAON Network - empowering creators to protect their intellectual property through blockchain-verified Liberation Licenses.
 
 ## Overview
 
