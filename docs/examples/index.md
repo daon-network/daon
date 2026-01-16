@@ -29,20 +29,21 @@ console.log('🛡️ Protected!', result.verificationUrl);
 
 **Full example:** `./nextjs-blog/`
 
-### 2. **WordPress Plugin** (1 click install)
+### 2. **PHP/WordPress** (auto-protect posts)
 
 ```php
 // Automatically protects posts as they're published
 add_action('save_post', 'daon_auto_protect');
 
 function daon_auto_protect($post_id) {
-    if (get_option('daon_auto_protect')) {
-        daon_protect_post($post_id); // Done!
-    }
+    $content = get_post_field('post_content', $post_id);
+    $daon = new Daon\DaonClient();
+    $result = $daon->protect($content, [
+        'title' => get_the_title($post_id),
+        'author' => get_the_author_meta('display_name')
+    ], 'liberation_v1');
 }
 ```
-
-**Full plugin:** `../wordpress-plugin/`
 
 ### 3. **Ruby/Rails** (AO3 integration)
 
