@@ -1,0 +1,394 @@
+# Prometheus Alert Rules for DAON Network
+# Referenced by prometheus.yml
+#
+# Alert severity levels:
+#   - critical: Immediate action required, service disruption
+#   - warning: Attention needed, potential issues
+#   - info: Informational, no action required
+
+groups:
+  # ==================== API SERVER ALERTS ====================
+  - name: api_server_alerts
+    interval: 30s
+    rules:
+      - alert: APIServerDown
+        expr: up{job="daon-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "API server is down"
+          description: "API server {{ $labels.instance }} has been down for more than 1 minute."
+          action: "Check container logs: docker compose logs daon-api"
+
+      - alert: HighAPIErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "High API error rate detected"
+          description: "API is returning 5xx errors at {{ $value | humanizePercentage }} rate (threshold: 5%)."
+          action: "Check application logs for errors: docker compose logs daon-api | grep ERROR"
+
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API response latency"
+          description: "API 95th percentile latency is {{ $value }}s (threshold: 5s)."
+          action: "Check system resources and database performance"
+
+      - alert: APITooManyRequests
+        expr: rate(http_requests_total[1m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High request rate"
+          description: "API is receiving {{ $value }} requests/second (threshold: 1000/s)."
+          action: "Monitor for potential DDoS or check if load balancing is working"
+
+      - alert: APIMemoryHigh
+        expr: container_memory_usage_bytes{name=~".*api.*"} / container_spec_memory_limit_bytes{name=~".*api.*"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "API server memory usage high"
+          description: "API container memory usage is {{ $value | humanizePercentage }} of limit."
+          action: "Consider increasing memory limit or investigating memory leaks"
+
+  # ==================== BLOCKCHAIN ALERTS ====================
+  - name: blockchain_alerts
+    interval: 30s
+    rules:
+      - alert: BlockchainDown
+        expr: up{job="daon-validators"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: blockchain
+        annotations:
+          summary: "Blockchain node is down"
+          description: "Blockchain validator {{ $labels.instance }} has been down for more than 2 minutes."
+          action: "Check blockchain container: docker compose logs daon-blockchain"
+
+      - alert: BlockchainNotSyncing
+        expr: increase(tendermint_consensus_height[10m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+          component: blockchain
+        annotations:
+          summary: "Blockchain not producing blocks"
+          description: "No new blocks have been produced in the last 10 minutes."
+          action: "Check blockchain status and validator connectivity"
+
+      - alert: BlockchainStuck
+        expr: tendermint_consensus_rounds > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: blockchain
+        annotations:
+          summary: "Blockchain consensus rounds high"
+          description: "Consensus is taking {{ $value }} rounds (threshold: 5)."
+          action: "Check network connectivity and validator performance"
+
+      - alert: BlockchainHighMempool
+        expr: tendermint_mempool_size > 1000
+        for: 10m
+        labels:
+          severity: warning
+          component: blockchain
+        annotations:
+          summary: "High mempool size"
+          description: "Mempool has {{ $value }} transactions pending (threshold: 1000)."
+          action: "Monitor transaction processing rate and block capacity"
+
+      - alert: BlockchainLowPeerCount
+        expr: tendermint_p2p_peers < 2
+        for: 5m
+        labels:
+          severity: warning
+          component: blockchain
+        annotations:
+          summary: "Low peer count"
+          description: "Blockchain node has only {{ $value }} peers (minimum recommended: 2)."
+          action: "Check network connectivity and peer configuration"
+
+  # ==================== DATABASE ALERTS ====================
+  - name: database_alerts
+    interval: 30s
+    rules:
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL instance {{ $labels.instance }} has been down for more than 1 minute."
+          action: "Check database container: docker compose logs postgres"
+
+      - alert: PostgreSQLTooManyConnections
+        expr: sum(pg_stat_activity_count) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Too many database connections"
+          description: "PostgreSQL has {{ $value }} active connections (threshold: 80)."
+          action: "Check for connection leaks in application or increase max_connections"
+
+      - alert: PostgreSQLHighQueryTime
+        expr: avg(pg_stat_activity_max_tx_duration) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database query time"
+          description: "Average query time is {{ $value }}ms (threshold: 1000ms)."
+          action: "Analyze slow queries: SELECT * FROM pg_stat_activity WHERE state = 'active'"
+
+      - alert: PostgreSQLReplicationLag
+        expr: pg_replication_lag > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High replication lag"
+          description: "Replication lag is {{ $value }} seconds (threshold: 10s)."
+          action: "Check replica health and network connectivity"
+
+      - alert: PostgreSQLDeadlocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Database deadlocks detected"
+          description: "Deadlock rate is {{ $value }}/s."
+          action: "Review application transaction patterns and locking strategies"
+
+  # ==================== REDIS ALERTS ====================
+  - name: redis_alerts
+    interval: 30s
+    rules:
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "Redis cache is down"
+          description: "Redis instance {{ $labels.instance }} has been down for more than 1 minute."
+          action: "Check Redis container: docker compose logs redis"
+
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.90
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is {{ $value | humanizePercentage }} of maximum."
+          action: "Consider increasing Redis memory limit or reviewing eviction policy"
+
+      - alert: RedisConnectionsHigh
+        expr: redis_connected_clients > 500
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "High number of Redis connections"
+          description: "Redis has {{ $value }} connected clients (threshold: 500)."
+          action: "Check for connection leaks in application code"
+
+      - alert: RedisRejectedConnections
+        expr: rate(redis_rejected_connections_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis rejecting connections"
+          description: "Redis is rejecting {{ $value }} connections/second."
+          action: "Increase maxclients configuration or investigate connection issues"
+
+  # ==================== SYSTEM RESOURCE ALERTS ====================
+  - name: system_alerts
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage on {{ $labels.instance }} is {{ $value | humanize }}% (threshold: 80%)."
+          action: "Identify CPU-intensive processes: docker stats"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage on {{ $labels.instance }} is {{ $value | humanizePercentage }} (threshold: 85%)."
+          action: "Check memory usage: free -h && docker stats"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"}) < 0.15
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space on {{ $labels.instance }}:{{ $labels.mountpoint }} is {{ $value | humanizePercentage }} available (threshold: 15%)."
+          action: "Free up disk space or expand volume: df -h && docker system prune"
+
+      - alert: HighDiskIOWait
+        expr: rate(node_disk_io_time_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High disk I/O wait"
+          description: "Disk I/O wait on {{ $labels.instance }} is {{ $value | humanizePercentage }} (threshold: 80%)."
+          action: "Check disk performance: iostat -x 1"
+
+      - alert: HighInodeUsage
+        expr: (1 - (node_filesystem_files_free / node_filesystem_files)) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High inode usage"
+          description: "Inode usage on {{ $labels.instance }}:{{ $labels.mountpoint }} is {{ $value | humanizePercentage }} (threshold: 85%)."
+          action: "Find directories with many files: find / -xdev -type f | cut -d \"/\" -f 2 | sort | uniq -c | sort -n"
+
+      - alert: SystemLoad
+        expr: node_load15 / count without(cpu,mode) (node_cpu_seconds_total{mode="idle"}) > 1.5
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High system load"
+          description: "15-minute load average on {{ $labels.instance }} is {{ $value | humanize }}."
+          action: "Check running processes: top"
+
+  # ==================== NETWORK ALERTS ====================
+  - name: network_alerts
+    interval: 30s
+    rules:
+      - alert: HighNetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: network
+        annotations:
+          summary: "High network error rate"
+          description: "Network errors on {{ $labels.instance }}:{{ $labels.device }} at {{ $value }}/s."
+          action: "Check network interface: ip link show {{ $labels.device }}"
+
+      - alert: HighNetworkDrops
+        expr: rate(node_network_receive_drop_total[5m]) + rate(node_network_transmit_drop_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: network
+        annotations:
+          summary: "High network packet drop rate"
+          description: "Packet drops on {{ $labels.instance }}:{{ $labels.device }} at {{ $value }}/s."
+          action: "Check network congestion and buffer sizes"
+
+  # ==================== CONTAINER ALERTS ====================
+  - name: container_alerts
+    interval: 30s
+    rules:
+      - alert: ContainerKilled
+        expr: time() - container_last_seen{name=~"daon.*"} < 60
+        for: 1m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container killed"
+          description: "Container {{ $labels.name }} was killed recently."
+          action: "Check container logs: docker logs {{ $labels.name }}"
+
+      - alert: ContainerCPUThrottling
+        expr: rate(container_cpu_cfs_throttled_seconds_total{name=~"daon.*"}[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "Container CPU throttling"
+          description: "Container {{ $labels.name }} is being CPU throttled {{ $value | humanizePercentage }} of the time."
+          action: "Consider increasing CPU limit: check docker-compose.yml"
+
+      - alert: ContainerOOMKilled
+        expr: increase(container_oom_events_total{name=~"daon.*"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: container
+        annotations:
+          summary: "Container killed due to OOM"
+          description: "Container {{ $labels.name }} was killed due to Out Of Memory."
+          action: "Increase memory limit or investigate memory leak"
+
+# ==================== ALERTING RULES BEST PRACTICES ====================
+#
+# 1. Alert fatigue: Don't alert on everything
+#    - Only alert on actionable items
+#    - Use appropriate 'for' durations to avoid flapping
+#
+# 2. Severity levels:
+#    - critical: Immediate action needed, user-facing impact
+#    - warning: Attention needed, potential future impact
+#    - info: Nice to know, no action required
+#
+# 3. Annotations:
+#    - summary: Brief description
+#    - description: Detailed context with values
+#    - action: Specific remediation steps
+#
+# 4. Labels:
+#    - severity: For routing and prioritization
+#    - component: For organizing alerts by service
+#
+# 5. Testing alerts:
+#    - Use promtool to validate: promtool check rules alert_rules.yml
+#    - Test alert routing: trigger test alerts manually
+#
+# 6. Documentation:
+#    - Keep runbook links in annotations
+#    - Document expected values and thresholds
