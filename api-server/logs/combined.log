@@ -193,3 +193,44 @@
 {"level":"info","message":"GET /api/v1 - ::ffff:127.0.0.1","timestamp":"2025-11-17T00:35:28.205Z"}
 {"level":"info","message":"GET /health - ::ffff:127.0.0.1","timestamp":"2025-11-17T00:35:28.208Z"}
 {"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2025-11-17T00:36:27.628Z"}
+{"level":"info","message":"🚀 DAON API Server running on port 3000","timestamp":"2026-01-13T23:54:41.321Z"}
+{"level":"info","message":"📊 Health check: http://localhost:3000/health","timestamp":"2026-01-13T23:54:41.322Z"}
+{"level":"info","message":"📖 API docs: http://localhost:3000/api/v1","timestamp":"2026-01-13T23:54:41.322Z"}
+{"level":"info","message":"⛓️  Blockchain: Demo mode","timestamp":"2026-01-13T23:54:41.323Z"}
+{"level":"info","message":"🛡️  Creator protection is now active!","timestamp":"2026-01-13T23:54:41.323Z"}
+{"level":"info","message":"🔄 Webhook retry processor started","timestamp":"2026-01-13T23:54:41.323Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2026-01-13T23:54:56.121Z"}
+{"level":"info","message":"🚀 DAON API Server running on port 3000","timestamp":"2026-01-13T23:54:56.936Z"}
+{"level":"info","message":"📊 Health check: http://localhost:3000/health","timestamp":"2026-01-13T23:54:56.937Z"}
+{"level":"info","message":"📖 API docs: http://localhost:3000/api/v1","timestamp":"2026-01-13T23:54:56.937Z"}
+{"level":"info","message":"⛓️  Blockchain: Demo mode","timestamp":"2026-01-13T23:54:56.937Z"}
+{"level":"info","message":"🛡️  Creator protection is now active!","timestamp":"2026-01-13T23:54:56.937Z"}
+{"level":"info","message":"🔄 Webhook retry processor started","timestamp":"2026-01-13T23:54:56.938Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2026-01-14T18:10:07.352Z"}
+{"level":"info","message":"🚀 DAON API Server running on port 3000","timestamp":"2026-01-14T18:10:08.370Z"}
+{"level":"info","message":"📊 Health check: http://localhost:3000/health","timestamp":"2026-01-14T18:10:08.371Z"}
+{"level":"info","message":"📖 API docs: http://localhost:3000/api/v1","timestamp":"2026-01-14T18:10:08.372Z"}
+{"level":"info","message":"⛓️  Blockchain: Demo mode","timestamp":"2026-01-14T18:10:08.372Z"}
+{"level":"info","message":"🛡️  Creator protection is now active!","timestamp":"2026-01-14T18:10:08.372Z"}
+{"level":"info","message":"🔄 Webhook retry processor started","timestamp":"2026-01-14T18:10:08.372Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2026-01-14T18:10:21.525Z"}
+{"level":"info","message":"🚀 DAON API Server running on port 3000","timestamp":"2026-01-14T18:10:22.214Z"}
+{"level":"info","message":"📊 Health check: http://localhost:3000/health","timestamp":"2026-01-14T18:10:22.216Z"}
+{"level":"info","message":"📖 API docs: http://localhost:3000/api/v1","timestamp":"2026-01-14T18:10:22.216Z"}
+{"level":"info","message":"⛓️  Blockchain: Demo mode","timestamp":"2026-01-14T18:10:22.216Z"}
+{"level":"info","message":"🛡️  Creator protection is now active!","timestamp":"2026-01-14T18:10:22.216Z"}
+{"level":"info","message":"🔄 Webhook retry processor started","timestamp":"2026-01-14T18:10:22.216Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2026-01-14T18:32:01.730Z"}
+{"level":"info","message":"🚀 DAON API Server running on port 3000","timestamp":"2026-01-14T18:32:02.539Z"}
+{"level":"info","message":"📊 Health check: http://localhost:3000/health","timestamp":"2026-01-14T18:32:02.540Z"}
+{"level":"info","message":"📖 API docs: http://localhost:3000/api/v1","timestamp":"2026-01-14T18:32:02.540Z"}
+{"level":"info","message":"⛓️  Blockchain: Demo mode","timestamp":"2026-01-14T18:32:02.540Z"}
+{"level":"info","message":"🛡️  Creator protection is now active!","timestamp":"2026-01-14T18:32:02.541Z"}
+{"level":"info","message":"🔄 Webhook retry processor started","timestamp":"2026-01-14T18:32:02.541Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully","timestamp":"2026-01-14T18:32:05.665Z"}
+{"level":"info","message":"🚀 DAON API Server running on port 3000","timestamp":"2026-01-14T18:32:06.194Z"}
+{"level":"info","message":"📊 Health check: http://localhost:3000/health","timestamp":"2026-01-14T18:32:06.195Z"}
+{"level":"info","message":"📖 API docs: http://localhost:3000/api/v1","timestamp":"2026-01-14T18:32:06.195Z"}
+{"level":"info","message":"⛓️  Blockchain: Demo mode","timestamp":"2026-01-14T18:32:06.195Z"}
+{"level":"info","message":"🛡️  Creator protection is now active!","timestamp":"2026-01-14T18:32:06.195Z"}
+{"level":"info","message":"🔄 Webhook retry processor started","timestamp":"2026-01-14T18:32:06.196Z"}

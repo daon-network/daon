@@ -12,33 +12,22 @@ Choose the right protection method for your creative work.
 
 <div class="md-grid">
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="edit"></i></div>
-    <h3 class="md-feature__title">WordPress Bloggers</h3>
-    <p class="md-feature__description">Install our plugin and protect all posts automatically</p>
+    <div class="md-feature__icon"><i data-lucide="globe"></i></div>
+    <h3 class="md-feature__title">Web Portal (Recommended)</h3>
+    <p class="md-feature__description">Protect your content through our secure web interface</p>
     <ul class="md-feature__list">
-      <li>One-click installation</li>
-      <li>Automatic protection for new posts</li>
-      <li>Liberation License blocks AI training</li>
+      <li>No installation required</li>
+      <li>Secure authentication with 2FA</li>
+      <li>Manage all protected assets</li>
+      <li>Works on any device</li>
     </ul>
-    <a href="/examples/wordpress/" class="md-feature__link">Download Plugin →</a>
-  </div>
-
-  <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="pen-tool"></i></div>
-    <h3 class="md-feature__title">Writers</h3>
-    <p class="md-feature__description">Browser extension protects your works instantly</p>
-    <ul class="md-feature__list">
-      <li>Works on any writing platform</li>
-      <li>Bulk protection for existing works</li>
-      <li>Cryptographic ownership proof</li>
-    </ul>
-    <a href="/examples/browser-extension/" class="md-feature__link">Get Extension →</a>
+    <a href="https://app.daon.network" class="md-feature__link">Access Web Portal →</a>
   </div>
 
   <div class="md-feature">
     <div class="md-feature__icon"><i data-lucide="code"></i></div>
     <h3 class="md-feature__title">Platform Developers</h3>
-    <p class="md-feature__description">Integrate creator protection in 3 lines of code</p>
+    <p class="md-feature__description">Integrate creator protection into your platform</p>
     <ul class="md-feature__list">
       <li>SDKs for all major languages</li>
       <li>REST API for any platform</li>
@@ -48,15 +37,27 @@ Choose the right protection method for your creative work.
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="folder"></i></div>
-    <h3 class="md-feature__title">Bulk Protection</h3>
-    <p class="md-feature__description">Protect hundreds of existing works at once</p>
+    <div class="md-feature__icon"><i data-lucide="server"></i></div>
+    <h3 class="md-feature__title">Run a Validator</h3>
+    <p class="md-feature__description">Support the network by running a blockchain validator</p>
     <ul class="md-feature__list">
-      <li>Import from exports or file folders</li>
-      <li>Support for JSON, XML, text files</li>
-      <li>Progress tracking and error recovery</li>
+      <li>One-command Docker setup</li>
+      <li>Academic institutions welcome</li>
+      <li>Strengthen decentralization</li>
     </ul>
-    <a href="/examples/bulk-protection/" class="md-feature__link">Download Tool →</a>
+    <a href="/get-started/validator/" class="md-feature__link">Setup Guide →</a>
+  </div>
+
+  <div class="md-feature">
+    <div class="md-feature__icon"><i data-lucide="shield"></i></div>
+    <h3 class="md-feature__title">Verify Content</h3>
+    <p class="md-feature__description">Check if content is protected by DAON</p>
+    <ul class="md-feature__list">
+      <li>Instant verification lookup</li>
+      <li>View license terms</li>
+      <li>Blockchain proof of ownership</li>
+    </ul>
+    <a href="https://app.daon.network/verify" class="md-feature__link">Verify Now →</a>
   </div>
 </div>
 
