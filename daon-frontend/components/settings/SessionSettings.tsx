@@ -7,7 +7,7 @@
  */
 
 import React, { useState } from 'react';
-import { useAuth } from '../../lib/hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import { apiClient } from '../../lib/api-client';
 
 export default function SessionSettings() {
