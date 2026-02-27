@@ -111,12 +111,13 @@ services:
     build:
       context: ./daon-frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${FRONTEND_API_URL:-https://api.daon.network}
     image: daon-frontend:latest
     container_name: daon-frontend
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://api-server:3000
     depends_on:
       api-server:
         condition: service_healthy
