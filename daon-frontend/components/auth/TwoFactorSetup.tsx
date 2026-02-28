@@ -17,6 +17,7 @@ import { LibIcon } from '@greenfieldoverride/liberation-ui';
 import { apiClient } from '../../lib/api-client';
 import { getDeviceInfo } from '../../lib/device-fingerprint';
 import type { AuthError } from '../../lib/types';
+import { AuthenticatorGuide } from './AuthenticatorGuide';
 
 interface TwoFactorSetupProps {
   tempSessionId: string;
@@ -37,6 +38,7 @@ export function TwoFactorSetup({ tempSessionId, onSuccess, onError }: TwoFactorS
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showBackupCodes, setShowBackupCodes] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const {
     register,
@@ -287,12 +289,23 @@ export function TwoFactorSetup({ tempSessionId, onSuccess, onError }: TwoFactorS
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
             <p className="text-sm text-blue-900">
-              <strong>Recommended apps:</strong> Google Authenticator, Authy, 1Password, or any TOTP-compatible app
+              <strong>Recommended apps:</strong> Google Authenticator, Authy, 1Password
             </p>
+            <button
+              type="button"
+              onClick={() => setShowGuide(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <LibIcon icon="Help" size="sm" />
+              <span>Setup Guide</span>
+            </button>
           </div>
         </div>
+
+        {/* Authenticator Guide Modal */}
+        <AuthenticatorGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />
 
         {/* Step 2: Verify */}
         <div className="border border-gray-200 rounded-xl p-6 space-y-4">
