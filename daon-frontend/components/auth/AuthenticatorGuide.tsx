@@ -268,7 +268,7 @@ export function AuthenticatorGuide({ isOpen, onClose }: AuthenticatorGuideProps)
             {/* Troubleshooting */}
             <details className="bg-gray-50 rounded-xl p-4">
               <summary className="font-semibold text-gray-900 cursor-pointer flex items-center space-x-2">
-                <LibIcon icon="Help" size="sm" />
+                <LibIcon icon="Alert" size="sm" />
                 <span>Troubleshooting</span>
               </summary>
               <div className="mt-3 space-y-2 text-sm text-gray-700">
