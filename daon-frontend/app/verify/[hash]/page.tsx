@@ -71,7 +71,8 @@ export default function VerifyPage() {
 
     const verifyContent = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const apiUrl = baseUrl.includes('/api/v1') ? baseUrl : `${baseUrl}/api/v1`;
         const response = await fetch(`${apiUrl}/verify/${hash}`);
         
         if (!response.ok) {
