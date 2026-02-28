@@ -203,7 +203,7 @@ function generateContentHash(content) {
 
 function generateVerificationUrl(contentHash) {
   const baseUrl = process.env.VERIFICATION_BASE_URL || 'https://verify.daon.network';
-  return `${baseUrl}/sha256:${contentHash}`;
+  return `${baseUrl}/verify/sha256:${contentHash}`;
 }
 
 // Blockchain integration
