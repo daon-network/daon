@@ -18,7 +18,7 @@ import { body, param, validationResult } from 'express-validator';
 import client from 'prom-client';
 import blockchainClient from './blockchain.js';
 import { DatabaseClient } from './database/client.js';
-import { createAuthRoutes } from './auth/auth-routes.js';
+import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
 import healthRoutes from './routes/health.js';
 import { BrokerService } from './broker/broker-service.js';
