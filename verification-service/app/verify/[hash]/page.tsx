@@ -71,8 +71,7 @@ export default function VerifyPage() {
 
     const verifyContent = async () => {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-        const apiUrl = baseUrl.includes('/api/v1') ? baseUrl : `${baseUrl}/api/v1`;
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
         const response = await fetch(`${apiUrl}/verify/${hash}`);
         
         if (!response.ok) {
@@ -334,7 +333,7 @@ export default function VerifyPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500">
-          <p>Powered by DAON - Digital Asset Ownership Network</p>
+          <p>Powered by DAON - Decentralized Author Ownership Network</p>
           <p className="mt-1">
             <a href="/" className="text-blue-600 hover:text-blue-700 underline">
               Learn More
