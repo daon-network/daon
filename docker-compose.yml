@@ -155,6 +155,7 @@ services:
       CHAIN_ID: daon-mainnet-1
       API_MNEMONIC: ${API_MNEMONIC}
       API_KEY_SECRET: ${API_KEY_SECRET}
+      TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-1"
       # SMTP Email Configuration
@@ -205,6 +206,7 @@ services:
       CHAIN_ID: daon-mainnet-1
       API_MNEMONIC: ${API_MNEMONIC}
       API_KEY_SECRET: ${API_KEY_SECRET}
+      TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-2"
       # SMTP Email Configuration
@@ -255,6 +257,7 @@ services:
       CHAIN_ID: daon-mainnet-1
       API_MNEMONIC: ${API_MNEMONIC}
       API_KEY_SECRET: ${API_KEY_SECRET}
+      TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-3"
       # SMTP Email Configuration
