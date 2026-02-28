@@ -298,7 +298,7 @@ export function TwoFactorSetup({ tempSessionId, onSuccess, onError }: TwoFactorS
               onClick={() => setShowGuide(true)}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              <LibIcon icon="Help" size="sm" />
+              <LibIcon icon="Alert" size="sm" />
               <span>Setup Guide</span>
             </button>
           </div>
