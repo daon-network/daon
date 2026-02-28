@@ -11,11 +11,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { LibIcon } from '@greenfieldoverride/liberation-ui';
 import { apiClient } from '../../../lib/api-client';
 import { getDeviceInfo } from '../../../lib/device-fingerprint';
+import { useAuth } from '../../../hooks/useAuth';
 import type { AuthError } from '../../../lib/types';
 
 function VerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const auth = useAuth();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [error, setError] = useState<string | null>(null);
   const [requires2FA, setRequires2FA] = useState(false);
@@ -59,11 +61,17 @@ function VerifyContent() {
         } else {
           // No 2FA required - user is logged in
           setStatus('success');
-          
-          // Store tokens (AuthProvider will pick them up)
-          if (response.access_token && response.refresh_token) {
-            // TODO: Update AuthProvider state
-            localStorage.setItem('daon_refresh_token', response.refresh_token);
+
+          // Update AuthProvider state immediately
+          if (response.access_token && response.refresh_token && response.user) {
+            // Use setAuthState from AuthProvider context
+            if (auth && (auth as any).setAuthState) {
+              (auth as any).setAuthState(
+                response.user,
+                response.access_token,
+                response.refresh_token
+              );
+            }
           }
 
           setTimeout(() => {
