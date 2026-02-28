@@ -233,7 +233,7 @@ export function AuthenticatorGuide({ isOpen, onClose }: AuthenticatorGuideProps)
               {/* Steps */}
               <div className="bg-white rounded-lg p-4 space-y-3">
                 <h4 className="font-semibold text-gray-900 flex items-center space-x-2">
-                  <LibIcon icon="List" size="sm" />
+                  <LibIcon icon="Menu" size="sm" />
                   <span>Setup Steps</span>
                 </h4>
                 <ol className="space-y-3">
