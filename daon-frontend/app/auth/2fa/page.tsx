@@ -15,11 +15,22 @@ export default function TwoFactorPage() {
   const [tempSessionId, setTempSessionId] = useState<string | null>(null);
 
   useEffect(() => {
-    const sessionId = sessionStorage.getItem('temp_session_id');
+    // Get session from URL parameter first, fallback to sessionStorage
+    const params = new URLSearchParams(window.location.search);
+    const sessionFromUrl = params.get('session');
+    const sessionFromStorage = sessionStorage.getItem('temp_session_id');
+    const sessionId = sessionFromUrl || sessionFromStorage;
+
     if (!sessionId) {
       router.push('/auth/login');
       return;
     }
+
+    // Store in sessionStorage for future use
+    if (sessionFromUrl) {
+      sessionStorage.setItem('temp_session_id', sessionFromUrl);
+    }
+
     setTempSessionId(sessionId);
   }, [router]);
 

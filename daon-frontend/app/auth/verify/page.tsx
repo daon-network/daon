@@ -39,19 +39,21 @@ function VerifyContent() {
           setRequires2FA(true);
           setStatus('success');
           const sessionId = response.session_id || response.temp_session_id;
+
+          // Store in sessionStorage as backup
           if (sessionId) {
             sessionStorage.setItem('temp_session_id', sessionId);
           }
-          
+
           // Route based on whether user has 2FA enabled already
           const hasTotp = response.user?.totp_enabled === true;
           setTimeout(() => {
             if (hasTotp) {
-              // Existing 2FA user - go to verification page
-              router.push('/auth/2fa');
+              // Existing 2FA user - go to verification page with session in URL
+              router.push(`/auth/2fa?session=${sessionId}`);
             } else {
-              // New user - go to setup page
-              router.push('/auth/setup-2fa');
+              // New user - go to setup page with session in URL
+              router.push(`/auth/setup-2fa?session=${sessionId}`);
             }
           }, 2000);
         } else {
