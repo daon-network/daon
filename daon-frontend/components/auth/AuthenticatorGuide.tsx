@@ -149,7 +149,7 @@ export function AuthenticatorGuide({ isOpen, onClose }: AuthenticatorGuideProps)
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <LibIcon icon="X" size="lg" />
+                <LibIcon icon="Close" size="lg" />
               </button>
             </div>
           </div>
