@@ -9,9 +9,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TwoFactorVerify } from '../../../components/auth/TwoFactorVerify';
+import { useAuth } from '../../../hooks/useAuth';
 
 export default function TwoFactorPage() {
   const router = useRouter();
+  const auth = useAuth();
   const [tempSessionId, setTempSessionId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,8 +38,12 @@ export default function TwoFactorPage() {
 
   const handleSuccess = (accessToken: string, refreshToken: string, user: any) => {
     sessionStorage.removeItem('temp_session_id');
-    localStorage.setItem('daon_refresh_token', refreshToken);
-    localStorage.setItem('daon_user', globalThis.JSON.stringify(user));
+
+    // Update AuthProvider state immediately
+    if (auth && (auth as any).setAuthState) {
+      (auth as any).setAuthState(user, accessToken, refreshToken);
+    }
+
     router.push('/dashboard');
   };
 
