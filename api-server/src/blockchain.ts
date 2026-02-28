@@ -359,7 +359,7 @@ class BlockchainClient {
   }
 
   /**
-   * Verify content on blockchain using RPC query
+   * Verify content on blockchain using REST API
    * @param {string} contentHash - SHA256 hash to verify
    * @returns {Promise<object>} Verification result
    */
@@ -369,48 +369,44 @@ class BlockchainClient {
     }
 
     // Ensure hash has sha256: prefix
-    const formattedHash = contentHash.startsWith('sha256:') 
-      ? contentHash 
+    const formattedHash = contentHash.startsWith('sha256:')
+      ? contentHash
       : `sha256:${contentHash}`;
 
     try {
-      // Query via ABCI query (direct RPC call)
-      const queryPath = `/daoncore.contentregistry.v1.Query/VerifyContent`;
-      
-      // Encode query data (content_hash field)
-      const queryData = Buffer.from(
-        JSON.stringify({ content_hash: formattedHash })
-      ).toString('base64');
+      // Use the REST API endpoint built into the blockchain module
+      // Port 1317 is the standard Cosmos SDK REST API port
+      const restEndpoint = this.rpcEndpoint.replace(':26657', ':1317');
+      const response = await fetch(
+        `${restEndpoint}/daon-network/daon-core/contentregistry/v1/verify_content/${encodeURIComponent(formattedHash)}`,
+        { signal: AbortSignal.timeout(5000) }
+      );
 
-      const response = await fetch(`${this.rpcEndpoint}/abci_query?path="${queryPath}"&data="${queryData}"`, {
-        signal: AbortSignal.timeout(5000)
-      });
+      if (!response.ok) {
+        // 404 means content not found
+        if (response.status === 404) {
+          return {
+            verified: false,
+            creator: null,
+            license: null,
+            timestamp: null,
+          };
+        }
+        throw new Error(`REST API returned ${response.status}: ${response.statusText}`);
+      }
 
       const data = await response.json();
 
-      if (data.result && data.result.response && data.result.response.value) {
-        // Decode base64 response
-        const decoded = JSON.parse(
-          Buffer.from(data.result.response.value, 'base64').toString('utf8')
-        );
-
-        return {
-          verified: decoded.verified || false,
-          creator: decoded.creator || null,
-          license: decoded.license || null,
-          timestamp: decoded.timestamp || null,
-        };
-      }
-
+      // Parse the response according to QueryVerifyContentResponse protobuf
       return {
-        verified: false,
-        creator: null,
-        license: null,
-        timestamp: null,
+        verified: data.verified || false,
+        creator: data.creator || null,
+        license: data.license || null,
+        timestamp: data.timestamp || null,
       };
     } catch (error) {
       // If content not found, return unverified
-      if (error.message.includes('not found') || error.message.includes('does not exist')) {
+      if (error.message.includes('not found') || error.message.includes('does not exist') || error.message.includes('404')) {
         return {
           verified: false,
           creator: null,
@@ -418,7 +414,7 @@ class BlockchainClient {
           timestamp: null,
         };
       }
-      
+
       console.error('Failed to verify content:', error.message);
       throw error;
     }
