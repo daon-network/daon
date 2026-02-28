@@ -9,6 +9,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { LibIcon } from '@greenfieldoverride/liberation-ui';
+import { useAuth } from '../../hooks/useAuth';
 
 interface RegisterContentFormProps {
   onSuccess?: () => void;
@@ -37,6 +38,7 @@ interface ProtectionResult {
 }
 
 export function RegisterContentForm() {
+  const { accessToken } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [textContent, setTextContent] = useState('');
   const [inputMode, setInputMode] = useState<'file' | 'text' | 'restricted'>('file');
@@ -124,10 +126,16 @@ export function RegisterContentForm() {
       // Call API
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const apiUrl = baseUrl.includes('/api/v1') ? baseUrl : `${baseUrl}/api/v1`;
+
+      if (!accessToken) {
+        throw new Error('You must be logged in to register content');
+      }
+
       const response = await fetch(`${apiUrl}/protect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           content,
