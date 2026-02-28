@@ -94,7 +94,8 @@ export default function BulkRegisterForm() {
     setProcessing(true);
     setCurrentIndex(0);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const apiUrl = baseUrl.includes('/api/v1') ? baseUrl : `${baseUrl}/api/v1`;
 
     // Process items one at a time to show progress
     for (let i = 0; i < items.length; i++) {

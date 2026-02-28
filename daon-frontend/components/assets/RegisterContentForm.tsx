@@ -122,7 +122,8 @@ export function RegisterContentForm() {
       }
 
       // Call API
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const apiUrl = baseUrl.includes('/api/v1') ? baseUrl : `${baseUrl}/api/v1`;
       const response = await fetch(`${apiUrl}/protect`, {
         method: 'POST',
         headers: {
