@@ -77,12 +77,19 @@ description: "Complete guide to protecting your creative work with DAON"
 6. Click "Register on Blockchain"
 7. Get your verification URL
 
-### **Step 4: Share Verification**
+### **Step 4: Embed & Share Verification**
 
-1. Copy your verification URL
-2. Share it wherever you publish your work
-3. Anyone can verify your ownership
-4. Use it for legal purposes if needed
+1. Copy your verification URL (shown on the confirmation screen)
+2. **Embed it in your content** — the link is only useful if it appears alongside your work:
+   - **AO3:** Add an `<a>` tag in your Author's Notes
+   - **WordPress:** Add a `<meta name="daon-verification">` tag in `<head>` + a visible badge
+   - **Images:** Use `exiftool -Comment="DAON:sha256:..."` to embed in EXIF data
+   - **Plain text:** Add `[DAON: sha256:...]` as first or last line
+3. Share the link wherever you publish
+4. Direct readers to [verify.daon.network/verify](/verify) to confirm they're reading the registered version
+5. Use the verification record for legal purposes if needed
+
+**Full platform-specific embedding instructions:** [Embedding Your Verification Token →](./embedding-tokens.md)
 
 ---
 

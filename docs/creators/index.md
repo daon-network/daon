@@ -225,6 +225,7 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 - [WordPress Plugin Guide](/examples/wordpress/)
 - [Browser Extension Guide](/examples/browser-extension/)
 - [Bulk Protection Tutorial](/creators/bulk-protection/)
+- [Embedding Your Verification Token](/creators/embedding-tokens/) — AO3, WordPress, images, PDF, plain text
 - [Frequently Asked Questions](/creators/faq/)
 
 ### **Community Support**
