@@ -39,7 +39,6 @@
     "url": "https://github.com/daon-network/node-sdk.git"
   },
   "dependencies": {
-    "axios": "^1.6.0",
     "crypto": "^1.0.1"
   },
   "devDependencies": {
@@ -51,7 +50,7 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "files": [
     "dist/",

@@ -1,11 +1,10 @@
 /**
  * DAON Creator Protection SDK for Node.js
- * 
+ *
  * Provides easy integration with DAON blockchain for content protection.
  * Perfect for Next.js, Express, and other Node.js applications.
  */
 
-import axios, { AxiosInstance } from 'axios';
 import { createHash } from 'crypto';
 
 export interface DAONConfig {
@@ -81,7 +80,6 @@ export interface LiberationCheckResult {
 
 export class DAONClient {
   private config: Required<DAONConfig>;
-  private httpClient: AxiosInstance;
 
   constructor(config: DAONConfig = {}) {
     this.config = {
@@ -91,16 +89,6 @@ export class DAONClient {
       retries: config.retries || 3,
       defaultLicense: config.defaultLicense || 'liberation_v1'
     };
-
-    this.httpClient = axios.create({
-      baseURL: this.config.apiUrl,
-      timeout: this.config.timeout,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'User-Agent': 'DAON-Node-SDK/1.0.0'
-      }
-    });
   }
 
   /**
@@ -109,10 +97,10 @@ export class DAONClient {
   async protect(request: ProtectionRequest): Promise<ProtectionResult> {
     try {
       this.validateContent(request.content);
-      
+
       const contentHash = this.generateContentHash(request.content);
       const license = request.license || this.config.defaultLicense;
-      
+
       const payload = {
         content_hash: contentHash,
         creator: request.creatorAddress || this.generateCreatorId(),
@@ -121,14 +109,14 @@ export class DAONClient {
         metadata: this.normalizeMetadata(request.metadata || {})
       };
 
-      const response = await this.postWithRetry('/api/v1/protect', payload);
-      
+      const data = await this.postWithRetry('/api/v1/protect', payload);
+
       return {
-        success: response.data.success,
+        success: data.success,
         contentHash,
-        txHash: response.data.tx_hash,
-        verificationUrl: response.data.verification_url,
-        blockchainUrl: response.data.tx_hash ? `https://explorer.daon.network/tx/${response.data.tx_hash}` : undefined,
+        txHash: data.tx_hash,
+        verificationUrl: data.verification_url,
+        blockchainUrl: data.tx_hash ? `https://explorer.daon.network/tx/${data.tx_hash}` : undefined,
         timestamp: new Date().toISOString()
       };
     } catch (error) {
@@ -146,20 +134,20 @@ export class DAONClient {
    */
   async verify(contentOrHash: string): Promise<VerificationResult> {
     try {
-      const contentHash = contentOrHash.startsWith('sha256:') 
-        ? contentOrHash 
+      const contentHash = contentOrHash.startsWith('sha256:')
+        ? contentOrHash
         : this.generateContentHash(contentOrHash);
-      
-      const response = await this.getWithRetry(`/api/v1/verify/${contentHash}`);
-      
+
+      const data = await this.getWithRetry(`/api/v1/verify/${contentHash}`);
+
       return {
-        verified: response.data.verified,
+        verified: data.verified,
         contentHash,
-        creator: response.data.creator,
-        license: response.data.license,
-        timestamp: response.data.timestamp ? new Date(response.data.timestamp * 1000).toISOString() : undefined,
-        platform: response.data.platform,
-        verificationUrl: response.data.verification_url,
+        creator: data.creator,
+        license: data.license,
+        timestamp: data.timestamp ? new Date(data.timestamp * 1000).toISOString() : undefined,
+        platform: data.platform,
+        verificationUrl: data.verification_url,
         blockchainUrl: `https://explorer.daon.network/content/${contentHash}`
       };
     } catch (error) {
@@ -185,13 +173,13 @@ export class DAONClient {
         metadata: useCase.metadata
       };
 
-      const response = await this.postWithRetry('/api/v1/liberation/check', payload);
-      
+      const data = await this.postWithRetry('/api/v1/liberation/check', payload);
+
       return {
-        compliant: response.data.compliant,
-        reason: response.data.reason,
+        compliant: data.compliant,
+        reason: data.reason,
         useCase,
-        recommendations: response.data.recommendations
+        recommendations: data.recommendations
       };
     } catch (error) {
       return {
@@ -207,7 +195,7 @@ export class DAONClient {
    */
   async protectBatch(requests: ProtectionRequest[]): Promise<ProtectionResult[]> {
     const results: ProtectionResult[] = [];
-    
+
     // Process in batches of 10
     for (let i = 0; i < requests.length; i += 10) {
       const batch = requests.slice(i, i + 10);
@@ -215,13 +203,13 @@ export class DAONClient {
         batch.map(request => this.protect(request))
       );
       results.push(...batchResults);
-      
+
       // Rate limiting
       if (i + 10 < requests.length) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
-    
+
     return results;
   }
 
@@ -230,17 +218,17 @@ export class DAONClient {
    */
   async verifyBatch(contentHashes: string[]): Promise<VerificationResult[]> {
     const results: VerificationResult[] = [];
-    
+
     // Process in batches of 50
     for (let i = 0; i < contentHashes.length; i += 50) {
       const batch = contentHashes.slice(i, i + 50);
-      
+
       try {
-        const response = await this.postWithRetry('/api/v1/verify/batch', {
+        const data = await this.postWithRetry('/api/v1/verify/batch', {
           content_hashes: batch
         });
-        
-        const batchResults = response.data.results.map((result: any) => ({
+
+        const batchResults = data.results.map((result: any) => ({
           verified: result.verified,
           contentHash: result.content_hash,
           creator: result.creator,
@@ -250,7 +238,7 @@ export class DAONClient {
           verificationUrl: result.verification_url,
           blockchainUrl: `https://explorer.daon.network/content/${result.content_hash}`
         }));
-        
+
         results.push(...batchResults);
       } catch (error) {
         // Fallback to individual verification
@@ -259,13 +247,13 @@ export class DAONClient {
         );
         results.push(...individualResults);
       }
-      
+
       // Rate limiting
       if (i + 50 < contentHashes.length) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
-    
+
     return results;
   }
 
@@ -310,7 +298,7 @@ export class DAONClient {
    */
   private normalizeMetadata(metadata: ContentMetadata): { [key: string]: any } {
     const normalized: { [key: string]: any } = {};
-    
+
     Object.keys(metadata).forEach(key => {
       const value = metadata[key];
       switch (key.toLowerCase()) {
@@ -330,7 +318,7 @@ export class DAONClient {
           normalized[key] = value;
       }
     });
-    
+
     return normalized;
   }
 
@@ -342,7 +330,7 @@ export class DAONClient {
     if (process.env.NEXT_PHASE) return 'nextjs';
     if (process.env.NUXT_ENV_CURRENT_ENV) return 'nuxtjs';
     if (process.env.NODE_ENV === 'development' && process.env.PWD?.includes('express')) return 'express';
-    
+
     return 'nodejs';
   }
 
@@ -356,11 +344,33 @@ export class DAONClient {
   }
 
   /**
-   * HTTP helpers with retry logic
+   * HTTP helpers with retry logic using native fetch
    */
+  private get defaultHeaders(): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': 'DAON-Node-SDK/1.0.0'
+    };
+  }
+
+  private async fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
+    const signal = AbortSignal.timeout(this.config.timeout);
+    return fetch(url, { ...options, signal });
+  }
+
   private async getWithRetry(path: string, retries: number = this.config.retries): Promise<any> {
     try {
-      return await this.httpClient.get(path);
+      const response = await this.fetchWithTimeout(`${this.config.apiUrl}${path}`, {
+        method: 'GET',
+        headers: this.defaultHeaders
+      });
+      if (!response.ok) {
+        const err: any = new Error(`HTTP ${response.status}`);
+        err.status = response.status;
+        throw err;
+      }
+      return response.json();
     } catch (error) {
       if (retries > 0 && this.isRetryableError(error)) {
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -372,7 +382,17 @@ export class DAONClient {
 
   private async postWithRetry(path: string, data: any, retries: number = this.config.retries): Promise<any> {
     try {
-      return await this.httpClient.post(path, data);
+      const response = await this.fetchWithTimeout(`${this.config.apiUrl}${path}`, {
+        method: 'POST',
+        headers: this.defaultHeaders,
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        const err: any = new Error(`HTTP ${response.status}`);
+        err.status = response.status;
+        throw err;
+      }
+      return response.json();
     } catch (error) {
       if (retries > 0 && this.isRetryableError(error)) {
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -383,12 +403,11 @@ export class DAONClient {
   }
 
   private isRetryableError(error: any): boolean {
-    return axios.isAxiosError(error) && (
-      error.code === 'ECONNRESET' ||
-      error.code === 'ENOTFOUND' ||
-      error.code === 'ECONNREFUSED' ||
-      (error.response?.status !== undefined && error.response.status >= 500)
-    );
+    // Network-level failures (fetch throws TypeError for connection errors)
+    if (error instanceof TypeError) return true;
+    // Retry on 5xx server errors but not 4xx client errors
+    if (error.status !== undefined) return error.status >= 500;
+    return false;
   }
 }
 

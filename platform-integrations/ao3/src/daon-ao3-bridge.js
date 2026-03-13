@@ -6,7 +6,6 @@
  */
 
 import { AO3Scraper } from './ao3-scraper.js';
-import axios from 'axios';
 
 export class DAONAo3Bridge {
   constructor(options = {}) {
@@ -123,30 +122,38 @@ export class DAONAo3Bridge {
    */
   async registerWithDAON(payload) {
     try {
-      const response = await axios.post(`${this.daonApiUrl}/register`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'DAON-AO3-Bridge/1.0',
-          'X-Platform-Integration': 'archiveofourown.org'
-        },
-        timeout: 30000
-      });
-      
+      let response;
+      try {
+        response = await fetch(`${this.daonApiUrl}/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'DAON-AO3-Bridge/1.0',
+            'X-Platform-Integration': 'archiveofourown.org'
+          },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(30000)
+        });
+      } catch (error) {
+        throw new Error(`DAON blockchain registration failed: ${error.message}`);
+      }
+
+      if (response.status === 409) {
+        throw new Error('Content already registered on DAON blockchain');
+      }
+      if (!response.ok) {
+        throw new Error(`DAON blockchain registration failed: HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
       return {
-        transactionHash: response.data.txHash,
-        blockHeight: response.data.blockHeight,
+        transactionHash: data.txHash,
+        blockHeight: data.blockHeight,
         contentHash: payload.contentHash,
-        registrationTimestamp: response.data.timestamp,
+        registrationTimestamp: data.timestamp,
         verificationUrl: `https://verify.daon.network/${payload.contentHash}`,
         status: 'registered'
       };
-      
-    } catch (error) {
-      if (error.response?.status === 409) {
-        throw new Error('Content already registered on DAON blockchain');
-      }
-      throw new Error(`DAON blockchain registration failed: ${error.message}`);
-    }
   }
 
   /**
