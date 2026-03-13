@@ -7,10 +7,10 @@
 
 import { DirectSecp256k1HdWallet, Registry, makeAuthInfoBytes, makeSignDoc } from '@cosmjs/proto-signing';
 import { SigningStargateClient, defaultRegistryTypes, QueryClient, StargateClient, GasPrice } from '@cosmjs/stargate';
-import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
-import { TxRaw, TxBody } from 'cosmjs-types/cosmos/tx/v1beta1/tx.js';
-import { Any } from 'cosmjs-types/google/protobuf/any.js';
-import { BaseAccount } from 'cosmjs-types/cosmos/auth/v1beta1/auth.js';
+import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
+import { TxRaw, TxBody } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
+import { Any } from 'cosmjs-types/google/protobuf/any';
+import { BaseAccount } from 'cosmjs-types/cosmos/auth/v1beta1/auth';
 import { MsgRegisterContent } from './types/daoncore/contentregistry/v1/tx.js';
 
 class BlockchainClient {
@@ -71,7 +71,7 @@ class BlockchainClient {
       ] as any);
 
       // Create Tendermint client first
-      const tmClient = await Tendermint34Client.connect(this.rpcEndpoint);
+      const tmClient = await Tendermint37Client.connect(this.rpcEndpoint);
       
       // Create signing client with custom registry and account parser that handles daon prefix
       this.client = await SigningStargateClient.createWithSigner(
