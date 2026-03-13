@@ -35,9 +35,13 @@ function getTransporter(): Transporter {
   const config: any = {
     host: SMTP_HOST,
     port: SMTP_PORT,
-    secure: SMTP_PORT === 465
+    secure: SMTP_PORT === 465,
+    tls: {
+      // Accept self-signed certificates (for internal mail servers)
+      rejectUnauthorized: false
+    }
   };
-  
+
   // Add auth only if credentials provided
   if (requiresAuth) {
     config.auth = {

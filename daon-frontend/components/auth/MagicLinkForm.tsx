@@ -56,13 +56,6 @@ export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
       <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="flex justify-center mb-4">
-            <img 
-              src="/logo.svg" 
-              alt="DAON Logo" 
-              className="w-16 h-16"
-            />
-          </div>
           <h1 className="text-2xl font-bold text-gray-900">Welcome to DAON</h1>
           <p className="text-gray-600">
             Enter your email to receive a secure magic link

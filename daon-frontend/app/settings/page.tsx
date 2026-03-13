@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { useAuth } from '../../lib/hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import AccountSettings from '../../components/settings/AccountSettings';
 import SecuritySettings from '../../components/settings/SecuritySettings';

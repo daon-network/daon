@@ -11,11 +11,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { LibIcon } from '@greenfieldoverride/liberation-ui';
 import { apiClient } from '../../../lib/api-client';
 import { getDeviceInfo } from '../../../lib/device-fingerprint';
+import { useAuth } from '../../../hooks/useAuth';
 import type { AuthError } from '../../../lib/types';
 
 function VerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const auth = useAuth();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [error, setError] = useState<string | null>(null);
   const [requires2FA, setRequires2FA] = useState(false);
@@ -39,29 +41,37 @@ function VerifyContent() {
           setRequires2FA(true);
           setStatus('success');
           const sessionId = response.session_id || response.temp_session_id;
+
+          // Store in sessionStorage as backup
           if (sessionId) {
             sessionStorage.setItem('temp_session_id', sessionId);
           }
-          
+
           // Route based on whether user has 2FA enabled already
           const hasTotp = response.user?.totp_enabled === true;
           setTimeout(() => {
             if (hasTotp) {
-              // Existing 2FA user - go to verification page
-              router.push('/auth/2fa');
+              // Existing 2FA user - go to verification page with session in URL
+              router.push(`/auth/2fa?session=${sessionId}`);
             } else {
-              // New user - go to setup page
-              router.push('/auth/setup-2fa');
+              // New user - go to setup page with session in URL
+              router.push(`/auth/setup-2fa?session=${sessionId}`);
             }
           }, 2000);
         } else {
           // No 2FA required - user is logged in
           setStatus('success');
-          
-          // Store tokens (AuthProvider will pick them up)
-          if (response.access_token && response.refresh_token) {
-            // TODO: Update AuthProvider state
-            localStorage.setItem('daon_refresh_token', response.refresh_token);
+
+          // Update AuthProvider state immediately
+          if (response.access_token && response.refresh_token && response.user) {
+            // Use setAuthState from AuthProvider context
+            if (auth && (auth as any).setAuthState) {
+              (auth as any).setAuthState(
+                response.user,
+                response.access_token,
+                response.refresh_token
+              );
+            }
           }
 
           setTimeout(() => {

@@ -72,7 +72,6 @@ export interface LiberationCheckResult {
 }
 export declare class DAONClient {
     private config;
-    private httpClient;
     constructor(config?: DAONConfig);
     /**
      * Protect content with DAON blockchain
@@ -119,8 +118,10 @@ export declare class DAONClient {
      */
     private generateCreatorId;
     /**
-     * HTTP helpers with retry logic
+     * HTTP helpers with retry logic using native fetch
      */
+    private get defaultHeaders();
+    private fetchWithTimeout;
     private getWithRetry;
     private postWithRetry;
     private isRetryableError;

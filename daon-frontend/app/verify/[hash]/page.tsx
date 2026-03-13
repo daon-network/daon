@@ -71,7 +71,8 @@ export default function VerifyPage() {
 
     const verifyContent = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const apiUrl = baseUrl.includes('/api/v1') ? baseUrl : `${baseUrl}/api/v1`;
         const response = await fetch(`${apiUrl}/verify/${hash}`);
         
         if (!response.ok) {
@@ -331,9 +332,19 @@ export default function VerifyPage() {
           </div>
         )}
 
+        {/* Verify by content CTA */}
+        <div className="text-center mt-6 text-sm text-gray-600">
+          <p>
+            Want to confirm the content you're reading matches this registration?{' '}
+            <a href="/verify" className="text-blue-600 hover:text-blue-700 underline font-medium">
+              Verify by content →
+            </a>
+          </p>
+        </div>
+
         {/* Footer */}
-        <div className="text-center mt-8 text-sm text-gray-500">
-          <p>Powered by DAON - Decentralized Author Ownership Network</p>
+        <div className="text-center mt-4 text-sm text-gray-500">
+          <p>Powered by DAON - Digital Asset Ownership Network</p>
           <p className="mt-1">
             <a href="/" className="text-blue-600 hover:text-blue-700 underline">
               Learn More

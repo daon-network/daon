@@ -6,9 +6,10 @@
  * Upload and register creative content on the blockchain
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { LibIcon } from '@greenfieldoverride/liberation-ui';
+import { useAuth } from '../../hooks/useAuth';
 
 interface RegisterContentFormProps {
   onSuccess?: () => void;
@@ -37,6 +38,7 @@ interface ProtectionResult {
 }
 
 export function RegisterContentForm() {
+  const { accessToken } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [textContent, setTextContent] = useState('');
   const [inputMode, setInputMode] = useState<'file' | 'text' | 'restricted'>('file');
@@ -122,11 +124,18 @@ export function RegisterContentForm() {
       }
 
       // Call API
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const apiUrl = baseUrl.includes('/api/v1') ? baseUrl : `${baseUrl}/api/v1`;
+
+      if (!accessToken) {
+        throw new Error('You must be logged in to register content');
+      }
+
       const response = await fetch(`${apiUrl}/protect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           content,
@@ -211,6 +220,66 @@ export function RegisterContentForm() {
     });
   };
 
+  const [showEmbedGuide, setShowEmbedGuide] = useState(false);
+
+  const embedSnippets = useMemo(() => {
+    if (!result) return null;
+    const hash = result.contentHash;
+    const url = result.verificationUrl;
+    const type = selectedType;
+
+    const snippets: Record<string, { label: string; code: string }[]> = {
+      text: [
+        {
+          label: 'AO3 Author\'s Notes (HTML)',
+          code: `<p>This work is registered on the DAON blockchain.\n<a href="${url}">[Verify ownership]</a></p>`,
+        },
+        {
+          label: 'Plain text (first/last line)',
+          code: `[DAON: sha256:${hash} | ${url}]`,
+        },
+        {
+          label: 'WordPress / blog meta tag',
+          code: `<meta name="daon-verification" content="sha256:${hash}">`,
+        },
+      ],
+      image: [
+        {
+          label: 'ExifTool (JPEG/PNG/TIFF)',
+          code: `exiftool \\\n  -Comment="DAON:sha256:${hash}" \\\n  -Copyright="Registered on DAON. ${url}" \\\n  your-image.jpg`,
+        },
+        {
+          label: 'Alt text / caption',
+          code: `[Image registered on DAON blockchain: ${url}]`,
+        },
+      ],
+      document: [
+        {
+          label: 'PDF via ExifTool',
+          code: `exiftool \\\n  -Subject="DAON:sha256:${hash}" \\\n  -Keywords="daon-verified" \\\n  your-document.pdf`,
+        },
+        {
+          label: 'Document footer text',
+          code: `DAON Verification: sha256:${hash}\n${url}`,
+        },
+      ],
+      video: [
+        {
+          label: 'Video description / credits',
+          code: `Registered on DAON blockchain.\nVerify: ${url}`,
+        },
+      ],
+      audio: [
+        {
+          label: 'ID3 tag / track description',
+          code: `DAON:sha256:${hash}\nVerify: ${url}`,
+        },
+      ],
+    };
+
+    return snippets[type] ?? snippets.text;
+  }, [result, selectedType]);
+
   if (result) {
     return (
       <div className="space-y-6">
@@ -223,7 +292,7 @@ export function RegisterContentForm() {
                 {result.existing ? 'Content Already Protected' : 'Content Successfully Protected!'}
               </h3>
               <p className="text-sm text-green-700 mb-4">
-                {result.existing 
+                {result.existing
                   ? 'This content was already registered on the blockchain.'
                   : 'Your content has been registered on the blockchain and is now permanently protected.'}
               </p>
@@ -257,9 +326,9 @@ export function RegisterContentForm() {
 
                 <div>
                   <p className="text-xs font-medium text-gray-500 mb-1">Verification URL</p>
-                  <a 
-                    href={result.verificationUrl} 
-                    target="_blank" 
+                  <a
+                    href={result.verificationUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-blue-600 hover:text-blue-700 underline break-all"
                   >
@@ -269,6 +338,67 @@ export function RegisterContentForm() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* What this URL proves */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-start space-x-3">
+            <LibIcon icon="Alert" size="lg" className="text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-amber-900 font-medium mb-1">What this verification URL proves</p>
+              <p className="text-sm text-amber-800">
+                This link confirms a hash was registered — but it does not automatically confirm that content found elsewhere <em>is</em> this registered work.
+                To make that check possible, embed the token in your content (see below) and direct readers to use the{' '}
+                <a href="/verify" className="underline font-medium">Verify by Content</a> tool, which hashes what they're reading and looks it up directly.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* How to embed this */}
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setShowEmbedGuide(!showEmbedGuide)}
+            className="w-full flex items-center justify-between px-5 py-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+          >
+            <span className="font-medium text-gray-900 text-sm">How to embed this token in your content</span>
+            <svg
+              className={`h-5 w-5 text-gray-500 transition-transform ${showEmbedGuide ? 'rotate-180' : ''}`}
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showEmbedGuide && embedSnippets && (
+            <div className="p-5 space-y-4 bg-white">
+              <p className="text-sm text-gray-600">
+                Copy one of these snippets and add it to your published work so readers can verify ownership:
+              </p>
+              {embedSnippets.map(({ label, code }) => (
+                <div key={label}>
+                  <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
+                  <div className="relative group">
+                    <pre className="text-xs font-mono bg-gray-50 border border-gray-200 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-all text-gray-900">
+                      {code}
+                    </pre>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(code)}
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 bg-white border border-gray-300 rounded text-gray-600 hover:text-gray-900"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-gray-500">
+                Need instructions for another platform?{' '}
+                <a href="https://daon.network/creators/embedding-tokens/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline">
+                  Full embedding guide →
+                </a>
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Actions */}

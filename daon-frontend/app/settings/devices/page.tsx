@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { useAuth } from '../../../lib/hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import DeviceManager from '../../../components/settings/DeviceManager';
 

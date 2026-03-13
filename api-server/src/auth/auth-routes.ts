@@ -452,7 +452,7 @@ export function createAuthRoutes(db: DatabaseClient): Router {
   router.patch('/devices/:id', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = (req as any).userId;
-      const deviceId = parseInt(req.params.id, 10);
+      const deviceId = parseInt(req.params.id as string, 10);
       const { name } = req.body;
       
       if (!name) {
@@ -486,7 +486,7 @@ export function createAuthRoutes(db: DatabaseClient): Router {
   router.delete('/devices/:id', requireAuth, async (req: Request, res: Response) => {
     try {
       const userId = (req as any).userId;
-      const deviceId = parseInt(req.params.id, 10);
+      const deviceId = parseInt(req.params.id as string, 10);
       const { code } = req.body;
       
       if (!code) {

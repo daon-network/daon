@@ -27,7 +27,7 @@ jobs:
           POSTGRES_USER: daon_test
           POSTGRES_PASSWORD: test_password
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U daon_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5

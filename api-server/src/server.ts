@@ -18,7 +18,7 @@ import { body, param, validationResult } from 'express-validator';
 import client from 'prom-client';
 import blockchainClient from './blockchain.js';
 import { DatabaseClient } from './database/client.js';
-import { createAuthRoutes } from './auth/auth-routes.js';
+import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
 import healthRoutes from './routes/health.js';
 import { BrokerService } from './broker/broker-service.js';
@@ -203,7 +203,7 @@ function generateContentHash(content) {
 
 function generateVerificationUrl(contentHash) {
   const baseUrl = process.env.VERIFICATION_BASE_URL || 'https://verify.daon.network';
-  return `${baseUrl}/sha256:${contentHash}`;
+  return `${baseUrl}/verify/sha256:${contentHash}`;
 }
 
 // Blockchain integration
@@ -279,7 +279,8 @@ app.get('/api/v1', (req, res) => {
     endpoints: {
       'POST /api/v1/protect': 'Protect content with Liberation License',
       'POST /api/v1/protect/bulk': 'Protect multiple works at once',
-      'GET /api/v1/verify/:hash': 'Verify content protection status',
+      'GET /api/v1/verify/:hash': 'Verify content protection status by hash',
+      'POST /api/v1/verify-content': 'Verify by submitting content — returns who registered it',
       'GET /api/v1/stats': 'Get protection statistics',
       'POST /api/v1/auth/magic-link': 'Send magic link for passwordless auth',
       'GET /api/v1/auth/verify': 'Verify magic link and get tokens',
@@ -581,6 +582,92 @@ app.get('/api/v1/verify/:hash', [
     
   } catch (error) {
     logger.error('Content verification failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Verification failed',
+      message: error.message
+    });
+  }
+});
+
+// Verify-by-content endpoint
+// Inverts the verification flow: submit content → get back who registered it (if anyone)
+// This closes the "token transplanting" gap where a hash link can appear on unrelated content.
+app.post('/api/v1/verify-content', [
+  body('content')
+    .isString()
+    .notEmpty()
+    .withMessage('content must be a non-empty string'),
+  handleValidationErrors
+], async (req, res) => {
+  try {
+    const { content } = req.body;
+
+    // Compute SHA-256 of the submitted content (same algorithm as /protect)
+    const contentHash = crypto.createHash('sha256').update(content).digest('hex');
+
+    let record = null;
+    let source = 'memory';
+
+    // Try blockchain first if enabled
+    if (blockchainEnabled && blockchainClient.connected) {
+      try {
+        const blockchainRecord = await blockchainClient.verifyContent(contentHash);
+        if (blockchainRecord.verified) {
+          record = {
+            contentHash,
+            timestamp: new Date(blockchainRecord.timestamp * 1000).toISOString(),
+            license: blockchainRecord.license,
+            creator: blockchainRecord.creator,
+            metadata: blockchainRecord.metadata,
+            blockchain: true
+          };
+          source = 'blockchain';
+        }
+      } catch (blockchainError) {
+        logger.warn('Blockchain verify-content failed, checking memory:', blockchainError.message);
+      }
+    }
+
+    // Fall back to in-memory cache
+    if (!record) {
+      record = protectedContent.get(contentHash);
+      if (record) {
+        source = 'memory-cache';
+      }
+    }
+
+    if (!record) {
+      contentVerificationsTotal.labels('not_found').inc();
+      return res.status(404).json({
+        success: false,
+        isValid: false,
+        contentHash,
+        error: 'Content not found in protection registry'
+      });
+    }
+
+    logger.info(`Verify-content lookup: ${contentHash} [${source}]`);
+    contentVerificationsTotal.labels('success').inc();
+
+    res.json({
+      success: true,
+      isValid: true,
+      contentHash,
+      timestamp: record.timestamp,
+      license: record.license,
+      creator: record.creator,
+      metadata: record.metadata,
+      verificationUrl: record.verificationUrl || generateVerificationUrl(contentHash),
+      blockchain: {
+        enabled: blockchainEnabled,
+        verified: source === 'blockchain',
+        source
+      }
+    });
+
+  } catch (error) {
+    logger.error('Verify-content failed:', error);
     res.status(500).json({
       success: false,
       error: 'Verification failed',
@@ -1364,7 +1451,7 @@ app.get('/api/v1/broker/webhooks/:webhookId/stats',
   async (req, res) => {
     try {
       const broker = req.broker!;
-      const webhookId = parseInt(req.params.webhookId);
+      const webhookId = parseInt(req.params.webhookId as string);
       
       const stats = await webhookService.getDeliveryStats(broker.id, webhookId);
       
@@ -1400,7 +1487,7 @@ app.delete('/api/v1/broker/webhooks/:webhookId',
   async (req, res) => {
     try {
       const broker = req.broker!;
-      const webhookId = parseInt(req.params.webhookId);
+      const webhookId = parseInt(req.params.webhookId as string);
       
       const deleted = await webhookService.deleteWebhook(webhookId, broker.id);
       
