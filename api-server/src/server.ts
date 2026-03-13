@@ -1451,7 +1451,7 @@ app.get('/api/v1/broker/webhooks/:webhookId/stats',
   async (req, res) => {
     try {
       const broker = req.broker!;
-      const webhookId = parseInt(req.params.webhookId);
+      const webhookId = parseInt(req.params.webhookId as string);
       
       const stats = await webhookService.getDeliveryStats(broker.id, webhookId);
       
@@ -1487,7 +1487,7 @@ app.delete('/api/v1/broker/webhooks/:webhookId',
   async (req, res) => {
     try {
       const broker = req.broker!;
-      const webhookId = parseInt(req.params.webhookId);
+      const webhookId = parseInt(req.params.webhookId as string);
       
       const deleted = await webhookService.deleteWebhook(webhookId, broker.id);
       

@@ -390,6 +390,7 @@ class BlockchainClient {
             creator: null,
             license: null,
             timestamp: null,
+            metadata: null,
           };
         }
         throw new Error(`REST API returned ${response.status}: ${response.statusText}`);
@@ -403,6 +404,7 @@ class BlockchainClient {
         creator: data.creator || null,
         license: data.license || null,
         timestamp: data.timestamp || null,
+        metadata: data.metadata || null,
       };
     } catch (error) {
       // If content not found, return unverified
@@ -412,6 +414,7 @@ class BlockchainClient {
           creator: null,
           license: null,
           timestamp: null,
+          metadata: null,
         };
       }
 
