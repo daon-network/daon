@@ -33,17 +33,17 @@ test.describe.skip('Error Boundaries - Root Level', () => {
     // We need to simulate a React component error
     // This is tricky to test without a dedicated error-throwing component
     // For now, we'll document that manual testing is needed
-    test.skip('Requires manual testing or dedicated error component');
+    test.skip(true, 'Requires manual testing or dedicated error component');
   });
 
   test('should have "Return to Home" button on error', async ({ page }) => {
     // Skip - needs component error simulation
-    test.skip('Requires manual testing or dedicated error component');
+    test.skip(true, 'Requires manual testing or dedicated error component');
   });
 
   test('should have "Reload Page" button on error', async ({ page }) => {
     // Skip - needs component error simulation
-    test.skip('Requires manual testing or dedicated error component');
+    test.skip(true, 'Requires manual testing or dedicated error component');
   });
 });
 
@@ -141,7 +141,7 @@ test.describe.skip('Error Boundaries - Form Validation', () => {
 
   test('should show validation error for invalid email in settings', async ({ page }) => {
     // This requires authentication first - skip for now
-    test.skip('Requires authentication setup');
+    test.skip(true, 'Requires authentication setup');
   });
 });
 

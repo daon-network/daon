@@ -370,7 +370,7 @@ test.describe.skip('Bulk Registration - Processing', () => {
     await page.click('button:has-text("Start Registration")');
 
     // Wait for completion
-    await expect(page.locator('text=/\\d+ successful/'), { timeout: 15000 }).toBeVisible();
+    await expect(page.locator('text=/\\d+ successful/')).toBeVisible({ timeout: 15000 });
 
     // Should show download button
     await expect(page.locator('button:has-text("Download Results")')).toBeVisible();
