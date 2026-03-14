@@ -208,7 +208,7 @@ export const db = {
   // Content operations
   content: {
     async create(data: {
-      user_id: number;
+      user_id?: number | null;
       content_hash: string;
       normalized_hash?: string;
       perceptual_hash?: string;

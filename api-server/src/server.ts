@@ -17,7 +17,7 @@ import winston from 'winston';
 import { body, param, validationResult } from 'express-validator';
 import client from 'prom-client';
 import blockchainClient from './blockchain.js';
-import { DatabaseClient } from './database/client.js';
+import { DatabaseClient, db } from './database/client.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
 import healthRoutes from './routes/health.js';
@@ -335,19 +335,43 @@ app.post('/api/v1/protect', [
     
     let blockchainTx = null;
     let existing = false;
-    
+
+    // Check if already exists in DB
+    try {
+      const existingInDb = await db.content.findByHash(contentHash);
+      if (existingInDb) {
+        logger.info(`Content already protected in DB: ${contentHash}`);
+        contentProtectionsTotal.labels(license, 'existing').inc();
+        return res.json({
+          success: true,
+          contentHash,
+          verificationUrl,
+          timestamp: existingInDb.created_at,
+          license: existingInDb.license,
+          message: 'Content already protected',
+          existing: true,
+          blockchain: {
+            enabled: blockchainEnabled,
+            tx: existingInDb.blockchain_tx
+          }
+        });
+      }
+    } catch (dbCheckError) {
+      logger.warn('DB existence check failed, continuing:', dbCheckError.message);
+    }
+
     // If blockchain enabled, use it as source of truth
     if (blockchainEnabled && blockchainClient.connected) {
       try {
         // Check if already exists on blockchain
         const existingOnChain = await blockchainClient.contentExists(contentHash);
-        
+
         if (existingOnChain) {
           logger.info(`Content already protected on blockchain: ${contentHash}`);
           const verification = await blockchainClient.verifyContent(contentHash);
-          
+
           contentProtectionsTotal.labels(license, 'existing').inc();
-          
+
           return res.json({
             success: true,
             contentHash,
@@ -362,24 +386,24 @@ app.post('/api/v1/protect', [
             }
           });
         }
-        
+
         // Register on blockchain
         const result = await blockchainClient.registerContent(
           contentHash,
           metadata,
           license
         );
-        
+
         blockchainTx = result.txHash;
         logger.info(`Content registered on blockchain: ${contentHash} (tx: ${blockchainTx})`);
-        
+
       } catch (blockchainError) {
         logger.error('Blockchain registration failed:', blockchainError);
-        // Fall back to in-memory storage if blockchain fails
-        logger.warn('Falling back to in-memory storage');
+        // Fall back to DB + in-memory storage if blockchain fails
+        logger.warn('Falling back to DB/in-memory storage');
       }
     }
-    
+
     // Also store in memory for quick access (cache)
     const protectionRecord = {
       contentHash,
@@ -396,8 +420,26 @@ app.post('/api/v1/protect', [
       ip: req.ip,
       userAgent: req.get('User-Agent')
     };
-    
+
     protectedContent.set(contentHash, protectionRecord);
+
+    // Persist to database so all instances and restarts can verify
+    try {
+      await db.content.create({
+        content_hash: contentHash,
+        title: metadata.title || 'Untitled Work',
+        description: metadata.description,
+        content_type: metadata.type || 'text',
+        license,
+        blockchain_tx: blockchainTx,
+        verification_url: verificationUrl,
+      });
+    } catch (dbWriteError) {
+      // Unique violation = already exists (race condition), safe to ignore
+      if ((dbWriteError as any).code !== '23505') {
+        logger.warn('Failed to persist content to DB:', (dbWriteError as any).message);
+      }
+    }
     
     // Update metrics
     contentProtectionsTotal.labels(license, 'success').inc();
@@ -545,14 +587,38 @@ app.get('/api/v1/verify/:hash', [
       }
     }
     
-    // Fall back to in-memory if not found on blockchain
+    // Fall back to in-memory cache
     if (!record) {
       record = protectedContent.get(hash);
       if (record) {
         source = 'memory-cache';
       }
     }
-    
+
+    // Fall back to database (shared across all instances)
+    if (!record) {
+      try {
+        const dbRecord = await db.content.findByHash(hash);
+        if (dbRecord) {
+          record = {
+            contentHash: hash,
+            timestamp: dbRecord.created_at,
+            license: dbRecord.license,
+            metadata: {
+              title: dbRecord.title,
+              type: dbRecord.content_type,
+              description: dbRecord.description,
+            },
+            verificationUrl: dbRecord.verification_url || generateVerificationUrl(hash),
+            blockchainTx: dbRecord.blockchain_tx,
+          };
+          source = 'database';
+        }
+      } catch (dbError) {
+        logger.warn('DB verification lookup failed:', (dbError as any).message);
+      }
+    }
+
     if (!record) {
       contentVerificationsTotal.labels('not_found').inc();
       return res.status(404).json({
@@ -634,6 +700,30 @@ app.post('/api/v1/verify-content', [
       record = protectedContent.get(contentHash);
       if (record) {
         source = 'memory-cache';
+      }
+    }
+
+    // Fall back to database
+    if (!record) {
+      try {
+        const dbRecord = await db.content.findByHash(contentHash);
+        if (dbRecord) {
+          record = {
+            contentHash,
+            timestamp: dbRecord.created_at,
+            license: dbRecord.license,
+            metadata: {
+              title: dbRecord.title,
+              type: dbRecord.content_type,
+              description: dbRecord.description,
+            },
+            verificationUrl: dbRecord.verification_url || generateVerificationUrl(contentHash),
+            blockchainTx: dbRecord.blockchain_tx,
+          };
+          source = 'database';
+        }
+      } catch (dbError) {
+        logger.warn('DB verify-content lookup failed:', (dbError as any).message);
       }
     }
 
