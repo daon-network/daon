@@ -74,21 +74,19 @@ export default function VerifyPage() {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
         const apiUrl = baseUrl.includes('/api/v1') ? baseUrl : `${baseUrl}/api/v1`;
         const response = await fetch(`${apiUrl}/verify/${hash}`);
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Verification failed');
-        }
-
         const data = await response.json();
-        
-        // Handle error responses from API
-        if (!data.success && data.error) {
-          setError(data.error);
+
+        // 404 = not found, show the "Content Not Found" state (not an error)
+        if (response.status === 404 || (data && !data.isValid && !data.success)) {
+          setResult({ success: false, isValid: false });
           setLoading(false);
           return;
         }
-        
+
+        if (!response.ok) {
+          throw new Error(data.message || data.error || 'Verification failed');
+        }
+
         setResult(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to verify content');
