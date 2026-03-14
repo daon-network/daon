@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 import { setupMockedAuth, generateMockTOTP } from './helpers/mock-auth';
 import * as speakeasy from 'speakeasy';
 
+const MAILHOG_API = process.env.MAILHOG_API || 'http://localhost:8025/api/v2';
+
 /**
  * Device Management E2E Tests
  *
@@ -147,7 +149,7 @@ test.describe.skip('Device Management - Rename Device', () => {
     await page.fill('input[placeholder="Device name"]', 'New Name');
 
     // Cancel
-    await page.click('button:has-text("Cancel")').last();
+    await page.locator('button:has-text("Cancel")').last().click();
 
     // Should still show original name
     await expect(page.locator(`text=${originalName}`)).toBeVisible();
@@ -263,6 +265,7 @@ test.describe.skip('Device Management - Multiple Devices', () => {
     const latestEmail = mailData.items[0];
     const body = Buffer.from(latestEmail.MIME.Parts[0].Body, 'base64').toString('utf-8');
     const urlMatch = body.match(/http:\/\/localhost:4000\/auth\/verify\?token=([a-f0-9]+)/);
+    if (!urlMatch) throw new Error('Magic link URL not found in email');
 
     await page2.goto(urlMatch[0]);
     await page2.waitForURL(/\/auth\/2fa/);
