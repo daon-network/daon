@@ -304,6 +304,9 @@ class BlockchainClient {
       ? contentHash 
       : `sha256:${contentHash}`;
 
+    // Normalize license to underscore format expected by the chain module
+    const chainLicense = (license || 'liberation_v1').replace(/-/g, '_');
+
     try {
       // Create the message using generated types
       const msg = {
@@ -311,7 +314,7 @@ class BlockchainClient {
         value: {
           creator: this.address,
           contentHash: formattedHash,
-          license: license || 'liberation_v1',
+          license: chainLicense,
           fingerprint: metadata.fingerprint || '',
           platform: metadata.platform || 'api',
         },
