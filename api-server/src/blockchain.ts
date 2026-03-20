@@ -322,11 +322,12 @@ class BlockchainClient {
 
       console.log('Submitting transaction using client signAndBroadcast...');
       
-      // Use the client's signAndBroadcast which uses the registry properly
+      // Use fixed gas to avoid simulation — the chain's simulate endpoint has a
+      // compatibility issue with custom modules; gas price is 0stake so no fees apply.
       const result = await this.client.signAndBroadcast(
         this.address,
         [msg],
-        'auto',
+        { amount: [], gas: '300000' },
         `Register content: ${metadata.title || 'Untitled'}`
       );
 
