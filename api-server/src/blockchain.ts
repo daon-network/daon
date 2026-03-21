@@ -304,6 +304,9 @@ class BlockchainClient {
       ? contentHash 
       : `sha256:${contentHash}`;
 
+    // Normalize license to underscore format expected by the chain module
+    const chainLicense = (license || 'liberation_v1').replace(/-/g, '_');
+
     try {
       // Create the message using generated types
       const msg = {
@@ -311,7 +314,7 @@ class BlockchainClient {
         value: {
           creator: this.address,
           contentHash: formattedHash,
-          license: license || 'liberation_v1',
+          license: chainLicense,
           fingerprint: metadata.fingerprint || '',
           platform: metadata.platform || 'api',
         },
@@ -319,11 +322,12 @@ class BlockchainClient {
 
       console.log('Submitting transaction using client signAndBroadcast...');
       
-      // Use the client's signAndBroadcast which uses the registry properly
+      // Use fixed gas to avoid simulation — the chain's simulate endpoint has a
+      // compatibility issue with custom modules; gas price is 0stake so no fees apply.
       const result = await this.client.signAndBroadcast(
         this.address,
         [msg],
-        'auto',
+        { amount: [], gas: '300000' },
         `Register content: ${metadata.title || 'Untitled'}`
       );
 
