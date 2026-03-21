@@ -128,7 +128,7 @@ if (process.env.NODE_ENV !== 'test') {
   
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: isLoadTesting ? 10000 : 100, // Higher limit for load testing
+    max: isLoadTesting ? 10_000_000 : 100, // Effectively unlimited for load testing
     message: {
       error: 'Too many requests from this IP, please try again later.',
       retryAfter: '15 minutes'
@@ -139,7 +139,7 @@ if (process.env.NODE_ENV !== 'test') {
 
   const protectLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: isLoadTesting ? 1000 : 10, // Higher limit for load testing
+    max: isLoadTesting ? 1_000_000 : 10, // Effectively unlimited for load testing
     message: {
       error: 'Content protection rate limit exceeded. Please wait before protecting more content.',
       retryAfter: '1 minute'
