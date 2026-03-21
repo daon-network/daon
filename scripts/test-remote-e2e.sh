@@ -72,7 +72,7 @@ fi
 
 # Test 4: Wallet balance sufficient via SSH docker exec
 echo -e "${YELLOW}[4/8]${NC} Verifying wallet balance via SSH..."
-BALANCE=$(ssh "${DAON_SERVER}" "docker exec daon-blockchain daond query bank balances ${WALLET} --home /daon/.daon 2>/dev/null | grep 'amount:' | awk '{print \$2}' | tr -d '\"'") || true
+BALANCE=$(ssh "${DAON_SERVER}" "docker exec daon-blockchain daond query bank balances ${WALLET} --home /daon/.daon 2>/dev/null | grep 'amount:' | awk '{print \$NF}' | tr -d '\"'") || true
 if [ -n "$BALANCE" ] && [ "$BALANCE" -ge "1000000000" ] 2>/dev/null; then
     pass "Wallet balance sufficient (${BALANCE} stake)"
 else
