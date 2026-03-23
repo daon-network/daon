@@ -11,6 +11,11 @@ import { test, expect, request as playwrightRequest } from '@playwright/test';
  *   API_URL   - API URL for seeding test content (default: https://api.daon.network)
  */
 
+// These tests require a live frontend+API. Skip them in local/CI runs where
+// BASE_URL is not explicitly set — use `npm run test:e2e:remote` instead.
+const isRemote = !!process.env.BASE_URL;
+test.skip(!isRemote, 'verification-live tests only run with BASE_URL set (use npm run test:e2e:remote)');
+
 const API_URL = process.env.API_URL || 'https://api.daon.network';
 
 let testContentHash: string;
