@@ -87,7 +87,7 @@ export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           <div>
             <label
               htmlFor="email"

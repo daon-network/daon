@@ -14,7 +14,8 @@
     "test:e2e:chrome": "playwright test --project=chromium",
     "test:e2e:safari": "playwright test --project=webkit",
     "test:e2e:firefox": "playwright test --project=firefox",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:remote": "BASE_URL=https://daon.network playwright test --project=chromium e2e/auth-flow.spec.ts e2e/verification-live.spec.ts"
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^5.0.1",
