@@ -183,10 +183,11 @@ jobs:
       - name: Deploy to server
         run: |
           # Copy source code and docker-compose to server
-          rsync -rlvz --delete --omit-dir-times --no-perms --no-owner --no-group \
+          rsync -rlvz --delete --ignore-errors --omit-dir-times --no-perms --no-owner --no-group \
             -e "ssh -i ~/.ssh/deploy_key" \
             --exclude '.git' --exclude 'node_modules' --exclude 'logs' \
-            --exclude 'systemd-private-*' \
+            --exclude 'systemd-private-*' --exclude '.next' \
+            --exclude '.env' --exclude '.DS_Store' --exclude '.claude' \
             . ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/daon-source/
           
           # Copy docker-compose to deployment directory
