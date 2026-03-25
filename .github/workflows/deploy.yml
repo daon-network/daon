@@ -182,12 +182,19 @@ jobs:
 
       - name: Deploy to server
         run: |
+          # Remove root-owned directories that block rsync --delete
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "sudo rm -rf /opt/daon-source/daon-frontend/test-results \
+                         '/opt/daon-source/daon-frontend/app/auth 2' \
+                         /opt/daon-source/daon-frontend/.next 2>/dev/null || true"
+
           # Copy source code and docker-compose to server
           rsync -rlvz --delete --ignore-errors --omit-dir-times --no-perms --no-owner --no-group \
             -e "ssh -i ~/.ssh/deploy_key" \
             --exclude '.git' --exclude 'node_modules' --exclude 'logs' \
             --exclude 'systemd-private-*' --exclude '.next' \
             --exclude '.env' --exclude '.DS_Store' --exclude '.claude' \
+            --exclude 'test-results' \
             . ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/daon-source/
           
           # Copy docker-compose to deployment directory
