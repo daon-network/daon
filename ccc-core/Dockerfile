@@ -23,7 +23,7 @@ COPY . .
 RUN make build
 
 # Production image
-FROM alpine:latest
+FROM alpine:3.23.3
 
 # Install runtime dependencies
 RUN apk add --no-cache ca-certificates curl jq
