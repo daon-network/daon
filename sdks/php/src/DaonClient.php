@@ -27,7 +27,7 @@ class DaonClient
     private string $defaultLicense;
     private HttpClient $httpClient;
 
-    public function __construct(array $config = [])
+    public function __construct(array $config = [], HttpClient $httpClient = null)
     {
         $this->apiUrl = $config['api_url'] ?? self::DEFAULT_API_URL;
         $this->chainId = $config['chain_id'] ?? self::DEFAULT_CHAIN_ID;
@@ -35,7 +35,7 @@ class DaonClient
         $this->retries = $config['retries'] ?? self::DEFAULT_RETRIES;
         $this->defaultLicense = $config['default_license'] ?? self::DEFAULT_LICENSE;
 
-        $this->httpClient = new HttpClient([
+        $this->httpClient = $httpClient ?? new HttpClient([
             'base_uri' => $this->apiUrl,
             'timeout' => $this->timeout,
             'headers' => [

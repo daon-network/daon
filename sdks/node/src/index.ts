@@ -83,11 +83,11 @@ export class DAONClient {
 
   constructor(config: DAONConfig = {}) {
     this.config = {
-      apiUrl: config.apiUrl || 'https://api.daon.network',
-      chainId: config.chainId || 'daon-mainnet-1',
-      timeout: config.timeout || 30000,
-      retries: config.retries || 3,
-      defaultLicense: config.defaultLicense || 'liberation_v1'
+      apiUrl: config.apiUrl ?? 'https://api.daon.network',
+      chainId: config.chainId ?? 'daon-mainnet-1',
+      timeout: config.timeout ?? 30000,
+      retries: config.retries ?? 3,
+      defaultLicense: config.defaultLicense ?? 'liberation_v1'
     };
   }
 
