@@ -1,190 +1,270 @@
-// DAON Go SDK - Native integration for Go applications
-// Perfect for your AO3 replacement built with Go backend
-
+// Package daon provides a Go client for the DAON content protection API.
+//
+// DAON registers a SHA-256 fingerprint of your content on the blockchain,
+// providing tamper-proof proof of existence and ownership.
+//
+// Basic usage:
+//
+//	client := daon.NewClient("https://api.daon.network")
+//	result, err := client.ProtectContent(ctx, daon.ProtectionRequest{
+//	    Content: "my story text",
+//	    License: "liberation_v1",
+//	})
 package daon
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"time"
-
-	"github.com/cosmos/cosmos-sdk/client"
-	contentregistry "github.com/daon-network/daon-core/x/contentregistry/types"
-	"google.golang.org/grpc"
 )
 
-// Client provides high-level interface to DAON blockchain
+const (
+	defaultAPIURL = "https://api.daon.network"
+	defaultTimeout = 30 * time.Second
+	sdkUserAgent   = "DAON-Go-SDK/1.0.0"
+)
+
+// Client is the DAON API client.
 type Client struct {
-	grpcConn  *grpc.ClientConn
-	clientCtx client.Context
-	apiURL    string
-	chainID   string
+	apiURL     string
+	httpClient *http.Client
 }
 
-// ContentRegistration represents a work being registered with DAON
-type ContentRegistration struct {
-	ContentHash string          `json:"content_hash"`
-	Creator     string          `json:"creator"` // Wallet address
-	License     string          `json:"license"`
-	Platform    string          `json:"platform"`
-	Metadata    ContentMetadata `json:"metadata"`
-	Fingerprint string          `json:"fingerprint,omitempty"`
+// NewClient creates a new DAON client targeting the given API URL.
+// Pass an empty string to use the default (https://api.daon.network).
+func NewClient(apiURL string) *Client {
+	if apiURL == "" {
+		apiURL = defaultAPIURL
+	}
+	return &Client{
+		apiURL: apiURL,
+		httpClient: &http.Client{
+			Timeout: defaultTimeout,
+		},
+	}
 }
 
-// ContentMetadata holds platform-specific work information
-type ContentMetadata struct {
-	Title       string    `json:"title"`
-	Author      string    `json:"author"`
-	Fandoms     []string  `json:"fandoms,omitempty"`
-	Characters  []string  `json:"characters,omitempty"`
-	Tags        []string  `json:"tags,omitempty"`
-	WordCount   int       `json:"word_count"`
-	PublishDate time.Time `json:"publish_date"`
-	Rating      string    `json:"rating,omitempty"`
-	Language    string    `json:"language,omitempty"`
+// ProtectionRequest holds the data needed to register content.
+type ProtectionRequest struct {
+	Content  string                 `json:"content"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	License  string                 `json:"license,omitempty"`
 }
 
-// VerificationResult contains ownership verification data
+// ProtectionResult is returned by ProtectContent.
+type ProtectionResult struct {
+	Success         bool   `json:"success"`
+	ContentHash     string `json:"contentHash"`  // sha256:<hex>
+	VerificationURL string `json:"verificationUrl"`
+	Timestamp       string `json:"timestamp"`
+	License         string `json:"license"`
+	BlockchainTx    string `json:"blockchainTx,omitempty"`
+}
+
+// VerificationResult is returned by VerifyContent and VerifyHash.
 type VerificationResult struct {
-	Verified        bool      `json:"verified"`
-	Creator         string    `json:"creator"`
+	Verified        bool      `json:"isValid"`
+	ContentHash     string    `json:"contentHash"` // sha256:<hex>
 	License         string    `json:"license"`
 	Timestamp       time.Time `json:"timestamp"`
-	Platform        string    `json:"platform"`
-	VerificationURL string    `json:"verification_url"`
-	BlockchainProof string    `json:"blockchain_proof"`
+	VerificationURL string    `json:"verificationUrl"`
 }
 
-// NewClient creates a new DAON client
-func NewClient(apiURL, chainID string) (*Client, error) {
-	// Connect to DAON blockchain
-	conn, err := grpc.Dial(apiURL, grpc.WithInsecure())
+// ContentMetadata is a convenience struct for building the Metadata map.
+type ContentMetadata struct {
+	Title     string   `json:"title,omitempty"`
+	Author    string   `json:"author,omitempty"`
+	Fandoms   []string `json:"fandoms,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
+	WordCount int      `json:"word_count,omitempty"`
+	Language  string   `json:"language,omitempty"`
+}
+
+// ToMap converts the struct to a map suitable for ProtectionRequest.Metadata.
+func (m ContentMetadata) ToMap() map[string]interface{} {
+	b, _ := json.Marshal(m)
+	var out map[string]interface{}
+	_ = json.Unmarshal(b, &out)
+	return out
+}
+
+// LiberationUseCase describes a proposed use of Liberation-licensed content.
+type LiberationUseCase struct {
+	EntityType   string // "individual", "corporation", "nonprofit"
+	UseType      string // "personal", "commercial", "ai_training"
+	Purpose      string // "profit", "education", "humanitarian"
+	Compensation bool   // whether creators will be compensated
+}
+
+// LiberationCheckResult holds the outcome of a local compliance evaluation.
+type LiberationCheckResult struct {
+	Compliant       bool
+	Reason          string
+	Recommendations []string
+}
+
+// ProtectContent registers content with DAON and returns the protection record.
+func (c *Client) ProtectContent(ctx context.Context, req ProtectionRequest) (*ProtectionResult, error) {
+	if req.Content == "" {
+		return nil, fmt.Errorf("content cannot be empty")
+	}
+	if req.License == "" {
+		req.License = "liberation_v1"
+	}
+
+	body, err := json.Marshal(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to DAON: %w", err)
+		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	clientCtx := client.Context{}.
-		WithChainID(chainID).
-		WithGRPCClient(conn)
-
-	return &Client{
-		grpcConn:  conn,
-		clientCtx: clientCtx,
-		apiURL:    apiURL,
-		chainID:   chainID,
-	}, nil
-}
-
-// RegisterContent registers a new work with DAON blockchain
-func (c *Client) RegisterContent(ctx context.Context, reg ContentRegistration) (string, error) {
-	// Build transaction message (validates structure)
-	msg := &contentregistry.MsgRegisterContent{
-		Creator:     reg.Creator,
-		ContentHash: reg.ContentHash,
-		License:     reg.License,
-		Platform:    reg.Platform,
-		Fingerprint: reg.Fingerprint,
-	}
-
-	// For MVP: Return a simulated transaction hash
-	// Full implementation requires wallet integration and key management
-	if c.clientCtx.TxConfig == nil {
-		// Simulate successful registration for testing
-		_ = msg // Use the message to validate it compiles
-		return "simulated-tx-" + reg.ContentHash, nil
-	}
-
-	// TODO: Full implementation with proper Cosmos SDK transaction building
-	// This requires:
-	// 1. Wallet/keyring integration for signing
-	// 2. Fee configuration
-	// 3. Gas estimation
-	// 4. Transaction broadcasting
-	_ = msg // Use the message to validate it compiles
-	return "pending-implementation", fmt.Errorf("full transaction support requires wallet integration")
-}
-
-// VerifyContent checks if content is registered and returns ownership info
-func (c *Client) VerifyContent(ctx context.Context, contentHash string) (*VerificationResult, error) {
-	// Query DAON blockchain for content record
-	queryClient := contentregistry.NewQueryClient(c.grpcConn)
-
-	req := &contentregistry.QueryVerifyContentRequest{
-		ContentHash: contentHash,
-	}
-
-	res, err := queryClient.VerifyContent(ctx, req)
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.apiURL+"/api/v1/protect", bytes.NewReader(body))
 	if err != nil {
-		return nil, fmt.Errorf("verification query failed: %w", err)
+		return nil, fmt.Errorf("create request: %w", err)
 	}
+	c.setHeaders(httpReq)
 
-	if !res.Verified {
-		return &VerificationResult{Verified: false}, nil
-	}
-
-	return &VerificationResult{
-		Verified:        true,
-		Creator:         res.Creator,
-		License:         res.License,
-		Timestamp:       time.Unix(res.Timestamp, 0),
-		VerificationURL: fmt.Sprintf("https://verify.daon.network/%s", contentHash),
-		BlockchainProof: contentHash, // Simplified
-	}, nil
-}
-
-// GenerateContentHash creates consistent hash for content
-func (c *Client) GenerateContentHash(content string) string {
-	// Normalize content for consistent hashing
-	normalized := normalizeContent(content)
-
-	hash := sha256.Sum256([]byte(normalized))
-	return "sha256:" + hex.EncodeToString(hash[:])
-}
-
-// CheckLiberationLicense validates use against Liberation License terms
-func (c *Client) CheckLiberationLicense(ctx context.Context, contentHash string, useCase LiberationUseCase) (*LiberationCheckResult, error) {
-	// Get content record
-	verification, err := c.VerifyContent(ctx, contentHash)
+	resp, err := c.httpClient.Do(httpReq)
 	if err != nil {
+		return nil, fmt.Errorf("POST /api/v1/protect: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if err := checkStatus(resp); err != nil {
 		return nil, err
 	}
 
-	if verification.License != "liberation_v1" {
-		return &LiberationCheckResult{
-			Compliant: true,
-			Reason:    "Not a Liberation License work",
-		}, nil
+	var raw struct {
+		Success         bool   `json:"success"`
+		ContentHash     string `json:"contentHash"`
+		VerificationURL string `json:"verificationUrl"`
+		Timestamp       string `json:"timestamp"`
+		License         string `json:"license"`
+		BlockchainTx    string `json:"blockchainTx"`
+		Blockchain      struct {
+			Tx string `json:"tx"`
+		} `json:"blockchain"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return nil, fmt.Errorf("decode response: %w", err)
 	}
 
-	// Check Liberation License compliance
-	compliant, reason := c.validateLiberationUse(useCase)
+	blockchainTx := raw.BlockchainTx
+	if blockchainTx == "" {
+		blockchainTx = raw.Blockchain.Tx
+	}
 
-	return &LiberationCheckResult{
-		Compliant: compliant,
-		Reason:    reason,
-		UseCase:   useCase,
+	return &ProtectionResult{
+		Success:         raw.Success,
+		ContentHash:     "sha256:" + raw.ContentHash,
+		VerificationURL: raw.VerificationURL,
+		Timestamp:       raw.Timestamp,
+		License:         raw.License,
+		BlockchainTx:    blockchainTx,
 	}, nil
 }
 
-// LiberationUseCase represents a proposed use of Liberation Licensed content
-type LiberationUseCase struct {
-	EntityType   string            `json:"entity_type"`  // individual, corporation, nonprofit
-	UseType      string            `json:"use_type"`     // personal, commercial, ai_training
-	Purpose      string            `json:"purpose"`      // profit, education, humanitarian
-	Compensation bool              `json:"compensation"` // will creators be compensated
-	Metadata     map[string]string `json:"metadata"`     // additional context
+// VerifyContent hashes the provided content and looks it up on the chain.
+func (c *Client) VerifyContent(ctx context.Context, content string) (*VerificationResult, error) {
+	hash := GenerateContentHash(content)
+	return c.VerifyHash(ctx, hash)
 }
 
-// LiberationCheckResult contains compliance check results
-type LiberationCheckResult struct {
-	Compliant bool              `json:"compliant"`
-	Reason    string            `json:"reason"`
-	UseCase   LiberationUseCase `json:"use_case"`
+// VerifyHash looks up a hash on the chain. Accepts both "sha256:<hex>" and
+// bare 64-character hex strings.
+func (c *Client) VerifyHash(ctx context.Context, contentHash string) (*VerificationResult, error) {
+	// Strip sha256: prefix — API expects bare 64-char hex
+	apiHash := contentHash
+	if len(apiHash) > 7 && apiHash[:7] == "sha256:" {
+		apiHash = apiHash[7:]
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, c.apiURL+"/api/v1/verify/"+apiHash, nil)
+	if err != nil {
+		return nil, fmt.Errorf("create request: %w", err)
+	}
+	c.setHeaders(httpReq)
+
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("GET /api/v1/verify/%s: %w", apiHash, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return &VerificationResult{Verified: false, ContentHash: "sha256:" + apiHash}, nil
+	}
+	if err := checkStatus(resp); err != nil {
+		return nil, err
+	}
+
+	var raw struct {
+		IsValid         bool   `json:"isValid"`
+		ContentHash     string `json:"contentHash"`
+		License         string `json:"license"`
+		Timestamp       string `json:"timestamp"`
+		VerificationURL string `json:"verificationUrl"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return nil, fmt.Errorf("decode response: %w", err)
+	}
+
+	var ts time.Time
+	if raw.Timestamp != "" {
+		ts, _ = time.Parse(time.RFC3339, raw.Timestamp)
+	}
+
+	return &VerificationResult{
+		Verified:        raw.IsValid,
+		ContentHash:     "sha256:" + raw.ContentHash,
+		License:         raw.License,
+		Timestamp:       ts,
+		VerificationURL: raw.VerificationURL,
+	}, nil
 }
 
-// Integration helpers for your AO3 replacement
+// CheckLiberationCompliance evaluates a proposed use against Liberation License
+// rules locally. No network call is made.
+func CheckLiberationCompliance(useCase LiberationUseCase) LiberationCheckResult {
+	if useCase.EntityType == "corporation" && useCase.UseType == "ai_training" && !useCase.Compensation {
+		return LiberationCheckResult{
+			Compliant: false,
+			Reason:    "Commercial AI training without creator compensation violates the Liberation License.",
+			Recommendations: []string{
+				"Obtain explicit permission from the creator",
+				"Compensate creators for use in AI training datasets",
+			},
+		}
+	}
+	if useCase.EntityType == "corporation" && useCase.Purpose == "profit" && !useCase.Compensation {
+		return LiberationCheckResult{
+			Compliant: false,
+			Reason:    "Corporate profit extraction without creator compensation violates the Liberation License.",
+			Recommendations: []string{
+				"Negotiate a licensing agreement with the creator",
+				"Include creator compensation in your budget",
+			},
+		}
+	}
+	return LiberationCheckResult{
+		Compliant: true,
+		Reason:    "Use case is compliant with Liberation License terms.",
+	}
+}
+
+// GenerateContentHash returns the SHA-256 hash of content as "sha256:<hex>".
+// This matches the API's hash function exactly: raw UTF-8 bytes, no normalization.
+func GenerateContentHash(content string) string {
+	sum := sha256.Sum256([]byte(content))
+	return "sha256:" + hex.EncodeToString(sum[:])
+}
+
+// Work is a convenience struct for platform integration.
 type Work struct {
 	ID            string    `json:"id"`
 	Title         string    `json:"title"`
@@ -199,68 +279,46 @@ type Work struct {
 	DAONProtected bool      `json:"daon_protected"`
 }
 
-// ProtectWork registers a work with DAON (convenience method for your platform)
-func (c *Client) ProtectWork(ctx context.Context, work *Work, creatorWallet string, license string) error {
-	// Generate content hash
-	contentHash := c.GenerateContentHash(work.Content)
-
-	// Create registration
-	reg := ContentRegistration{
-		ContentHash: contentHash,
-		Creator:     creatorWallet,
-		License:     license,
-		Platform:    "nuclear-ao3.org", // Your platform identifier
-		Metadata: ContentMetadata{
-			Title:       work.Title,
-			Author:      work.Author,
-			Fandoms:     work.Fandoms,
-			Characters:  work.Characters,
-			Tags:        work.Tags,
-			WordCount:   work.WordCount,
-			PublishDate: work.PublishDate,
-		},
+// ProtectWork registers a work with DAON and updates the work's DAONHash field.
+func (c *Client) ProtectWork(ctx context.Context, work *Work, license string) error {
+	if license == "" {
+		license = "liberation_v1"
 	}
 
-	// Register with DAON
-	txHash, err := c.RegisterContent(ctx, reg)
+	result, err := c.ProtectContent(ctx, ProtectionRequest{
+		Content: work.Content,
+		License: license,
+		Metadata: ContentMetadata{
+			Title:     work.Title,
+			Author:    work.Author,
+			Fandoms:   work.Fandoms,
+			Tags:      work.Tags,
+			WordCount: work.WordCount,
+		}.ToMap(),
+	})
 	if err != nil {
 		return fmt.Errorf("DAON registration failed: %w", err)
 	}
 
-	// Update work with DAON info
-	work.DAONHash = contentHash
+	work.DAONHash = result.ContentHash
 	work.DAONProtected = true
 
-	// Log successful registration
-	fmt.Printf("Work '%s' protected by DAON. TX: %s\n", work.Title, txHash)
-
+	fmt.Printf("Work %q protected by DAON. Hash: %s\n", work.Title, result.ContentHash)
 	return nil
 }
 
-// Helper functions
-func normalizeContent(content string) string {
-	// Implement content normalization for consistent hashing
-	// Remove extra whitespace, normalize quotes, etc.
-	return content // Simplified for now
+// --- internal helpers ---
+
+func (c *Client) setHeaders(req *http.Request) {
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("User-Agent", sdkUserAgent)
 }
 
-func (c *Client) validateLiberationUse(useCase LiberationUseCase) (bool, string) {
-	// Implement Liberation License validation logic
-	if useCase.EntityType == "corporation" && useCase.Purpose == "profit" && !useCase.Compensation {
-		return false, "Corporate profit extraction without creator compensation violates Liberation License"
+func checkStatus(resp *http.Response) error {
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		return nil
 	}
-
-	if useCase.UseType == "ai_training" && useCase.EntityType == "corporation" && !useCase.Compensation {
-		return false, "Commercial AI training without compensation violates Liberation License"
-	}
-
-	return true, "Use case compliant with Liberation License terms"
-}
-
-// Close releases resources
-func (c *Client) Close() error {
-	if c.grpcConn != nil {
-		return c.grpcConn.Close()
-	}
-	return nil
+	body, _ := io.ReadAll(resp.Body)
+	return fmt.Errorf("DAON API error %d: %s", resp.StatusCode, string(body))
 }

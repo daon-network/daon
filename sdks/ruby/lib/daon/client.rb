@@ -11,33 +11,33 @@ module Daon
     # Protect a work with DAON blockchain
     def protect(work, license: nil, creator_address: nil)
       license ||= Daon.configuration.default_license
-      
+
       validate_work!(work)
-      
-      content_hash = work.content_hash
-      
+
       payload = {
-        content_hash: content_hash,
-        creator: creator_address || generate_creator_id,
-        license: license,
-        platform: extract_platform,
-        metadata: work.metadata
+        content: work.content,
+        metadata: work.metadata,
+        license: license
       }
 
       response = post_with_retry('/api/v1/protect', payload)
-      
+
+      api_hash = response['contentHash']
+      content_hash = api_hash ? "sha256:#{api_hash}" : work.content_hash
+      blockchain_tx = response['blockchainTx'] || response.dig('blockchain', 'tx')
+
       ProtectionResult.new(
         success: response['success'],
-        tx_hash: response['tx_hash'],
+        tx_hash: blockchain_tx,
         content_hash: content_hash,
-        verification_url: response['verification_url'],
+        verification_url: response['verificationUrl'],
         error: response['error']
       )
     rescue => e
       ProtectionResult.new(
         success: false,
         error: "Protection failed: #{e.message}",
-        content_hash: content_hash
+        content_hash: work.content_hash
       )
     end
 
@@ -48,16 +48,16 @@ module Daon
     end
 
     def verify_by_hash(content_hash)
-      response = get_with_retry("/api/v1/verify/#{content_hash}")
-      
+      # API expects 64-char hex only — strip sha256: prefix
+      api_hash = content_hash.start_with?('sha256:') ? content_hash[7..] : content_hash
+      response = get_with_retry("/api/v1/verify/#{api_hash}")
+
       VerificationResult.new(
-        verified: response['verified'],
+        verified: response['isValid'],
         content_hash: content_hash,
-        creator: response['creator'],
         license: response['license'],
-        timestamp: response['timestamp'] ? Time.at(response['timestamp']) : nil,
-        platform: response['platform'],
-        verification_url: response['verification_url']
+        timestamp: response['timestamp'] ? Time.parse(response['timestamp']) : nil,
+        verification_url: response['verificationUrl']
       )
     rescue => e
       VerificationResult.new(
@@ -67,28 +67,40 @@ module Daon
       )
     end
 
-    # Check Liberation License compliance
+    # Check Liberation License compliance (evaluated locally — no API endpoint)
     def check_liberation_compliance(content_hash, use_case)
-      payload = {
-        content_hash: content_hash,
-        entity_type: use_case[:entity_type], # 'individual', 'corporation', 'nonprofit'
-        use_type: use_case[:use_type],       # 'personal', 'commercial', 'ai_training'
-        purpose: use_case[:purpose],         # 'profit', 'education', 'humanitarian'
-        compensation: use_case[:compensation] # true/false
-      }
+      entity_type  = use_case[:entity_type]
+      use_type     = use_case[:use_type]
+      purpose      = use_case[:purpose]
+      compensation = use_case[:compensation]
 
-      response = post_with_retry('/api/v1/liberation/check', payload)
-      
+      if entity_type == 'corporation' && use_type == 'ai_training' && !compensation
+        return {
+          compliant: false,
+          reason: 'Commercial AI training without creator compensation violates the Liberation License.',
+          use_case: use_case,
+          recommendations: [
+            'Obtain explicit permission from the creator',
+            'Compensate creators for use in AI training datasets'
+          ]
+        }
+      end
+
+      if entity_type == 'corporation' && purpose == 'profit' && !compensation
+        return {
+          compliant: false,
+          reason: 'Corporate profit extraction without creator compensation violates the Liberation License.',
+          use_case: use_case,
+          recommendations: [
+            'Negotiate a licensing agreement with the creator',
+            'Include creator compensation in your budget'
+          ]
+        }
+      end
+
       {
-        compliant: response['compliant'],
-        reason: response['reason'],
-        use_case: use_case,
-        recommendations: response['recommendations']
-      }
-    rescue => e
-      {
-        compliant: false,
-        reason: "Compliance check failed: #{e.message}",
+        compliant: true,
+        reason: 'Use case is compliant with Liberation License terms.',
         use_case: use_case
       }
     end
@@ -112,30 +124,14 @@ module Daon
 
     def verify_batch(content_hashes)
       results = []
-      
-      content_hashes.each_slice(50) do |batch| # Verify in larger batches
-        payload = { content_hashes: batch }
-        response = post_with_retry('/api/v1/verify/batch', payload)
-        
-        batch_results = response['results'].map do |result|
-          VerificationResult.new(
-            verified: result['verified'],
-            content_hash: result['content_hash'],
-            creator: result['creator'],
-            license: result['license'],
-            timestamp: result['timestamp'] ? Time.at(result['timestamp']) : nil,
-            platform: result['platform']
-          )
-        end
-        
-        results.concat(batch_results)
+
+      # Process in batches of 50 using individual verification
+      content_hashes.each_slice(50) do |batch|
+        batch.each { |hash| results << verify_by_hash(hash) }
         sleep(0.1) if batch.size == 50
       end
-      
+
       results
-    rescue => e
-      # Return individual verification results as fallback
-      content_hashes.map { |hash| verify_by_hash(hash) }
     end
 
     private
