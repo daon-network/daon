@@ -182,11 +182,9 @@ jobs:
 
       - name: Deploy to server
         run: |
-          # Remove root-owned directories that block rsync --delete
+          # Fix ownership of deployment directory so rsync can write all files
           ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "sudo rm -rf /opt/daon-source/daon-frontend/test-results \
-                         '/opt/daon-source/daon-frontend/app/auth 2' \
-                         /opt/daon-source/daon-frontend/.next 2>/dev/null || true"
+            "sudo chown -R \$(whoami):\$(whoami) /opt/daon-source/ 2>/dev/null || true"
 
           # Copy source code and docker-compose to server
           rsync -rlvz --delete --ignore-errors --omit-dir-times --no-perms --no-owner --no-group \
