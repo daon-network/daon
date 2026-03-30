@@ -91,6 +91,7 @@ Documentation for the DAON blockchain platform that protects creator content wit
 - [Blockchain Setup](guides/BLOCKCHAIN_SETUP.md) - Blockchain basics
 
 ### Project Management
+- [Protocol Scope](project/PROTOCOL_SCOPE.md) - What DAON does, doesn't do, and what's coming next
 - [DAON Mission](project/DAON_MISSION.md) - Why we exist
 - [Pre-Launch Roadmap](project/PRE_LAUNCH_ROADMAP.md) - Path to launch
 - [Current Priorities](project/CURRENT_PRIORITIES.md) - What's happening now

@@ -200,14 +200,14 @@ body {
 
 .md-button--primary {
   background: var(--md-primary-color);
-  color: #0a0f1c;
+  color: #0a0f1c !important;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(93, 213, 213, 0.3);
 }
 
 .md-button--primary:hover {
   background: var(--md-primary-light);
-  color: #0a0f1c;
+  color: #0a0f1c !important;
   box-shadow: 0 6px 16px rgba(93, 213, 213, 0.4);
 }
 

@@ -202,6 +202,7 @@ Simple, fast, and effective protection in four steps.
 
 ### For Creators
 
+- [How DAON Works](/how-it-works/) — what the protocol does and doesn't do
 - [Getting Started Guide](/creators/getting-started/)
 - [Bulk Protection Tool](/creators/bulk-protection/)
 - [Understanding Licenses](/creators/licenses/)
