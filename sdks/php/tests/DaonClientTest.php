@@ -14,10 +14,13 @@ use PHPUnit\Framework\TestCase;
 
 class DaonClientTest extends TestCase
 {
-    // Known SHA-256 test vector: SHA-256("test")
-    private const TEST_CONTENT = 'test';
+    // Known SHA-256 test vector: SHA-256("test") — used only for pure hash tests
+    private const HASH_TEST_CONTENT = 'test';
     private const TEST_HASH_HEX = '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08';
     private const TEST_HASH = 'sha256:' . self::TEST_HASH_HEX;
+
+    // Content for HTTP mock tests — must be >= 10 chars to pass SDK validation
+    private const TEST_CONTENT = 'test content for daon sdk integration tests';
 
     private function protectResponse(array $overrides = []): string
     {
@@ -66,7 +69,7 @@ class DaonClientTest extends TestCase
     public function testHashMatchesKnownVector(): void
     {
         $client = new DaonClient();
-        $this->assertSame(self::TEST_HASH, $client->generateContentHash(self::TEST_CONTENT));
+        $this->assertSame(self::TEST_HASH, $client->generateContentHash(self::HASH_TEST_CONTENT));
     }
 
     public function testHashHasCorrectFormat(): void
