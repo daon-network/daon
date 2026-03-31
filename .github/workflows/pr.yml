@@ -6,84 +6,103 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Security Audit
+  # Detect which areas of the repo changed so downstream jobs can self-select
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      api_server: ${{ steps.filter.outputs.api_server }}
+      frontend:   ${{ steps.filter.outputs.frontend }}
+      blockchain: ${{ steps.filter.outputs.blockchain }}
+      sdk_go:     ${{ steps.filter.outputs.sdk_go }}
+      sdk_node:   ${{ steps.filter.outputs.sdk_node }}
+      sdk_python: ${{ steps.filter.outputs.sdk_python }}
+      sdk_ruby:   ${{ steps.filter.outputs.sdk_ruby }}
+      sdk_php:    ${{ steps.filter.outputs.sdk_php }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api_server:
+              - 'api-server/**'
+            frontend:
+              - 'daon-frontend/**'
+            blockchain:
+              - 'daon-core/**'
+            sdk_go:
+              - 'sdks/go/**'
+            sdk_node:
+              - 'sdks/node/**'
+            sdk_python:
+              - 'sdks/python/**'
+            sdk_ruby:
+              - 'sdks/ruby/**'
+            sdk_php:
+              - 'sdks/php/**'
+
+  # ── API Server ────────────────────────────────────────────────────────────
+
   security:
     name: Security Audit
+    needs: changes
+    if: needs.changes.outputs.api_server == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: api-server/package-lock.json
-
-      - name: Install dependencies
-        run: |
-          cd api-server
-          npm ci
-
+      - run: cd api-server && npm ci
       - name: Run security audit
         run: |
           cd api-server
           npm audit --audit-level moderate
           if [ $? -ne 0 ]; then
-            echo "⚠️ Security vulnerabilities found - check details above"
+            echo "Security vulnerabilities found - check details above"
             echo "High/Critical vulnerabilities will block deployment"
           fi
 
-  # Tests
   test:
-    name: Run Tests
+    name: API Tests (Node ${{ matrix.node-version }})
+    needs: changes
+    if: needs.changes.outputs.api_server == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18, 20]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: api-server/package-lock.json
-
-      - name: Install dependencies
-        run: |
-          cd api-server
-          npm ci
-
+      - run: cd api-server && npm ci
       - name: Run unit tests
-        run: |
-          cd api-server
-          npm test
+        run: cd api-server && npm test
         env:
           NODE_ENV: test
           SKIP_SERVER_START: true
+      - run: cd api-server && npm run lint || echo "Lint configuration needed"
 
-      - name: Run lint checks
-        run: |
-          cd api-server
-          npm run lint || echo "⚠️ Lint configuration needed"
-
-  # API Build Test
   build-test:
-    name: Build Test
+    name: API Docker Build
+    needs: [changes, security, test]
+    # Only run when api-server changed AND both gating jobs passed
+    if: |
+      always() &&
+      needs.changes.outputs.api_server == 'true' &&
+      needs.security.result == 'success' &&
+      needs.test.result == 'success'
     runs-on: ubuntu-latest
-    needs: [security, test]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build API Docker image (test)
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build API Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./api-server
@@ -92,126 +111,216 @@ jobs:
           tags: daonnetwork/api:pr-${{ github.event.number }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Test Docker image
+      - name: Smoke test Docker image
+        env:
+          PR_NUMBER: ${{ github.event.number }}
         run: |
-          docker run --rm -d -p 3000:3000 --name api-test daonnetwork/api:pr-${{ github.event.number }}
+          docker run --rm -d -p 3000:3000 --name api-test "daonnetwork/api:pr-${PR_NUMBER}"
           sleep 15
           curl -f http://localhost:3000/health || exit 1
           docker stop api-test
 
-  # Blockchain Build Test  
+  # ── Blockchain ────────────────────────────────────────────────────────────
+
   blockchain-build-test:
-    name: Blockchain Build Test
+    name: Blockchain Build
+    needs: changes
+    if: needs.changes.outputs.blockchain == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: '1.24'
-
       - name: Build blockchain binary
         run: |
           cd daon-core
           go mod download
           make install || go build -o build/daon-cored ./cmd/daon-cored
-
       - name: Test blockchain binary
-        run: |
-          cd daon-core
-          ./build/daon-cored version || echo "Binary created successfully"
+        run: cd daon-core && ./build/daon-cored version || echo "Binary created successfully"
 
-  # Frontend Build and Test
+  # ── Frontend ──────────────────────────────────────────────────────────────
+
   frontend-test:
-    name: Frontend Build & Test
+    name: Frontend Build & E2E
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: daon-frontend/package-lock.json
-
-      - name: Install dependencies
-        run: |
-          cd daon-frontend
-          npm ci
-
-      - name: Build frontend
-        run: |
-          cd daon-frontend
-          npm run build
+      - run: cd daon-frontend && npm ci
+      - run: cd daon-frontend && npm run build
         env:
           NODE_ENV: production
-
-      - name: Install Playwright browsers
-        run: |
-          cd daon-frontend
-          npx playwright install --with-deps chromium
-
+      - run: cd daon-frontend && npx playwright install --with-deps chromium
       - name: Run E2E tests
-        run: |
-          cd daon-frontend
-          npx playwright test --project=chromium
+        run: cd daon-frontend && npx playwright test --project=chromium
         env:
           CI: true
-
-      - name: Upload test results
-        if: always()
+      - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: daon-frontend/playwright-report/
           retention-days: 30
 
-  # PR Summary
+  # ── SDK Tests ─────────────────────────────────────────────────────────────
+
+  test-go:
+    name: Go SDK Tests
+    needs: changes
+    if: needs.changes.outputs.sdk_go == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      - name: Run tests
+        run: cd sdks/go && go test ./... -v
+
+  test-node-sdk:
+    name: Node.js SDK Tests
+    needs: changes
+    if: needs.changes.outputs.sdk_node == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: sdks/node/package-lock.json
+      - run: cd sdks/node && npm ci
+      - name: Run tests
+        run: cd sdks/node && npm test
+
+  test-python:
+    name: Python SDK Tests
+    needs: changes
+    if: needs.changes.outputs.sdk_python == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests requests-mock pytest
+      - name: Run tests
+        run: cd sdks/python && PYTHONPATH=. pytest tests/ -v
+
+  test-ruby:
+    name: Ruby SDK Tests
+    needs: changes
+    if: needs.changes.outputs.sdk_ruby == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: sdks/ruby
+      - name: Run tests
+        run: cd sdks/ruby && bundle exec rspec spec/ --format documentation -I lib
+
+  test-php:
+    name: PHP SDK Tests
+    needs: changes
+    if: needs.changes.outputs.sdk_php == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          coverage: none
+      - run: cd sdks/php && composer install --no-interaction
+      - name: Run tests
+        run: cd sdks/php && vendor/bin/phpunit --testdox
+
+  # ── Summary ───────────────────────────────────────────────────────────────
+
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
-    needs: [security, test, build-test, blockchain-build-test, frontend-test]
+    needs:
+      - changes
+      - security
+      - test
+      - build-test
+      - blockchain-build-test
+      - frontend-test
+      - test-go
+      - test-node-sdk
+      - test-python
+      - test-ruby
+      - test-php
     if: always()
     steps:
       - name: PR Status Summary
+        env:
+          R_SECURITY:    ${{ needs.security.result }}
+          R_TEST:        ${{ needs.test.result }}
+          R_BUILD:       ${{ needs.build-test.result }}
+          R_BLOCKCHAIN:  ${{ needs.blockchain-build-test.result }}
+          R_FRONTEND:    ${{ needs.frontend-test.result }}
+          R_GO:          ${{ needs.test-go.result }}
+          R_NODE:        ${{ needs.test-node-sdk.result }}
+          R_PYTHON:      ${{ needs.test-python.result }}
+          R_RUBY:        ${{ needs.test-ruby.result }}
+          R_PHP:         ${{ needs.test-php.result }}
         run: |
-          echo "## 🔍 Pull Request Check Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${{ needs.security.result }}" = "success" ]; then
-            echo "✅ **Security**: No critical vulnerabilities" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Security**: Check failed - review security audit" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ needs.test.result }}" = "success" ]; then
-            echo "✅ **Tests**: All tests passing" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Tests**: Test failures detected" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ needs.build-test.result }}" = "success" ]; then
-            echo "✅ **API Build**: Docker image builds successfully" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **API Build**: Build failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ needs.blockchain-build-test.result }}" = "success" ]; then
-            echo "✅ **Blockchain**: Binary builds successfully" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Blockchain**: Build failed" >> $GITHUB_STEP_SUMMARY
-          fi
+          render() {
+            local label="$1" result="$2"
+            case "$result" in
+              success) echo "✅ **${label}**: passed"               >> "$GITHUB_STEP_SUMMARY" ;;
+              skipped) echo "➖ **${label}**: skipped (no changes)" >> "$GITHUB_STEP_SUMMARY" ;;
+              *)       echo "❌ **${label}**: FAILED (${result})"   >> "$GITHUB_STEP_SUMMARY" ;;
+            esac
+          }
 
-          if [ "${{ needs.frontend-test.result }}" = "success" ]; then
-            echo "✅ **Frontend**: Build and E2E tests passing" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Frontend**: Build or tests failed" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "## Pull Request Check Summary" >> "$GITHUB_STEP_SUMMARY"
 
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Ready for deployment**: ${{ needs.security.result == 'success' && needs.test.result == 'success' && needs.build-test.result == 'success' && needs.blockchain-build-test.result == 'success' && needs.frontend-test.result == 'success' }}" >> $GITHUB_STEP_SUMMARY
+          echo ""                              >> "$GITHUB_STEP_SUMMARY"
+          echo "### API Server"                >> "$GITHUB_STEP_SUMMARY"
+          render "Security Audit"   "$R_SECURITY"
+          render "API Tests"        "$R_TEST"
+          render "Docker Build"     "$R_BUILD"
+
+          echo ""                              >> "$GITHUB_STEP_SUMMARY"
+          echo "### Core"                      >> "$GITHUB_STEP_SUMMARY"
+          render "Blockchain Build" "$R_BLOCKCHAIN"
+          render "Frontend & E2E"   "$R_FRONTEND"
+
+          echo ""                              >> "$GITHUB_STEP_SUMMARY"
+          echo "### SDKs"                      >> "$GITHUB_STEP_SUMMARY"
+          render "Go SDK"           "$R_GO"
+          render "Node.js SDK"      "$R_NODE"
+          render "Python SDK"       "$R_PYTHON"
+          render "Ruby SDK"         "$R_RUBY"
+          render "PHP SDK"          "$R_PHP"
+
+          # Fail the summary job if any non-skipped job failed
+          all_ok=true
+          for result in "$R_SECURITY" "$R_TEST" "$R_BUILD" "$R_BLOCKCHAIN" \
+                        "$R_FRONTEND" "$R_GO" "$R_NODE" "$R_PYTHON" "$R_RUBY" "$R_PHP"; do
+            if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
+              all_ok=false
+            fi
+          done
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if $all_ok; then
+            echo "**✅ All applicable checks passed.**" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "**❌ One or more checks failed.**"    >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
