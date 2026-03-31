@@ -125,8 +125,8 @@ module Daon
     end
 
     def generate_content_hash
-      normalized = normalized_content
-      digest = Digest::SHA256.hexdigest(normalized)
+      # Raw SHA-256 on the original content, matching the API's hash function exactly
+      digest = Digest::SHA256.hexdigest(@content)
       "sha256:#{digest}"
     end
 

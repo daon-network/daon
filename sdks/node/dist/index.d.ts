@@ -82,9 +82,9 @@ export declare class DAONClient {
      */
     verify(contentOrHash: string): Promise<VerificationResult>;
     /**
-     * Check Liberation License compliance
+     * Check Liberation License compliance (evaluated locally — no API endpoint)
      */
-    checkLiberationCompliance(contentHash: string, useCase: LiberationUseCase): Promise<LiberationCheckResult>;
+    checkLiberationCompliance(contentHash: string, useCase: LiberationUseCase): LiberationCheckResult;
     /**
      * Bulk protect multiple works
      */
@@ -94,7 +94,7 @@ export declare class DAONClient {
      */
     verifyBatch(contentHashes: string[]): Promise<VerificationResult[]>;
     /**
-     * Generate content hash
+     * Generate content hash (raw SHA-256, matching the API's hash function exactly)
      */
     generateContentHash(content: string): string;
     /**

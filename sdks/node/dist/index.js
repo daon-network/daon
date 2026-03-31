@@ -8,11 +8,11 @@ import { createHash } from 'crypto';
 export class DAONClient {
     constructor(config = {}) {
         this.config = {
-            apiUrl: config.apiUrl || 'https://api.daon.network',
-            chainId: config.chainId || 'daon-mainnet-1',
-            timeout: config.timeout || 30000,
-            retries: config.retries || 3,
-            defaultLicense: config.defaultLicense || 'liberation_v1'
+            apiUrl: config.apiUrl ?? 'https://api.daon.network',
+            chainId: config.chainId ?? 'daon-mainnet-1',
+            timeout: config.timeout ?? 30000,
+            retries: config.retries ?? 3,
+            defaultLicense: config.defaultLicense ?? 'liberation_v1'
         };
     }
     /**
@@ -21,23 +21,21 @@ export class DAONClient {
     async protect(request) {
         try {
             this.validateContent(request.content);
-            const contentHash = this.generateContentHash(request.content);
             const license = request.license || this.config.defaultLicense;
             const payload = {
-                content_hash: contentHash,
-                creator: request.creatorAddress || this.generateCreatorId(),
+                content: request.content,
+                metadata: this.normalizeMetadata(request.metadata || {}),
                 license,
-                platform: this.detectPlatform(),
-                metadata: this.normalizeMetadata(request.metadata || {})
             };
             const data = await this.postWithRetry('/api/v1/protect', payload);
+            const contentHash = data.contentHash ? `sha256:${data.contentHash}` : this.generateContentHash(request.content);
             return {
                 success: data.success,
                 contentHash,
-                txHash: data.tx_hash,
-                verificationUrl: data.verification_url,
-                blockchainUrl: data.tx_hash ? `https://explorer.daon.network/tx/${data.tx_hash}` : undefined,
-                timestamp: new Date().toISOString()
+                txHash: data.blockchainTx ?? data.blockchain?.tx ?? undefined,
+                verificationUrl: data.verificationUrl,
+                blockchainUrl: data.blockchainTx ? `https://explorer.daon.network/tx/${data.blockchainTx}` : undefined,
+                timestamp: data.timestamp ?? new Date().toISOString()
             };
         }
         catch (error) {
@@ -57,16 +55,16 @@ export class DAONClient {
             const contentHash = contentOrHash.startsWith('sha256:')
                 ? contentOrHash
                 : this.generateContentHash(contentOrHash);
-            const data = await this.getWithRetry(`/api/v1/verify/${contentHash}`);
+            // API expects 64-char hex only — strip sha256: prefix
+            const apiHash = contentHash.startsWith('sha256:') ? contentHash.slice(7) : contentHash;
+            const data = await this.getWithRetry(`/api/v1/verify/${apiHash}`);
             return {
-                verified: data.verified,
+                verified: data.isValid,
                 contentHash,
-                creator: data.creator,
                 license: data.license,
-                timestamp: data.timestamp ? new Date(data.timestamp * 1000).toISOString() : undefined,
-                platform: data.platform,
-                verificationUrl: data.verification_url,
-                blockchainUrl: `https://explorer.daon.network/content/${contentHash}`
+                timestamp: data.timestamp,
+                verificationUrl: data.verificationUrl,
+                blockchainUrl: `https://explorer.daon.network/content/${apiHash}`
             };
         }
         catch (error) {
@@ -78,33 +76,31 @@ export class DAONClient {
         }
     }
     /**
-     * Check Liberation License compliance
+     * Check Liberation License compliance (evaluated locally — no API endpoint)
      */
-    async checkLiberationCompliance(contentHash, useCase) {
-        try {
-            const payload = {
-                content_hash: contentHash,
-                entity_type: useCase.entityType,
-                use_type: useCase.useType,
-                purpose: useCase.purpose,
-                compensation: useCase.compensation,
-                metadata: useCase.metadata
-            };
-            const data = await this.postWithRetry('/api/v1/liberation/check', payload);
-            return {
-                compliant: data.compliant,
-                reason: data.reason,
-                useCase,
-                recommendations: data.recommendations
-            };
-        }
-        catch (error) {
+    checkLiberationCompliance(contentHash, useCase) {
+        const { entityType, useType, purpose, compensation } = useCase;
+        if (entityType === 'corporation' && useType === 'ai_training' && !compensation) {
             return {
                 compliant: false,
-                reason: error instanceof Error ? error.message : 'Compliance check failed',
-                useCase
+                reason: 'Commercial AI training without creator compensation violates the Liberation License.',
+                useCase,
+                recommendations: ['Obtain explicit permission from the creator', 'Compensate creators for use in AI training datasets']
             };
         }
+        if (entityType === 'corporation' && purpose === 'profit' && !compensation) {
+            return {
+                compliant: false,
+                reason: 'Corporate profit extraction without creator compensation violates the Liberation License.',
+                useCase,
+                recommendations: ['Negotiate a licensing agreement with the creator', 'Include creator compensation in your budget']
+            };
+        }
+        return {
+            compliant: true,
+            reason: 'Use case is compliant with Liberation License terms.',
+            useCase
+        };
     }
     /**
      * Bulk protect multiple works
@@ -128,30 +124,12 @@ export class DAONClient {
      */
     async verifyBatch(contentHashes) {
         const results = [];
-        // Process in batches of 50
+        // Process in batches of 50, falling back to individual verification
         for (let i = 0; i < contentHashes.length; i += 50) {
             const batch = contentHashes.slice(i, i + 50);
-            try {
-                const data = await this.postWithRetry('/api/v1/verify/batch', {
-                    content_hashes: batch
-                });
-                const batchResults = data.results.map((result) => ({
-                    verified: result.verified,
-                    contentHash: result.content_hash,
-                    creator: result.creator,
-                    license: result.license,
-                    timestamp: result.timestamp ? new Date(result.timestamp * 1000).toISOString() : undefined,
-                    platform: result.platform,
-                    verificationUrl: result.verification_url,
-                    blockchainUrl: `https://explorer.daon.network/content/${result.content_hash}`
-                }));
-                results.push(...batchResults);
-            }
-            catch (error) {
-                // Fallback to individual verification
-                const individualResults = await Promise.all(batch.map(hash => this.verify(hash)));
-                results.push(...individualResults);
-            }
+            // Fallback to individual verification (batch endpoint not available)
+            const individualResults = await Promise.all(batch.map(hash => this.verify(hash)));
+            results.push(...individualResults);
             // Rate limiting
             if (i + 50 < contentHashes.length) {
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -160,11 +138,10 @@ export class DAONClient {
         return results;
     }
     /**
-     * Generate content hash
+     * Generate content hash (raw SHA-256, matching the API's hash function exactly)
      */
     generateContentHash(content) {
-        const normalized = this.normalizeContent(content);
-        const hash = createHash('sha256').update(normalized, 'utf8').digest('hex');
+        const hash = createHash('sha256').update(content, 'utf8').digest('hex');
         return `sha256:${hash}`;
     }
     /**

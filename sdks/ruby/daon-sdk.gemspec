@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.license       = "Liberation-1.0"
   spec.metadata["license_uri"] = "https://github.com/liberationlicense/license"
 
-  spec.required_ruby_version = ">= 2.7.0"
+  spec.required_ruby_version = ">= 2.6.0"
 
   spec.files         = Dir.glob("{lib,spec}/**/*") + %w[README.md]
   spec.bindir        = "exe"

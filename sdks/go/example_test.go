@@ -1,4 +1,4 @@
-// Example test to validate DAON Go SDK integration
+// Example tests to validate DAON Go SDK compilation and basic behavior.
 package daon
 
 import (
@@ -8,80 +8,70 @@ import (
 )
 
 func TestClientCreation(t *testing.T) {
-	// Test creating a DAON client
-	client, err := NewClient("localhost:9090", "daon-localnet")
-	if err != nil {
-		// Expected to fail without running DAON node - just testing compilation
-		t.Log("Expected error without DAON node:", err)
+	client := NewClient("")
+	if client == nil {
+		t.Fatal("NewClient should not return nil")
 	}
-	defer func() {
-		if client != nil {
-			client.Close()
-		}
-	}()
 
-	// Test content hash generation
+	// Content hash generation is pure — no network call needed.
 	content := "This is a test fanfiction work"
-	hash := client.GenerateContentHash(content)
+	hash := GenerateContentHash(content)
 	if hash == "" {
-		t.Error("Content hash should not be empty")
+		t.Error("content hash should not be empty")
+	}
+	if len(hash) != 7+64 { // "sha256:" + 64 hex chars
+		t.Errorf("unexpected hash length %d: %s", len(hash), hash)
 	}
 	t.Log("Generated content hash:", hash)
 }
 
 func TestWorkProtection(t *testing.T) {
-	client, err := NewClient("localhost:9090", "daon-localnet")
-	if err != nil {
-		t.Log("Expected error without DAON node:", err)
-		return // Skip rest of test
-	}
-	defer client.Close()
+	// Skip if no network is available in the test environment.
+	t.Skip("requires live DAON API — run manually against a real or local server")
 
-	// Create test work
+	client := NewClient("")
+
 	work := &Work{
 		ID:          "test-123",
 		Title:       "My Revolutionary Fanfic",
 		Author:      "test-author",
 		Content:     "This work fights AI exploitation with DAON protection!",
 		Fandoms:     []string{"Original Work"},
-		Characters:  []string{"Hero", "Villain"},
 		Tags:        []string{"liberation", "anti-exploitation"},
 		WordCount:   10,
 		PublishDate: time.Now(),
 	}
 
-	// Test protecting work (will fail without wallet setup - just testing types)
-	err = client.ProtectWork(context.Background(), work, "daon1testcreator", "liberation_v1")
+	err := client.ProtectWork(context.Background(), work, "liberation_v1")
 	if err != nil {
-		t.Log("Expected error without wallet:", err)
+		t.Log("ProtectWork error:", err)
 	}
 }
 
 func TestLiberationLicense(t *testing.T) {
-	client, err := NewClient("localhost:9090", "daon-localnet")
-	if err != nil {
-		t.Log("Expected error without DAON node:", err)
-		return
-	}
-	defer client.Close()
-
-	// Test Liberation License compliance check
-	useCase := LiberationUseCase{
+	// Non-compliant: corporation doing AI training without compensation.
+	nonCompliant := LiberationUseCase{
 		EntityType:   "corporation",
 		UseType:      "ai_training",
 		Purpose:      "profit",
-		Compensation: false, // Corporate AI training without compensation
+		Compensation: false,
 	}
-
-	result, err := client.CheckLiberationLicense(context.Background(), "test-hash", useCase)
-	if err != nil {
-		t.Log("Expected error without content:", err)
-		return
-	}
-
-	// Should be non-compliant for corporate AI training without compensation
+	result := CheckLiberationCompliance(nonCompliant)
 	if result.Compliant {
-		t.Error("Corporate AI training without compensation should not be compliant")
+		t.Error("corporate AI training without compensation should not be compliant")
 	}
-	t.Log("Liberation License check result:", result.Reason)
+	t.Log("non-compliant reason:", result.Reason)
+
+	// Compliant: individual personal use.
+	compliant := LiberationUseCase{
+		EntityType:   "individual",
+		UseType:      "personal",
+		Purpose:      "education",
+		Compensation: false,
+	}
+	result2 := CheckLiberationCompliance(compliant)
+	if !result2.Compliant {
+		t.Error("individual personal use should be compliant")
+	}
+	t.Log("compliant reason:", result2.Reason)
 }

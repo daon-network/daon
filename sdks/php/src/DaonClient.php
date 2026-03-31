@@ -27,7 +27,7 @@ class DaonClient
     private string $defaultLicense;
     private HttpClient $httpClient;
 
-    public function __construct(array $config = [])
+    public function __construct(array $config = [], HttpClient $httpClient = null)
     {
         $this->apiUrl = $config['api_url'] ?? self::DEFAULT_API_URL;
         $this->chainId = $config['chain_id'] ?? self::DEFAULT_CHAIN_ID;
@@ -35,7 +35,7 @@ class DaonClient
         $this->retries = $config['retries'] ?? self::DEFAULT_RETRIES;
         $this->defaultLicense = $config['default_license'] ?? self::DEFAULT_LICENSE;
 
-        $this->httpClient = new HttpClient([
+        $this->httpClient = $httpClient ?? new HttpClient([
             'base_uri' => $this->apiUrl,
             'timeout' => $this->timeout,
             'headers' => [
@@ -53,31 +53,32 @@ class DaonClient
     {
         try {
             $this->validateContent($request->getContent());
-            
-            $contentHash = $this->generateContentHash($request->getContent());
+
             $license = $request->getLicense() ?? $this->defaultLicense;
-            
+
             $payload = [
-                'content_hash' => $contentHash,
-                'creator' => $request->getCreatorAddress() ?? $this->generateCreatorId(),
-                'license' => $license,
-                'platform' => $this->detectPlatform(),
+                'content' => $request->getContent(),
                 'metadata' => $this->normalizeMetadata($request->getMetadata()),
+                'license' => $license,
             ];
 
             $response = $this->postWithRetry('/api/v1/protect', $payload);
-            
+
+            $apiHash = $response['contentHash'] ?? null;
+            $contentHash = $apiHash ? "sha256:{$apiHash}" : $this->generateContentHash($request->getContent());
+            $blockchainTx = $response['blockchainTx'] ?? $response['blockchain']['tx'] ?? null;
+
             return new ProtectionResult([
                 'success' => $response['success'] ?? false,
                 'content_hash' => $contentHash,
-                'tx_hash' => $response['tx_hash'] ?? null,
-                'verification_url' => $response['verification_url'] ?? null,
-                'blockchain_url' => isset($response['tx_hash']) 
-                    ? "https://explorer.daon.network/tx/{$response['tx_hash']}" 
+                'tx_hash' => $blockchainTx,
+                'verification_url' => $response['verificationUrl'] ?? null,
+                'blockchain_url' => $blockchainTx
+                    ? "https://explorer.daon.network/tx/{$blockchainTx}"
                     : null,
-                'timestamp' => new \DateTime(),
+                'timestamp' => isset($response['timestamp']) ? new \DateTime($response['timestamp']) : new \DateTime(),
             ]);
-            
+
         } catch (\Exception $e) {
             return new ProtectionResult([
                 'success' => false,
@@ -94,30 +95,28 @@ class DaonClient
     public function verify(string $contentOrHash): VerificationResult
     {
         try {
-            $contentHash = str_starts_with($contentOrHash, 'sha256:') 
-                ? $contentOrHash 
+            $contentHash = str_starts_with($contentOrHash, 'sha256:')
+                ? $contentOrHash
                 : $this->generateContentHash($contentOrHash);
-            
-            $response = $this->getWithRetry("/api/v1/verify/{$contentHash}");
-            
+
+            // API expects 64-char hex only — strip sha256: prefix
+            $apiHash = str_starts_with($contentHash, 'sha256:') ? substr($contentHash, 7) : $contentHash;
+            $response = $this->getWithRetry("/api/v1/verify/{$apiHash}");
+
             return new VerificationResult([
-                'verified' => $response['verified'] ?? false,
+                'verified' => $response['isValid'] ?? false,
                 'content_hash' => $contentHash,
-                'creator' => $response['creator'] ?? null,
                 'license' => $response['license'] ?? null,
-                'timestamp' => isset($response['timestamp']) 
-                    ? new \DateTime('@' . $response['timestamp']) 
-                    : null,
-                'platform' => $response['platform'] ?? null,
-                'verification_url' => $response['verification_url'] ?? null,
-                'blockchain_url' => "https://explorer.daon.network/content/{$contentHash}",
+                'timestamp' => isset($response['timestamp']) ? new \DateTime($response['timestamp']) : null,
+                'verification_url' => $response['verificationUrl'] ?? null,
+                'blockchain_url' => "https://explorer.daon.network/content/{$apiHash}",
             ]);
-            
+
         } catch (\Exception $e) {
             return new VerificationResult([
                 'verified' => false,
-                'content_hash' => str_starts_with($contentOrHash, 'sha256:') 
-                    ? $contentOrHash 
+                'content_hash' => str_starts_with($contentOrHash, 'sha256:')
+                    ? $contentOrHash
                     : $this->generateContentHash($contentOrHash),
                 'error' => $e->getMessage(),
             ]);
@@ -125,36 +124,44 @@ class DaonClient
     }
 
     /**
-     * Check Liberation License compliance
+     * Check Liberation License compliance (evaluated locally — no API endpoint)
      */
     public function checkLiberationCompliance(string $contentHash, LiberationUseCase $useCase): LiberationCheckResult
     {
-        try {
-            $payload = [
-                'content_hash' => $contentHash,
-                'entity_type' => $useCase->getEntityType(),
-                'use_type' => $useCase->getUseType(),
-                'purpose' => $useCase->getPurpose(),
-                'compensation' => $useCase->isCompensated(),
-                'metadata' => $useCase->getMetadata(),
-            ];
+        $entityType = $useCase->getEntityType();
+        $useType = $useCase->getUseType();
+        $purpose = $useCase->getPurpose();
+        $compensation = $useCase->isCompensated();
 
-            $response = $this->postWithRetry('/api/v1/liberation/check', $payload);
-            
-            return new LiberationCheckResult([
-                'compliant' => $response['compliant'] ?? false,
-                'reason' => $response['reason'] ?? 'Unknown',
-                'use_case' => $useCase,
-                'recommendations' => $response['recommendations'] ?? [],
-            ]);
-            
-        } catch (\Exception $e) {
+        if ($entityType === 'corporation' && $useType === 'ai_training' && !$compensation) {
             return new LiberationCheckResult([
                 'compliant' => false,
-                'reason' => $e->getMessage(),
+                'reason' => 'Commercial AI training without creator compensation violates the Liberation License.',
                 'use_case' => $useCase,
+                'recommendations' => [
+                    'Obtain explicit permission from the creator',
+                    'Compensate creators for use in AI training datasets',
+                ],
             ]);
         }
+
+        if ($entityType === 'corporation' && $purpose === 'profit' && !$compensation) {
+            return new LiberationCheckResult([
+                'compliant' => false,
+                'reason' => 'Corporate profit extraction without creator compensation violates the Liberation License.',
+                'use_case' => $useCase,
+                'recommendations' => [
+                    'Negotiate a licensing agreement with the creator',
+                    'Include creator compensation in your budget',
+                ],
+            ]);
+        }
+
+        return new LiberationCheckResult([
+            'compliant' => true,
+            'reason' => 'Use case is compliant with Liberation License terms.',
+            'use_case' => $useCase,
+        ]);
     }
 
     /**
@@ -189,57 +196,30 @@ class DaonClient
     public function verifyBatch(array $contentHashes): array
     {
         $results = [];
-        
-        // Process in batches of 50
+
+        // Process in batches of 50 using individual verification
         $chunks = array_chunk($contentHashes, 50);
-        
+
         foreach ($chunks as $chunk) {
-            try {
-                $response = $this->postWithRetry('/api/v1/verify/batch', [
-                    'content_hashes' => $chunk,
-                ]);
-                
-                $chunkResults = [];
-                foreach ($response['results'] ?? [] as $result) {
-                    $chunkResults[] = new VerificationResult([
-                        'verified' => $result['verified'] ?? false,
-                        'content_hash' => $result['content_hash'] ?? '',
-                        'creator' => $result['creator'] ?? null,
-                        'license' => $result['license'] ?? null,
-                        'timestamp' => isset($result['timestamp']) 
-                            ? new \DateTime('@' . $result['timestamp']) 
-                            : null,
-                        'platform' => $result['platform'] ?? null,
-                        'verification_url' => $result['verification_url'] ?? null,
-                        'blockchain_url' => "https://explorer.daon.network/content/{$result['content_hash']}",
-                    ]);
-                }
-                
-                $results = array_merge($results, $chunkResults);
-                
-            } catch (\Exception $e) {
-                // Fallback to individual verification
-                foreach ($chunk as $hash) {
-                    $results[] = $this->verify($hash);
-                }
+            foreach ($chunk as $hash) {
+                $results[] = $this->verify($hash);
             }
-            
+
             // Rate limiting
             if (count($chunks) > 1) {
                 usleep(100000); // 100ms
             }
         }
-        
+
         return $results;
     }
 
     /**
-     * Generate content hash
+     * Generate content hash (raw SHA-256, matching the API's hash function exactly)
      */
     public function generateContentHash(string $content): string
     {
-        $normalized = $this->normalizeContent($content);
-        $hash = hash('sha256', $normalized);
+        $hash = hash('sha256', $content);
         return "sha256:{$hash}";
     }
 
