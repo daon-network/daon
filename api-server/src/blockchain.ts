@@ -28,7 +28,10 @@ class BlockchainClient {
   constructor() {
     this.rpcEndpoint = process.env.BLOCKCHAIN_RPC || 'http://localhost:26657';
     this.chainId = process.env.CHAIN_ID || 'daon-mainnet-1';
-    this.mnemonic = process.env.API_MNEMONIC || 'blur cause boost pass stick allow hundred odor level erosion umbrella urban need indicate inject funny anchor kiss rain equal among unhappy sad dutch';
+    if (!process.env.API_MNEMONIC) {
+      throw new Error('API_MNEMONIC environment variable is required');
+    }
+    this.mnemonic = process.env.API_MNEMONIC;
     this.client = null;
     this.wallet = null;
     this.address = null;
