@@ -206,8 +206,8 @@ function generateVerificationUrl(contentHash) {
   return `${baseUrl}/verify/sha256:${contentHash}`;
 }
 
-// Blockchain integration
-const blockchainEnabled = process.env.BLOCKCHAIN_ENABLED === 'true';
+// Blockchain integration — disabled during load testing to avoid polluting the chain
+const blockchainEnabled = process.env.BLOCKCHAIN_ENABLED === 'true' && process.env.LOAD_TEST_MODE !== 'true';
 
 // Fallback in-memory storage (used when blockchain is disabled)
 const protectedContent = new Map();

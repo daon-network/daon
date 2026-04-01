@@ -12,6 +12,7 @@
 DAON_SERVER="${DAON_SERVER:-daon}"
 API_URL="https://api.daon.network"
 RESULTS_FILE="load-results-$(date +%Y%m%d-%H%M).json"
+LOAD_TEST_START_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 # Colors
 GREEN='\033[0;32m'
@@ -88,13 +89,18 @@ for name in containers:
 \""
 }
 
-# Cleanup: restore normal rate limits on exit
+# Cleanup: restore normal rate limits and purge load test records from DB
 cleanup() {
     echo ""
     echo -e "${YELLOW}Restoring normal rate limits...${NC}"
     restart_api_containers "false" && \
         echo -e "${GREEN}Rate limits restored.${NC}" || \
         echo -e "${YELLOW}⚠  Could not auto-restore rate limits — check server manually${NC}"
+
+    echo -e "${YELLOW}Purging load test records from DB (created after ${LOAD_TEST_START_TIME})...${NC}"
+    ssh "${DAON_SERVER}" "docker exec daon-postgres psql -U daon_api -d daon_production -c \
+        \"DELETE FROM protected_content WHERE created_at >= '${LOAD_TEST_START_TIME}' AND blockchain_tx IS NULL;\""
+    echo -e "${GREEN}✓ Load test records purged.${NC}"
 }
 trap cleanup EXIT
 

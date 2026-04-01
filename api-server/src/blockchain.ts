@@ -308,7 +308,9 @@ class BlockchainClient {
       : `sha256:${contentHash}`;
 
     // Normalize license to underscore format expected by the chain module
-    const chainLicense = (license || 'liberation_v1').replace(/-/g, '_');
+    const licenseNormalized = (license || 'liberation_v1').replace(/-/g, '_');
+    // cc0 (Creative Commons Zero) maps to public_domain on-chain
+    const chainLicense = licenseNormalized === 'cc0' ? 'public_domain' : licenseNormalized;
 
     try {
       // Create the message using generated types
