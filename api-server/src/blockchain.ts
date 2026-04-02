@@ -28,7 +28,10 @@ class BlockchainClient {
   constructor() {
     this.rpcEndpoint = process.env.BLOCKCHAIN_RPC || 'http://localhost:26657';
     this.chainId = process.env.CHAIN_ID || 'daon-mainnet-1';
-    this.mnemonic = process.env.API_MNEMONIC || 'blur cause boost pass stick allow hundred odor level erosion umbrella urban need indicate inject funny anchor kiss rain equal among unhappy sad dutch';
+    if (process.env.BLOCKCHAIN_ENABLED === 'true' && !process.env.API_MNEMONIC) {
+      throw new Error('API_MNEMONIC environment variable is required when BLOCKCHAIN_ENABLED=true');
+    }
+    this.mnemonic = process.env.API_MNEMONIC || '';
     this.client = null;
     this.wallet = null;
     this.address = null;
@@ -305,7 +308,9 @@ class BlockchainClient {
       : `sha256:${contentHash}`;
 
     // Normalize license to underscore format expected by the chain module
-    const chainLicense = (license || 'liberation_v1').replace(/-/g, '_');
+    const licenseNormalized = (license || 'liberation_v1').replace(/-/g, '_');
+    // cc0 (Creative Commons Zero) maps to public_domain on-chain
+    const chainLicense = licenseNormalized === 'cc0' ? 'public_domain' : licenseNormalized;
 
     try {
       // Create the message using generated types
