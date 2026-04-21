@@ -220,13 +220,16 @@ export const db = {
       blockchain_tx?: string;
       blockchain_height?: number;
       verification_url?: string;
+      ai_training_policy?: 'prohibited' | 'contact_required' | 'open';
+      licensing_email?: string;
+      licensing_uri?: string;
     }) {
       const result = await db.query(
-        `INSERT INTO protected_content 
-         (user_id, content_hash, normalized_hash, perceptual_hash, previous_version, 
-          title, description, content_type, license, blockchain_tx, blockchain_height, 
-          verification_url, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, CURRENT_TIMESTAMP)
+        `INSERT INTO protected_content
+         (user_id, content_hash, normalized_hash, perceptual_hash, previous_version,
+          title, description, content_type, license, blockchain_tx, blockchain_height,
+          verification_url, ai_training_policy, licensing_email, licensing_uri, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, CURRENT_TIMESTAMP)
          RETURNING *`,
         [
           data.user_id,
@@ -241,6 +244,9 @@ export const db = {
           data.blockchain_tx,
           data.blockchain_height,
           data.verification_url,
+          data.ai_training_policy || 'prohibited',
+          data.licensing_email || null,
+          data.licensing_uri || null,
         ]
       );
       return result.rows[0];
