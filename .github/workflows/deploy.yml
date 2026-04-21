@@ -241,6 +241,24 @@ jobs:
             # Deploy full stack
             docker compose up -d --remove-orphans
             
+            # Run database migrations (all are idempotent via IF NOT EXISTS)
+            echo "⏳ Waiting for postgres to be ready..."
+            for i in {1..15}; do
+              if docker exec daon-postgres pg_isready -U daon_api -d daon_production -q; then
+                echo "✅ Postgres is ready"
+                break
+              fi
+              echo "Attempt $i/15, waiting 5s..."
+              sleep 5
+            done
+
+            echo "🗄️ Running database migrations..."
+            for migration in /opt/daon-source/api-server/src/database/migrations/*.sql; do
+              echo "  → $(basename $migration)"
+              docker exec -i daon-postgres psql -U daon_api -d daon_production < "$migration"
+            done
+            echo "✅ Migrations complete"
+
             # Wait for health checks
             echo "⏳ Waiting for services to be healthy..."
             sleep 60
