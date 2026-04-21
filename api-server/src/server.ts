@@ -323,10 +323,36 @@ app.post('/api/v1/protect', [
       'cc-by-nd'
     ])
     .withMessage('Invalid license type'),
+  body('ai_training_policy')
+    .optional()
+    .isIn(['prohibited', 'contact_required', 'open'])
+    .withMessage('ai_training_policy must be prohibited, contact_required, or open'),
+  body('licensing_email')
+    .optional()
+    .isEmail()
+    .withMessage('licensing_email must be a valid email address'),
+  body('licensing_uri')
+    .optional()
+    .isURL()
+    .withMessage('licensing_uri must be a valid URL'),
   handleValidationErrors
 ], async (req, res) => {
   try {
-    const { content, metadata = {}, license = 'all-rights-reserved' } = req.body;
+    const {
+      content,
+      metadata = {},
+      license = 'liberation_v1',
+      ai_training_policy = 'prohibited',
+      licensing_email,
+      licensing_uri,
+    } = req.body;
+
+    if (ai_training_policy === 'contact_required' && !licensing_email && !licensing_uri) {
+      return res.status(400).json({
+        success: false,
+        error: 'licensing_email or licensing_uri is required when ai_training_policy is contact_required',
+      });
+    }
     
     // Generate content hash
     const contentHash = generateContentHash(content);
@@ -433,6 +459,9 @@ app.post('/api/v1/protect', [
         license,
         blockchain_tx: blockchainTx,
         verification_url: verificationUrl,
+        ai_training_policy,
+        licensing_email,
+        licensing_uri,
       });
     } catch (dbWriteError) {
       // Unique violation = already exists (race condition), safe to ignore
@@ -452,12 +481,15 @@ app.post('/api/v1/protect', [
       verificationUrl,
       timestamp,
       license,
+      ai_training_policy,
+      licensing_email: licensing_email || null,
+      licensing_uri: licensing_uri || null,
       blockchainTx,
       blockchain: {
         enabled: blockchainEnabled,
         tx: blockchainTx
       },
-      message: blockchainTx 
+      message: blockchainTx
         ? 'Content successfully protected on DAON blockchain'
         : 'Content protected (blockchain pending)',
       support: {
@@ -604,6 +636,9 @@ app.get('/api/v1/verify/:hash', [
             contentHash: hash,
             timestamp: dbRecord.created_at,
             license: dbRecord.license,
+            ai_training_policy: dbRecord.ai_training_policy || 'prohibited',
+            licensing_email: dbRecord.licensing_email || null,
+            licensing_uri: dbRecord.licensing_uri || null,
             metadata: {
               title: dbRecord.title,
               type: dbRecord.content_type,
@@ -627,16 +662,19 @@ app.get('/api/v1/verify/:hash', [
         error: 'Content not found in protection registry'
       });
     }
-    
+
     logger.info(`Content verification: ${hash} [${source}]`);
     contentVerificationsTotal.labels('success').inc();
-    
+
     res.json({
       success: true,
       isValid: true,
       contentHash: hash,
       timestamp: record.timestamp,
       license: record.license,
+      ai_training_policy: record.ai_training_policy || 'prohibited',
+      licensing_email: record.licensing_email || null,
+      licensing_uri: record.licensing_uri || null,
       metadata: record.metadata,
       verificationUrl: record.verificationUrl || generateVerificationUrl(hash),
       blockchain: {

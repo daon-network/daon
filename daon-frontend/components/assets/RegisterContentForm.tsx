@@ -20,6 +20,9 @@ interface RegisterFormData {
   author: string;
   type: 'text' | 'image' | 'video' | 'audio' | 'document' | 'other';
   license: 'all-rights-reserved' | 'copyright' | 'liberation_v1' | 'cc0' | 'cc-by' | 'cc-by-sa' | 'cc-by-nc' | 'cc-by-nc-sa' | 'cc-by-nd';
+  ai_training_policy: 'prohibited' | 'contact_required' | 'open';
+  licensing_email?: string;
+  licensing_uri?: string;
   description?: string;
   copyrightYear?: string;
 }
@@ -30,6 +33,9 @@ interface ProtectionResult {
   verificationUrl: string;
   timestamp: string;
   license: string;
+  ai_training_policy?: 'prohibited' | 'contact_required' | 'open';
+  licensing_email?: string;
+  licensing_uri?: string;
   blockchain?: {
     enabled: boolean;
     creator?: string;
@@ -50,13 +56,15 @@ export function RegisterContentForm() {
   const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterFormData>({
     defaultValues: {
       type: 'text',
-      license: 'all-rights-reserved',
+      license: 'liberation_v1',
+      ai_training_policy: 'prohibited',
       copyrightYear: new Date().getFullYear().toString(),
     }
   });
 
   const selectedType = watch('type');
   const selectedLicense = watch('license');
+  const selectedAiPolicy = watch('ai_training_policy');
   const isCopyrighted = selectedLicense === 'all-rights-reserved' || selectedLicense === 'copyright';
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,6 +156,9 @@ export function RegisterContentForm() {
             fileSize: file?.size,
           },
           license: data.license,
+          ai_training_policy: data.ai_training_policy,
+          ...(data.licensing_email && { licensing_email: data.licensing_email }),
+          ...(data.licensing_uri && { licensing_uri: data.licensing_uri }),
         }),
       });
 
@@ -313,6 +324,25 @@ export function RegisterContentForm() {
                   <p className="text-xs font-medium text-gray-500 mb-1">License</p>
                   <p className="text-sm text-gray-900">{result.license.toUpperCase()}</p>
                 </div>
+
+                {result.ai_training_policy && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">AI Training Policy</p>
+                    <p className="text-sm text-gray-900">
+                      {result.ai_training_policy === 'prohibited' && 'Prohibited — AI training not permitted'}
+                      {result.ai_training_policy === 'contact_required' && 'Contact required — reach out to license'}
+                      {result.ai_training_policy === 'open' && 'Open — permitted with attribution'}
+                    </p>
+                    {result.licensing_email && (
+                      <p className="text-xs text-gray-600 mt-1">Contact: {result.licensing_email}</p>
+                    )}
+                    {result.licensing_uri && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        <a href={result.licensing_uri} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{result.licensing_uri}</a>
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {result.blockchain?.enabled && (
                   <div>
@@ -655,6 +685,85 @@ export function RegisterContentForm() {
           </p>
         </div>
       )}
+
+      {/* AI Training Policy */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          AI Training Policy
+        </label>
+        <div className="space-y-2">
+          <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 p-3 hover:bg-gray-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+            <input
+              {...register('ai_training_policy')}
+              type="radio"
+              value="prohibited"
+              className="mt-0.5 accent-blue-600"
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Prohibited</p>
+              <p className="text-xs text-gray-500">AI companies and automated systems may not use this work for training</p>
+            </div>
+          </label>
+          <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 p-3 hover:bg-gray-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+            <input
+              {...register('ai_training_policy')}
+              type="radio"
+              value="contact_required"
+              className="mt-0.5 accent-blue-600"
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Contact required</p>
+              <p className="text-xs text-gray-500">AI use requires prior permission — provide contact info below</p>
+            </div>
+          </label>
+          <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 p-3 hover:bg-gray-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+            <input
+              {...register('ai_training_policy')}
+              type="radio"
+              value="open"
+              className="mt-0.5 accent-blue-600"
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Open</p>
+              <p className="text-xs text-gray-500">AI training permitted with attribution</p>
+            </div>
+          </label>
+        </div>
+
+        {selectedAiPolicy === 'contact_required' && (
+          <div className="mt-3 space-y-3 pl-1">
+            <p className="text-xs text-gray-600">Provide at least one contact method for licensing inquiries:</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Licensing Email</label>
+              <input
+                {...register('licensing_email', {
+                  validate: (val) => {
+                    if (selectedAiPolicy === 'contact_required' && !val && !watch('licensing_uri')) {
+                      return 'Provide an email or URL when contact is required';
+                    }
+                    return true;
+                  },
+                })}
+                type="email"
+                placeholder="licensing@example.com"
+                className="block w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {errors.licensing_email && (
+                <p className="mt-1 text-sm text-red-600">{errors.licensing_email.message}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Licensing URL</label>
+              <input
+                {...register('licensing_uri')}
+                type="url"
+                placeholder="https://example.com/licensing"
+                className="block w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
