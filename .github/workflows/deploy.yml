@@ -238,8 +238,8 @@ jobs:
             # Build blockchain image locally
             docker build -t daon-blockchain:latest ./daon-core
 
-            # Deploy full stack
-            docker compose up -d --remove-orphans
+            # Deploy full stack — force-recreate ensures new images are actually used
+            docker compose up -d --remove-orphans --force-recreate
             
             # Run database migrations (all are idempotent via IF NOT EXISTS)
             echo "⏳ Waiting for postgres to be ready..."
