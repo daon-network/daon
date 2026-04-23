@@ -44,6 +44,8 @@ nav_links:
     url: "/legal/"
   - title: "Community"
     url: "/community/"
+  - title: "Roadmap"
+    url: "/roadmap/"
 
 # Footer links
 footer_links:
