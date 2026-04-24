@@ -20,6 +20,7 @@ import blockchainClient from './blockchain.js';
 import { DatabaseClient, db } from './database/client.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
+import { verifyToken } from './auth/auth.js';
 import healthRoutes from './routes/health.js';
 import { BrokerService } from './broker/broker-service.js';
 import { createBrokerAuthMiddleware } from './broker/broker-auth-middleware.js';
@@ -184,6 +185,16 @@ app.use((req, res, next) => {
 });
 
 // Validation middleware helper
+// Optional auth: attaches req.userId if a valid Bearer token is present, otherwise continues anonymously
+const optionalAuth = (req: any, _res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const decoded = verifyToken(authHeader.substring(7));
+    if (decoded) req.userId = decoded.userId;
+  }
+  next();
+};
+
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -299,7 +310,7 @@ app.get('/api/v1', (req, res) => {
 });
 
 // Content protection endpoint
-app.post('/api/v1/protect', [
+app.post("/api/v1/protect", [optionalAuth,
   body('content')
     .notEmpty()
     .withMessage('Content is required')
@@ -452,6 +463,7 @@ app.post('/api/v1/protect', [
     // Persist to database so all instances and restarts can verify
     try {
       await db.content.create({
+        user_id: req.userId || null,
         content_hash: contentHash,
         title: metadata.title || 'Untitled Work',
         description: metadata.description,
