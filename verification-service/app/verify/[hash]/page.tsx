@@ -333,7 +333,7 @@ export default function VerifyPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500">
-          <p>Powered by DAON - Decentralized Author Ownership Network</p>
+          <p>Powered by DAON - Digital Asset Ownership Network</p>
           <p className="mt-1">
             <a href="/" className="text-blue-600 hover:text-blue-700 underline">
               Learn More

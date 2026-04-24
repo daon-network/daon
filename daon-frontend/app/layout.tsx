@@ -7,7 +7,7 @@ import ErrorBoundary from "../components/ErrorBoundary";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "DAON - Decentralized Author Ownership Network",
+  title: "DAON - Digital Asset Ownership Network",
   description: "Privacy-first authentication for content creators",
 };
 
