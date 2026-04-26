@@ -175,58 +175,7 @@ services:
       daon-blockchain:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.5'
-        reservations:
-          memory: 128M
-          cpus: '0.25'
-
-  # DAON API Service 2
-  daon-api-2:
-    image: daon-api:latest
-    container_name: daon-api-2
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:3002:3000"
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-      DATABASE_URL: postgresql://daon_api:${POSTGRES_PASSWORD}@postgres:5432/daon_production
-      REDIS_URL: redis://redis:6379
-      BLOCKCHAIN_ENABLED: ${BLOCKCHAIN_ENABLED:-true}
-      BLOCKCHAIN_RPC: http://daon-blockchain:26657
-      CHAIN_ID: daon-mainnet-1
-      API_MNEMONIC: ${API_MNEMONIC}
-      API_KEY_SECRET: ${API_KEY_SECRET}
-      TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      INSTANCE_ID: "api-2"
-      # SMTP Email Configuration
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
-      SMTP_FROM: ${SMTP_FROM}
-      FRONTEND_URL: ${FRONTEND_URL}
-    volumes:
-      - daon-api-logs:/app/logs
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      daon-blockchain:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -277,7 +226,7 @@ services:
       daon-blockchain:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -306,7 +255,7 @@ services:
     environment:
       NODE_ENV: production
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
