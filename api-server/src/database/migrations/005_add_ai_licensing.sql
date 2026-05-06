@@ -7,17 +7,23 @@ ALTER TABLE protected_content
   ADD COLUMN IF NOT EXISTS licensing_email VARCHAR(255),
   ADD COLUMN IF NOT EXISTS licensing_uri TEXT;
 
-ALTER TABLE protected_content
-  ADD CONSTRAINT IF NOT EXISTS valid_ai_training_policy
-    CHECK (ai_training_policy IN ('prohibited', 'contact_required', 'open'));
+DO $$ BEGIN
+  ALTER TABLE protected_content
+    ADD CONSTRAINT valid_ai_training_policy
+      CHECK (ai_training_policy IN ('prohibited', 'contact_required', 'open'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Enforce: contact_required must have at least one contact method
-ALTER TABLE protected_content
-  ADD CONSTRAINT IF NOT EXISTS licensing_contact_when_required
-    CHECK (
-      ai_training_policy != 'contact_required'
-      OR (licensing_email IS NOT NULL OR licensing_uri IS NOT NULL)
-    );
+DO $$ BEGIN
+  ALTER TABLE protected_content
+    ADD CONSTRAINT licensing_contact_when_required
+      CHECK (
+        ai_training_policy != 'contact_required'
+        OR (licensing_email IS NOT NULL OR licensing_uri IS NOT NULL)
+      );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_content_ai_policy ON protected_content(ai_training_policy);
 
