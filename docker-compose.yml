@@ -14,7 +14,7 @@ services:
       - "127.0.0.1:26656:26656"  # P2P
       - "127.0.0.1:1317:1317"    # REST API
     volumes:
-      - daon-blockchain-data:/daon/.daon
+      - /mnt/HC_Volume_103956354/blockchain:/daon/.daon
     environment:
       CHAIN_ID: daon-mainnet-1
       MONIKER: daon-validator-1
@@ -99,7 +99,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - daon-postgres-data:/var/lib/postgresql/data
+      - /mnt/HC_Volume_103956354/postgres:/var/lib/postgresql/data
+      - ./api-server/src/database/init-production.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
+      - ./api-server/src/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ./api-server/src/database/migrations:/docker-entrypoint-initdb.d/migrations:ro
     ports:
       - "127.0.0.1:5432:5432"
     healthcheck:
@@ -275,6 +278,4 @@ networks:
     name: daon-network
 
 volumes:
-  daon-blockchain-data:
-  daon-postgres-data:
   daon-api-logs:

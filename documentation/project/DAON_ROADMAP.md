@@ -1,5 +1,5 @@
 # DAON Product Roadmap
-**Last updated:** April 2026
+**Last updated:** May 2026
 **Status:** Live on mainnet. Accepting users.
 
 ---
@@ -78,7 +78,8 @@ The broker system lets third-party platforms register content on behalf of their
 | Transfer blockchain integration | Critical | Transfers write to DB only; not on-chain |
 | Broker onboarding documentation | High | Required before first partner |
 | Broker Node.js SDK | High | Reference implementation for integrators |
-| AI licensing fields | High | `ai_training_policy`, `licensing_email`, `licensing_uri` absent from schema |
+| AI licensing fields | ~~High~~ | ~~`ai_training_policy`, `licensing_email`, `licensing_uri` absent from schema~~ **Shipped** (PR #71) |
+| 2FA recovery via backup codes | High | Allow users to disable/reset 2FA using a backup code when they've lost their authenticator. Currently backup codes can authenticate but not reset 2FA — users who lose their authenticator AND don't have a trusted device are permanently locked out. |
 | License record API (audit trail) | High | Brokers record that licensing occurred |
 | Redis for rate limiting | High | General API rate limits use in-memory store (resets on restart) |
 | Identity linking (federated → DAON account) | Medium | User claims their platform content |

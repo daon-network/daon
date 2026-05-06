@@ -1,7 +1,20 @@
 # Large compiled binaries
 daon-core/daon-cored
 daon-core/build/
+
+# Dependencies & build artifacts
 **/node_modules/
+api-server/dist/
+sdks/python/**/__pycache__/
+sdks/ruby/.bundle/
+sdks/ruby/vendor/
+
+# OS & editor
 **/.DS_Store
 *.log
+
+# Environment & secrets
 .env
+
+# Test artifacts
+load-results-*.json
