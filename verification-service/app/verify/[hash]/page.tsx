@@ -16,6 +16,8 @@ interface VerificationResult {
   contentHash?: string;
   timestamp?: string;
   license?: string;
+  ai_training_policy?: string;
+  licensing_email?: string;
   creator?: string;
   metadata?: {
     title?: string;
@@ -28,9 +30,40 @@ interface VerificationResult {
     enabled: boolean;
     verified: boolean;
     source?: string;
+    txHash?: string;
+    height?: number;
   };
   error?: string;
 }
+
+const LICENSE_LABELS: Record<string, string> = {
+  'all_rights_reserved': 'All Rights Reserved',
+  'all-rights-reserved': 'All Rights Reserved',
+  'liberation_v1': 'Liberation License v1',
+  'cc0': 'CC0 / Public Domain',
+  'public_domain': 'Public Domain',
+};
+
+const AI_POLICY_LABELS: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  'prohibited': {
+    label: 'AI Training Prohibited',
+    color: 'text-red-800',
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+  },
+  'contact_required': {
+    label: 'Contact Required for AI Training',
+    color: 'text-amber-800',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+  },
+  'open': {
+    label: 'AI Training Permitted with Attribution',
+    color: 'text-green-800',
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+  },
+};
 
 export default function VerifyPage() {
   const params = useParams();
@@ -189,147 +222,185 @@ export default function VerifyPage() {
           </div>
         )}
 
-        {/* Success State */}
-        {!error && result && result.isValid && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
-            {/* Success Header */}
-            <div className="text-center space-y-4">
-              <div className="flex justify-center">
-                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center">
-                  <LibIcon icon="Success" size="xl" className="text-green-600" />
-                </div>
+        {/* Success State — Certificate */}
+        {!error && result && result.isValid && (() => {
+          const aiPolicy = AI_POLICY_LABELS[result.ai_training_policy || 'prohibited'] || AI_POLICY_LABELS['prohibited'];
+          const licenseLabel = LICENSE_LABELS[result.license || ''] || result.license?.toUpperCase() || 'Unknown';
+
+          return (
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            {/* Certificate Header */}
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-8 py-6 text-center">
+              <div className="flex items-center justify-center space-x-2 mb-3">
+                <LibIcon icon="Success" size="sm" className="text-green-400" />
+                <span className="text-sm font-semibold text-green-400 uppercase tracking-wider">
+                  Verified Registration
+                </span>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Content Verified!</h2>
-              <p className="text-gray-600">
-                This content is registered and protected on the DAON blockchain
-              </p>
+              {result.metadata?.title ? (
+                <>
+                  <h2 className="text-2xl font-bold text-white">{result.metadata.title}</h2>
+                  <p className="text-gray-400 mt-1 text-sm">
+                    Registered on the DAON blockchain
+                  </p>
+                </>
+              ) : (
+                <h2 className="text-2xl font-bold text-white">Content Verified</h2>
+              )}
             </div>
 
-            {/* Blockchain Badge */}
-            {result.blockchain?.verified && (
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4">
+            <div className="p-8 space-y-6">
+              {/* AI Training Policy Banner */}
+              <div className={`${aiPolicy.bg} ${aiPolicy.border} border rounded-xl p-4`}>
                 <div className="flex items-center justify-center space-x-2">
-                  <LibIcon icon="Success" size="sm" className="text-blue-600" />
-                  <span className="text-sm font-semibold text-blue-900">
-                    Verified on Blockchain
+                  <span className={`text-sm font-semibold ${aiPolicy.color} uppercase tracking-wide`}>
+                    {aiPolicy.label}
                   </span>
                 </div>
+                {result.ai_training_policy === 'contact_required' && result.licensing_email && (
+                  <p className="text-center mt-2 text-sm text-amber-700">
+                    Licensing inquiries:{' '}
+                    <a href={`mailto:${result.licensing_email}`} className="underline font-medium">
+                      {result.licensing_email}
+                    </a>
+                  </p>
+                )}
               </div>
-            )}
 
-            {/* Details */}
-            <div className="space-y-4">
-              {/* Content Hash */}
-              {result.contentHash && (
+              {/* Registration Details */}
+              <div className="space-y-4">
+                {/* Content Hash */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <p className="text-xs font-medium text-gray-500 mb-2">Content Hash (SHA-256)</p>
                   <p className="text-sm font-mono text-gray-900 break-all">{result.contentHash}</p>
                 </div>
-              )}
 
-              {/* Metadata Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Timestamp */}
-                {result.timestamp && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-xs font-medium text-gray-500 mb-2">Registration Date</p>
-                    <p className="text-sm text-gray-900">
-                      {new Date(result.timestamp).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        timeZoneName: 'short'
-                      })}
-                    </p>
-                  </div>
-                )}
+                {/* Grid: Date, License, Chain */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {result.timestamp && (
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-xs font-medium text-gray-500 mb-2">Registration Date</p>
+                      <p className="text-sm text-gray-900">
+                        {new Date(result.timestamp).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          timeZoneName: 'short'
+                        })}
+                      </p>
+                    </div>
+                  )}
 
-                {/* License */}
-                {result.license && (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-xs font-medium text-gray-500 mb-2">License</p>
-                    <p className="text-sm text-gray-900 font-medium uppercase">{result.license}</p>
+                    <p className="text-sm text-gray-900 font-medium">{licenseLabel}</p>
+                  </div>
+                </div>
+
+                {/* Blockchain Proof */}
+                {(result.blockchain?.txHash || result.blockchain?.height) && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-xs font-medium text-gray-500 mb-3">Blockchain Proof</p>
+                    <div className="space-y-2">
+                      {result.blockchain.txHash && (
+                        <div>
+                          <span className="text-xs text-gray-500">Transaction: </span>
+                          <span className="text-sm font-mono text-gray-900 break-all">
+                            {result.blockchain.txHash}
+                          </span>
+                        </div>
+                      )}
+                      {result.blockchain.height && (
+                        <div>
+                          <span className="text-xs text-gray-500">Block Height: </span>
+                          <span className="text-sm font-mono text-gray-900">
+                            {result.blockchain.height.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-xs text-gray-500">Network: </span>
+                        <span className="text-sm text-gray-900">daon-mainnet-1</span>
+                      </div>
+                    </div>
                   </div>
                 )}
 
                 {/* Creator */}
                 {result.creator && (
-                  <div className="bg-gray-50 rounded-lg p-4 md:col-span-2">
+                  <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-xs font-medium text-gray-500 mb-2">Creator</p>
                     <p className="text-sm font-mono text-gray-900 break-all">{result.creator}</p>
                   </div>
                 )}
+
+                {/* Additional Metadata */}
+                {result.metadata && (result.metadata.author || result.metadata.type || result.metadata.description) && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-xs font-medium text-gray-500 mb-3">Content Information</p>
+                    <div className="space-y-2">
+                      {result.metadata.author && (
+                        <div>
+                          <span className="text-xs text-gray-500">Author: </span>
+                          <span className="text-sm text-gray-900">{result.metadata.author}</span>
+                        </div>
+                      )}
+                      {result.metadata.type && (
+                        <div>
+                          <span className="text-xs text-gray-500">Type: </span>
+                          <span className="text-sm text-gray-900 capitalize">{result.metadata.type}</span>
+                        </div>
+                      )}
+                      {result.metadata.description && (
+                        <div>
+                          <span className="text-xs text-gray-500">Description: </span>
+                          <span className="text-sm text-gray-900">{result.metadata.description}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Metadata if available */}
-              {result.metadata && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs font-medium text-gray-500 mb-3">Content Information</p>
-                  <div className="space-y-2">
-                    {result.metadata.title && (
-                      <div>
-                        <span className="text-xs text-gray-600">Title: </span>
-                        <span className="text-sm text-gray-900">{result.metadata.title}</span>
-                      </div>
-                    )}
-                    {result.metadata.author && (
-                      <div>
-                        <span className="text-xs text-gray-600">Author: </span>
-                        <span className="text-sm text-gray-900">{result.metadata.author}</span>
-                      </div>
-                    )}
-                    {result.metadata.type && (
-                      <div>
-                        <span className="text-xs text-gray-600">Type: </span>
-                        <span className="text-sm text-gray-900 capitalize">{result.metadata.type}</span>
-                      </div>
-                    )}
-                    {result.metadata.description && (
-                      <div>
-                        <span className="text-xs text-gray-600">Description: </span>
-                        <span className="text-sm text-gray-900">{result.metadata.description}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Info Box */}
-            {result.timestamp && result.license && (
+              {/* Explainer */}
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <div className="flex items-start space-x-3">
                   <LibIcon icon="Privacy" size="lg" className="text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm text-blue-900 font-medium mb-1">What does this mean?</p>
                     <p className="text-sm text-blue-700">
-                      This cryptographic proof confirms that content matching this hash was registered on {new Date(result.timestamp).toLocaleDateString()} 
-                      and is protected under the {result.license.toUpperCase()} license. This registration is permanent and cannot be altered.
+                      This is a cryptographic certificate proving that content matching this SHA-256 hash
+                      was registered on the DAON blockchain
+                      {result.timestamp && <> on {new Date(result.timestamp).toLocaleDateString()}</>}.
+                      The creator set the license to <strong>{licenseLabel}</strong> and
+                      the AI training policy to <strong>{aiPolicy.label.toLowerCase()}</strong>.
+                      This registration is permanent and cannot be altered or removed.
                     </p>
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <button
-                onClick={() => window.location.href = '/assets'}
-                className="flex-1 py-3 px-4 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors"
-              >
-                Protect Your Content
-              </button>
-              <button
-                onClick={() => window.print()}
-                className="flex-1 py-3 px-4 rounded-xl font-medium bg-gray-600 hover:bg-gray-700 text-white transition-colors"
-              >
-                Print Certificate
-              </button>
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <button
+                  onClick={() => window.location.href = '/assets'}
+                  className="flex-1 py-3 px-4 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                >
+                  Protect Your Content
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 py-3 px-4 rounded-xl font-medium bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+                >
+                  Print Certificate
+                </button>
+              </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500">
