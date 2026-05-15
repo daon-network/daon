@@ -611,12 +611,13 @@ app.get('/api/v1/verify/:hash', [
     let record = null;
     let source = 'memory';
     
-    // Try blockchain first if enabled
+    // Check blockchain verification
+    let blockchainVerified = false;
     if (blockchainEnabled && blockchainClient.connected) {
       try {
         const blockchainRecord = await blockchainClient.verifyContent(hash);
-        
         if (blockchainRecord.verified) {
+          blockchainVerified = true;
           record = {
             contentHash: hash,
             timestamp: new Date(blockchainRecord.timestamp * 1000).toISOString(),
@@ -627,43 +628,45 @@ app.get('/api/v1/verify/:hash', [
           source = 'blockchain';
         }
       } catch (blockchainError) {
-        logger.warn('Blockchain verification failed, checking memory:', blockchainError.message);
+        logger.warn('Blockchain verification failed, checking database:', blockchainError.message);
       }
     }
-    
+
+    // Always check database for full record (title, AI policy, tx hash, etc.)
+    try {
+      const dbRecord = await db.content.findByHash(hash);
+      if (dbRecord) {
+        if (!record) {
+          // DB is the primary source
+          record = {
+            contentHash: hash,
+            timestamp: dbRecord.created_at,
+            license: dbRecord.license,
+            blockchain: false,
+          };
+          source = 'database';
+        }
+        // Enrich record with DB fields regardless of source
+        record.ai_training_policy = dbRecord.ai_training_policy || 'prohibited';
+        record.licensing_email = dbRecord.licensing_email || null;
+        record.metadata = {
+          title: dbRecord.title,
+          type: dbRecord.content_type,
+          description: dbRecord.description,
+        };
+        record.verificationUrl = dbRecord.verification_url || generateVerificationUrl(hash);
+        record.blockchainTx = dbRecord.blockchain_tx;
+        record.blockchainHeight = dbRecord.blockchain_height;
+      }
+    } catch (dbError) {
+      logger.warn('DB verification lookup failed:', (dbError as any).message);
+    }
+
     // Fall back to in-memory cache
     if (!record) {
       record = protectedContent.get(hash);
       if (record) {
         source = 'memory-cache';
-      }
-    }
-
-    // Fall back to database (shared across all instances)
-    if (!record) {
-      try {
-        const dbRecord = await db.content.findByHash(hash);
-        if (dbRecord) {
-          record = {
-            contentHash: hash,
-            timestamp: dbRecord.created_at,
-            license: dbRecord.license,
-            ai_training_policy: dbRecord.ai_training_policy || 'prohibited',
-            licensing_email: dbRecord.licensing_email || null,
-            licensing_uri: dbRecord.licensing_uri || null,
-            metadata: {
-              title: dbRecord.title,
-              type: dbRecord.content_type,
-              description: dbRecord.description,
-            },
-            verificationUrl: dbRecord.verification_url || generateVerificationUrl(hash),
-            blockchainTx: dbRecord.blockchain_tx,
-            blockchainHeight: dbRecord.blockchain_height,
-          };
-          source = 'database';
-        }
-      } catch (dbError) {
-        logger.warn('DB verification lookup failed:', (dbError as any).message);
       }
     }
 

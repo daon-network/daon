@@ -240,8 +240,9 @@ jobs:
 
             # Stop and remove app containers so new images are guaranteed to run
             # (--force-recreate is unreliable when container_name is set)
-            docker compose stop daon-api daon-frontend daon-blockchain 2>/dev/null || true
-            docker compose rm -f daon-api daon-frontend daon-blockchain 2>/dev/null || true
+            # Service names must match docker-compose.yml (daon-api-1, daon-api-3, etc.)
+            docker compose stop daon-api-1 daon-api-3 daon-frontend daon-blockchain 2>/dev/null || true
+            docker compose rm -f daon-api-1 daon-api-3 daon-frontend daon-blockchain 2>/dev/null || true
 
             # Deploy full stack
             docker compose up -d --remove-orphans
