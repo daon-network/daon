@@ -658,6 +658,7 @@ app.get('/api/v1/verify/:hash', [
             },
             verificationUrl: dbRecord.verification_url || generateVerificationUrl(hash),
             blockchainTx: dbRecord.blockchain_tx,
+            blockchainHeight: dbRecord.blockchain_height,
           };
           source = 'database';
         }
@@ -686,13 +687,14 @@ app.get('/api/v1/verify/:hash', [
       license: record.license,
       ai_training_policy: record.ai_training_policy || 'prohibited',
       licensing_email: record.licensing_email || null,
-      licensing_uri: record.licensing_uri || null,
       metadata: record.metadata,
       verificationUrl: record.verificationUrl || generateVerificationUrl(hash),
       blockchain: {
         enabled: blockchainEnabled,
         verified: source === 'blockchain',
-        source: source
+        source: source,
+        txHash: record.blockchainTx || null,
+        height: record.blockchainHeight || null,
       }
     });
     
