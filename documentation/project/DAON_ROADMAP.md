@@ -33,6 +33,20 @@ A creator submits content → DAON hashes it → records the hash + identity + l
 
 **Known issue:** The default license is inconsistent. The single-item endpoint defaults to `all-rights-reserved`; the bulk and broker endpoints default to `liberation_v1`. This should be aligned before launch.
 
+**Next for Pillar 1 — Canary Trap Registry:**
+
+When a creator registers content, they can also register a *canary* — a short, unique, statistically improbable phrase embedded in their published work. The canary hash is stored on-chain alongside the content record; the plaintext is known only to the creator. If a model is later suspected of training on their work, the creator prompts the model to elicit the canary. Successful elicitation + the timestamped DAON receipt = evidence of unauthorized ingestion.
+
+**What to build:**
+- Canary generation tool (produces phrases with near-zero probability of natural occurrence)
+- `canary_hash` field on `protected_content`, committed to chain
+- Canary verification endpoint: given a canary and a model response, assess statistical likelihood of memorization
+- Creator guidance on canary placement (must survive tokenization and not alter meaning for human readers)
+
+**Research basis:** ICLR 2025 canary-based privacy auditing demonstrated the first nontrivial privacy audit of an LLM trained on real data. Canary design is the critical variable — poorly designed canaries underestimate memorization by orders of magnitude. The generation tool must account for tokenizer behavior across major model families.
+
+**Priority:** Near-term. This is a field, a tool, and an endpoint — not a new system.
+
 ---
 
 ### 2. Content Verification
@@ -50,6 +64,28 @@ A creator submits content → DAON hashes it → records the hash + identity + l
 **Notes:**
 - Architecture is already correct — it's purely an input format extension
 - Priority: near-term post-launch
+
+**Next for Pillar 2 — Membership Inference as a Service (MIaaS):**
+
+DAON already holds the registered content. MIaaS lets a creator ask: *"Was my work used to train this model?"* and get a statistically rigorous answer.
+
+**How it works:**
+- Creator selects registered content from their DAON portfolio
+- DAON runs membership inference attacks against target model APIs (SPV-MIA, DUALTEST, or successor methods)
+- Returns a confidence score and a report structured for legal proceedings
+- Canary probes (from Pillar 1) are used as targeted tests alongside general membership inference
+
+**What to build:**
+- Inference pipeline that queries model APIs with registered content
+- Statistical testing framework (p-values, AUC scores, false positive calibration)
+- Report generator: timestamped DAON receipt + inference results + methodology disclosure
+- API partnerships or proxy access to target models
+
+**Research basis:** SPV-MIA raised membership inference AUC from 0.7 to 0.9. DUALTEST detected hundreds of memorized samples in LLaMA-2-70B across one million articles. These methods work on black-box API access — no model weights required.
+
+**Priority:** Medium-term. Depends on having a critical mass of registered content and stable model API access. Legal report format should be designed with input from an IP attorney.
+
+**Open question:** Should MIaaS results be published on-chain as "inference attestations," creating a public record of which models show evidence of training on which registered works?
 
 ---
 
@@ -103,17 +139,45 @@ The broker system lets third-party platforms register content on behalf of their
 
 ---
 
+## Research Track: Radioactive Text Watermarking
+
+*Separate project. Not a DAON feature — a tool that feeds into DAON's registry.*
+
+The February 2024 paper "Watermarking Makes Language Models Radioactive" proved that watermarked text leaves detectable traces in models trained on it, with p-values as low as 10⁻⁶. ICLR 2025 extended this to diffusion models and federated learning.
+
+**The concept:** A creator runs their text through a watermarking process that embeds statistically detectable patterns at the token distribution level — invisible to human readers, but "radioactive" to any model that ingests it. If a model trains on the watermarked version, the watermark signature propagates into the model's outputs and can be detected with high confidence.
+
+**This is not homoglyph swapping.** It's distributional — shifting which synonym or phrasing gets used in ways that are statistically fingerprinted. The original meaning is preserved. The math is sound.
+
+**What needs to exist:**
+- A text-specific implementation for human-authored content (current work focuses on LLM-generated text and images)
+- A detection pipeline that works against black-box model APIs
+- Integration with DAON's registry so the watermark parameters are timestamped on-chain
+- Probably an academic collaboration — this is a research problem, not a weekend feature
+
+**The endgame:** A creator watermarks their manuscript, registers the watermarked version on DAON, publishes it. Six months later, a model shows the radioactive signature. The DAON receipt proves the watermarked version existed before the model's training cutoff. The statistical test proves ingestion. The Liberation License proves the boundary was set. That's a case.
+
+**Key references:**
+- "Watermarking Makes Language Models Radioactive" (Sander et al., 2024)
+- "Radioactive Watermarks in Diffusion and Autoregressive Image Generative Models" (2025)
+- WARD: Dataset misuse detection in RAG systems with statistical guarantees (ETH Zürich, ICLR 2025)
+- "Scaling Up Membership Inference" (NAACL 2025)
+- "Privacy Auditing of Large Language Models" (2025) — canary design for nontrivial LLM auditing
+
+---
+
 ## Sequence
 
 ```
 NOW          → Public launch with current feature set (Pillar 1)
-NEAR-TERM    → Content verification via file upload (Pillar 2 gap)
+NEAR-TERM    → Canary trap registry (Pillar 1) + binary file verification (Pillar 2 gap)
 NEXT         → Broker system completion + first certified partner (Pillar 3)
-FOLLOWING    → AI licensing infrastructure (contact routing + audit trail)
+FOLLOWING    → Membership Inference as a Service (Pillar 2)
+RESEARCH     → Radioactive text watermarking (separate project, feeds into DAON)
 ONGOING      → Platform shutdown protocol, identity migration, DMCA handling
 ```
 
-The broker system does not need to be complete before launch. Launch with Pillar 1. Add Pillar 2 (content verification) as the first post-launch feature. Broker system is the medium-term priority that enables mass adoption without requiring individual creator action.
+The broker system does not need to be complete before launch. Launch with Pillar 1. Canary traps and binary verification are the first post-launch features. MIaaS follows once there's enough registered content to make inference attacks meaningful. Radioactive watermarking is a parallel research effort.
 
 ---
 
@@ -139,10 +203,9 @@ Estimated: ~120 engineering hours from current state.
 - Licensing negotiations or marketplaces
 - Price setting
 - Revenue distribution
-- AI model monitoring or violation detection
 - Content hosting of any kind
 
-These are appropriate for third parties to build on top of DAON's verification infrastructure. DAON's job is proof. Everything else is someone else's job.
+These are appropriate for third parties to build on top of DAON's verification infrastructure. DAON's job is proof — proof of registration, proof of boundary, and (with MIaaS and radioactive watermarking) proof of ingestion.
 
 ---
 
@@ -151,3 +214,5 @@ These are appropriate for third parties to build on top of DAON's verification i
 1. Should license records (AI training audit trail) be public or private?
 2. For broker-registered content: auto-populate broker's licensing email as default contact?
 3. Payment currency in license records: normalize to USD or support multiple?
+4. Should MIaaS inference results be published on-chain as "ingestion attestations" — creating a public, immutable record of which models show evidence of training on which registered works?
+5. Radioactive watermarking: pursue as internal research or seek academic partnership? (ETH Zürich, UChicago, and Amazon Science all have active groups in this space.)
