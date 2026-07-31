@@ -20,11 +20,19 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Define plugin constants
-define('DAON_PLUGIN_VERSION', '1.0.0');
-define('DAON_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('DAON_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('DAON_PLUGIN_BASENAME', plugin_basename(__FILE__));
+// Define plugin constants (guarded for test re-inclusion)
+if (!defined('DAON_PLUGIN_VERSION')) {
+    define('DAON_PLUGIN_VERSION', '1.0.0');
+}
+if (!defined('DAON_PLUGIN_PATH')) {
+    define('DAON_PLUGIN_PATH', plugin_dir_path(__FILE__));
+}
+if (!defined('DAON_PLUGIN_URL')) {
+    define('DAON_PLUGIN_URL', plugin_dir_url(__FILE__));
+}
+if (!defined('DAON_PLUGIN_BASENAME')) {
+    define('DAON_PLUGIN_BASENAME', plugin_basename(__FILE__));
+}
 
 /**
  * Main DAON Creator Protection Plugin Class
