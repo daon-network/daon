@@ -8,6 +8,9 @@ api-server/dist/
 sdks/python/**/__pycache__/
 sdks/ruby/.bundle/
 sdks/ruby/vendor/
+verification-service/.next/
+.playwright-mcp/
+wordpress-plugin/daon-creator-protection/vendor/
 
 # OS & editor
 **/.DS_Store
