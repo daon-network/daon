@@ -31,7 +31,7 @@
     "content-registry"
   ],
   "author": "DAON Network",
-  "license": "SEE LICENSE IN ../LICENSE.md",
+  "license": "AGPL-3.0-only",
   "dependencies": {
     "@bufbuild/protobuf": "^2.10.2",
     "@cosmjs/crypto": "^0.38.1",

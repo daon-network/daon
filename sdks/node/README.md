@@ -182,11 +182,7 @@ const response: ProtectionResponse = await client.protectContent(request);
 
 ## License
 
-This project is licensed under the [Liberation License v1.0](https://github.com/liberationlicense/license).
-
-**Key terms:**
-- ✅ Free for creators and platforms protecting creative works
-- ✅ Free for educational and research purposes
+This SDK is licensed under the [Apache License 2.0](./LICENSE) — permissive, so you can embed it in any application, including closed-source, without copyleft obligations. (DAON's server-side reference implementation is AGPL-3.0; the SDK is deliberately permissive to maximize adoption.)
 - ❌ Cannot be used by AI companies to identify unprotected content for training
 - ❌ Cannot be used to circumvent creator protection
 

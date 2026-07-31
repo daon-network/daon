@@ -3,7 +3,7 @@
 **Decentralized Autonomous Organization for Creators - Protecting Creative Works with Blockchain Technology**
 
 [![Support DAON on Ko-fi](https://img.shields.io/badge/Support%20DAON-Ko--fi-FF5E5B?style=flat&logo=ko-fi)](https://ko-fi.com/greenfieldoverride)
-[![License: Liberation v1.0](https://img.shields.io/badge/License-Liberation%20v1.0-blue.svg)](https://github.com/liberationlicense/license)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE.md)
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://docker.com)
 
 ## 🌟 Mission
@@ -152,9 +152,13 @@ DAON Network is committed to keeping creator protection tools **free and open so
 
 ## 📄 License
 
-DAON Network is released under the **MIT License**. See [LICENSE](LICENSE) for details.
+DAON is released under recognized open-source licenses, chosen per component:
 
-Liberation License protections are enforced through blockchain consensus and do not affect the open-source nature of this codebase.
+- **Reference implementation & services** (API server, blockchain core, web portal) — [GNU AGPL-3.0](LICENSE.md). Network-copyleft keeps the running service and any fork open.
+- **Client SDKs** (`sdks/`) — [Apache-2.0](sdks/node/LICENSE), so you can embed them in any application, including closed-source, without copyleft obligations.
+- **Documentation** (`docs/`, `documentation/`) — [CC-BY-SA-4.0](docs/LICENSE).
+
+The **DAON** name and conformance are protected separately, so that anything calling itself "DAON" keeps trust anchored in the creator — not in a vendor or device.
 
 ## 🔗 Connect
 

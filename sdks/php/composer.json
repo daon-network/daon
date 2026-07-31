@@ -2,7 +2,7 @@
     "name": "daon/sdk",
     "description": "DAON Creator Protection SDK for PHP applications with WordPress support",
     "type": "library",
-    "license": "SEE LICENSE IN ../../LICENSE.md",
+    "license": "Apache-2.0",
     "authors": [
         {
             "name": "DAON Network",
