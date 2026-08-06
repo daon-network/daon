@@ -8,6 +8,7 @@
 
 import React, { useState } from 'react';
 import { LibIcon } from '@greenfieldoverride/liberation-ui';
+import { Circle, Smartphone, Bot, Laptop } from 'lucide-react';
 
 interface AuthenticatorGuideProps {
   isOpen: boolean;
@@ -18,7 +19,8 @@ type AuthApp = 'google' | 'authy' | '1password' | 'microsoft' | 'bitwarden';
 
 interface AppGuide {
   name: string;
-  icon: string;
+  /** Tailwind text colour for the app's brand dot. */
+  iconColor: string;
   platforms: string[];
   steps: string[];
   downloadLinks: {
@@ -31,7 +33,7 @@ interface AppGuide {
 const AUTHENTICATOR_APPS: Record<AuthApp, AppGuide> = {
   google: {
     name: 'Google Authenticator',
-    icon: '🔵',
+    iconColor: 'text-blue-500',
     platforms: ['iOS', 'Android'],
     steps: [
       'Download Google Authenticator from the App Store or Google Play',
@@ -47,7 +49,7 @@ const AUTHENTICATOR_APPS: Record<AuthApp, AppGuide> = {
   },
   authy: {
     name: 'Authy',
-    icon: '🔴',
+    iconColor: 'text-red-500',
     platforms: ['iOS', 'Android', 'Desktop'],
     steps: [
       'Download Authy from the App Store, Google Play, or authy.com',
@@ -65,7 +67,7 @@ const AUTHENTICATOR_APPS: Record<AuthApp, AppGuide> = {
   },
   '1password': {
     name: '1Password',
-    icon: '🔵',
+    iconColor: 'text-blue-500',
     platforms: ['iOS', 'Android', 'Desktop'],
     steps: [
       'Open 1Password and go to your vault',
@@ -83,7 +85,7 @@ const AUTHENTICATOR_APPS: Record<AuthApp, AppGuide> = {
   },
   microsoft: {
     name: 'Microsoft Authenticator',
-    icon: '🟦',
+    iconColor: 'text-blue-600',
     platforms: ['iOS', 'Android'],
     steps: [
       'Download Microsoft Authenticator from the App Store or Google Play',
@@ -100,7 +102,7 @@ const AUTHENTICATOR_APPS: Record<AuthApp, AppGuide> = {
   },
   bitwarden: {
     name: 'Bitwarden',
-    icon: '🟦',
+    iconColor: 'text-blue-600',
     platforms: ['iOS', 'Android', 'Desktop', 'Browser'],
     steps: [
       'Open Bitwarden and go to your vault',
@@ -172,7 +174,11 @@ export function AuthenticatorGuide({ isOpen, onClose }: AuthenticatorGuideProps)
                       }
                     `}
                   >
-                    <div className="text-3xl mb-2">{AUTHENTICATOR_APPS[app].icon}</div>
+                    <Circle
+                      className={`${AUTHENTICATOR_APPS[app].iconColor} fill-current mx-auto mb-2`}
+                      size={28}
+                      aria-hidden="true"
+                    />
                     <div className="text-sm font-medium text-gray-900">
                       {AUTHENTICATOR_APPS[app].name}
                     </div>
@@ -184,7 +190,7 @@ export function AuthenticatorGuide({ isOpen, onClose }: AuthenticatorGuideProps)
             {/* Selected App Guide */}
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 space-y-4">
               <div className="flex items-center space-x-3">
-                <div className="text-4xl">{guide.icon}</div>
+                <Circle className={`${guide.iconColor} fill-current`} size={36} aria-hidden="true" />
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">{guide.name}</h3>
                   <p className="text-sm text-gray-600">
@@ -202,7 +208,7 @@ export function AuthenticatorGuide({ isOpen, onClose }: AuthenticatorGuideProps)
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-2 px-4 py-2 bg-white rounded-lg border border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-colors text-sm font-medium"
                   >
-                    <span>📱</span>
+                    <Smartphone size={16} aria-hidden="true" />
                     <span>iOS</span>
                   </a>
                 )}
@@ -213,7 +219,7 @@ export function AuthenticatorGuide({ isOpen, onClose }: AuthenticatorGuideProps)
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-2 px-4 py-2 bg-white rounded-lg border border-gray-300 hover:border-green-500 hover:bg-green-50 transition-colors text-sm font-medium"
                   >
-                    <span>🤖</span>
+                    <Bot size={16} aria-hidden="true" />
                     <span>Android</span>
                   </a>
                 )}
@@ -224,7 +230,7 @@ export function AuthenticatorGuide({ isOpen, onClose }: AuthenticatorGuideProps)
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-2 px-4 py-2 bg-white rounded-lg border border-gray-300 hover:border-purple-500 hover:bg-purple-50 transition-colors text-sm font-medium"
                   >
-                    <span>💻</span>
+                    <Laptop size={16} aria-hidden="true" />
                     <span>Desktop</span>
                   </a>
                 )}

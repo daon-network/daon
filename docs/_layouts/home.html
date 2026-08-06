@@ -28,6 +28,7 @@
     {% seo %}
 </head>
 <body>
+{% include icons.svg %}
     <header class="md-header">
         <nav class="md-header__inner md-container">
             <div class="md-header__title">
@@ -97,7 +98,7 @@
             <div class="md-footer-meta__inner md-container">
                 <div class="md-footer-copyright">
                     <p>&copy; {{ 'now' | date: "%Y" }} DAON Network. Open source under MIT License.</p>
-                    <p><small>🛡️ Every protected work is a victory against exploitation.</small></p>
+                    <p><small><svg class="icon"><use href="#i-shield"/></svg> Every protected work is a victory against exploitation.</small></p>
                 </div>
             </div>
         </div>

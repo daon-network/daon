@@ -119,6 +119,16 @@ body {
   width: 2rem;
 }
 
+/* Icons (lucide, inlined as a sprite via _includes/icons.svg).
+   Sized in em so an icon tracks the type it sits beside, and inheriting
+   currentColor so it takes that text's colour. */
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  flex: none;
+}
+
 .md-logo svg,
 .md-logo img {
   height: 100%;

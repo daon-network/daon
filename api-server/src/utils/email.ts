@@ -135,7 +135,7 @@ export async function sendMagicLinkEmail(email: string, token: string, magicLink
     </head>
     <body>
       <div class="header">
-        <h1>🛡️ Sign in to DAON</h1>
+        <h1>Sign in to DAON</h1>
       </div>
       
       <div class="content">
@@ -150,7 +150,7 @@ export async function sendMagicLinkEmail(email: string, token: string, magicLink
         <div class="code-box">${magicLink}</div>
         
         <div class="warning">
-          <strong>⚠️ Security Note:</strong> Never share this link with anyone. DAON will never ask for this link via email, phone, or social media.
+          <strong>Security Note:</strong> Never share this link with anyone. DAON will never ask for this link via email, phone, or social media.
         </div>
       </div>
       
@@ -254,7 +254,7 @@ export async function sendEmailChangeConfirmation(
     </head>
     <body>
       <div class="header">
-        <h1>🔒 Email Change Request</h1>
+        <h1>Email Change Request</h1>
       </div>
       
       <div class="content">
@@ -265,7 +265,7 @@ export async function sendEmailChangeConfirmation(
         <p><strong>${newEmail}</strong></p>
         
         <div class="alert">
-          <strong>⚠️ Was this you?</strong><br>
+          <strong>Was this you?</strong><br>
           If you requested this change, click the button below to confirm.
           If you didn't request this, click "Cancel Request" to secure your account.
         </div>
@@ -336,7 +336,7 @@ export async function sendEmailChangeVerification(
       </style>
     </head>
     <body>
-      <h1>✅ Verify Your New Email</h1>
+      <h1>Verify Your New Email</h1>
       <p>Click the button below to complete your email change:</p>
       <center>
         <a href="${verifyLink}" class="button">Verify Email</a>
@@ -382,7 +382,7 @@ export async function sendNewDeviceNotification(
       </style>
     </head>
     <body>
-      <h1>🔐 New Device Login</h1>
+      <h1>New Device Login</h1>
       <div class="alert">
         <p><strong>Your account was accessed from a new device:</strong></p>
         <ul>

@@ -86,6 +86,52 @@ For professional print, prefer sending the **SVG** — it is resolution independ
 shop needing CMYK can separate from vector without the quality loss of converting an sRGB raster.
 The PNGs are for cases where vector is not accepted.
 
+## Icons
+
+Icons are [lucide](https://lucide.dev) (ISC), self-hosted. Nothing is fetched from a CDN, so
+no third party sees who reads the docs.
+
+`scripts/build-icon-sprite.mjs` generates every consumer from `lucide-react` -- the same
+package the frontend imports -- so the icons on the docs site, in the browser extension and in
+the WordPress plugin cannot drift from the ones React renders. Run it after changing the
+`ICONS` map at the top of that script:
+
+```
+node scripts/build-icon-sprite.mjs
+```
+
+| Surface | Mechanism | Generated file |
+| --- | --- | --- |
+| Frontend (React) | `import { Shield } from 'lucide-react'` | -- |
+| Docs site | sprite, inlined via `{% raw %}{% include icons.svg %}{% endraw %}` | `docs/_includes/icons.svg` |
+| Browser extension | `daonIcon()` / `daonIconMarkup()` | `browser-extension/icons.js` |
+| WordPress plugin | inline `<svg>` pasted into PHP | `brand/icons/*.svg` |
+| Transactional email | **none -- see below** | -- |
+
+Icons take their colour from `currentColor` and are sized in `em`, so they track whatever text
+they sit beside. The docs stylesheet carries a matching `.icon` rule.
+
+### Why email has no icons
+
+Gmail and Outlook strip both `<svg>` and `@font-face`. An icon font or inline SVG in a
+transactional email renders as nothing at all, which is worse than the emoji it replaced. The
+templates in `api-server/src/utils/email.ts` therefore dropped their decorative emoji without
+substituting anything -- the headings carry themselves. If an email ever genuinely needs an
+icon, the only reliable mechanism is a hosted PNG, and it must survive being blocked, because
+most clients suppress remote images by default.
+
+The same constraint applies to a few browser-extension call sites: `chrome.contextMenus` titles,
+`chrome.notifications` bodies, `confirm()` and `alert()` are plain-text APIs that cannot hold
+markup. Those dropped their emoji too. The notification already passes `iconUrl: icons/icon48.png`,
+which is the supported way to put an icon there.
+
+### A note on the sprite
+
+Stroke attributes live on each `<symbol>`, not on the sprite's root `<svg>`. The root is not an
+ancestor of a symbol in the rendered tree, so a `<use>` elsewhere on the page inherits nothing
+from it -- put them on the root and every icon renders as a solid black blob that disappears
+against a dark background.
+
 ## Known limitation: small sizes
 
 Below roughly 32 px the ridge gaps and circuit traces collapse into a solid blob. `icon16.png` and

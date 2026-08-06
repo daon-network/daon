@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     
     <div class="daon-admin-header">
         <div class="daon-logo">
-            <span class="daon-shield">🛡️</span>
+            <span class="daon-shield"><svg style="vertical-align:-0.125em" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></span>
             <h2><?php _e('Protect Your Content with Blockchain Technology', 'daon-creator-protection'); ?></h2>
             <p class="description"><?php _e('DAON provides cryptographic proof of ownership to prevent AI exploitation of your creative work.', 'daon-creator-protection'); ?></p>
         </div>
@@ -162,22 +162,22 @@ if (!defined('ABSPATH')) {
         
         <div class="daon-info-grid">
             <div class="daon-info-card">
-                <h3>🛡️ <?php _e('What is DAON?', 'daon-creator-protection'); ?></h3>
+                <h3><svg style="vertical-align:-0.125em" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg> <?php _e('What is DAON?', 'daon-creator-protection'); ?></h3>
                 <p><?php _e('DAON (Digital Asset Ownership Network) provides cryptographic proof of content ownership using blockchain technology. This helps protect your creative work from unauthorized AI training and exploitation.', 'daon-creator-protection'); ?></p>
             </div>
             
             <div class="daon-info-card">
-                <h3>⚖️ <?php _e('Liberation License', 'daon-creator-protection'); ?></h3>
+                <h3><svg style="vertical-align:-0.125em" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/><path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/><path d="M7 21h10"/></svg> <?php _e('Liberation License', 'daon-creator-protection'); ?></h3>
                 <p><?php _e('Our recommended license that allows personal use, education, and humanitarian purposes while blocking corporate AI training without creator compensation. Perfect for blogs and creative content.', 'daon-creator-protection'); ?></p>
             </div>
             
             <div class="daon-info-card">
-                <h3>🔗 <?php _e('Blockchain Verification', 'daon-creator-protection'); ?></h3>
+                <h3><svg style="vertical-align:-0.125em" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> <?php _e('Blockchain Verification', 'daon-creator-protection'); ?></h3>
                 <p><?php _e('Each protected post gets a unique cryptographic hash stored on the DAON blockchain, providing tamper-proof evidence of ownership and publication date.', 'daon-creator-protection'); ?></p>
             </div>
             
             <div class="daon-info-card">
-                <h3>🌍 <?php _e('Global Protection', 'daon-creator-protection'); ?></h3>
+                <h3><svg style="vertical-align:-0.125em" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> <?php _e('Global Protection', 'daon-creator-protection'); ?></h3>
                 <p><?php _e('DAON protection works across platforms and jurisdictions. Your ownership proof travels with your content wherever it goes on the internet.', 'daon-creator-protection'); ?></p>
             </div>
         </div>
@@ -185,7 +185,7 @@ if (!defined('ABSPATH')) {
         <div class="daon-support-links">
             <h3><?php _e('Support DAON', 'daon-creator-protection'); ?></h3>
             <div class="daon-support-card" style="background: linear-gradient(135deg, #ff5e5b, #ff9500); padding: 16px; border-radius: 8px; margin-bottom: 16px; color: white;">
-                <h4 style="margin-top: 0; color: white;">☕ <?php _e('Help Keep DAON Free', 'daon-creator-protection'); ?></h4>
+                <h4 style="margin-top: 0; color: white;"><svg style="vertical-align:-0.125em" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg> <?php _e('Help Keep DAON Free', 'daon-creator-protection'); ?></h4>
                 <p><?php _e('DAON provides free creator protection tools powered by blockchain technology. Your support helps us maintain servers, develop new features, and fight against AI exploitation of creative works.', 'daon-creator-protection'); ?></p>
                 <a href="https://ko-fi.com/greenfieldoverride" target="_blank" style="
                     display: inline-block;
