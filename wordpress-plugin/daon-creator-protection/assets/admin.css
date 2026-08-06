@@ -1,7 +1,7 @@
 /* DAON Creator Protection - Admin Styles */
 
 .daon-admin-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #155DFC 0%, #9810FA 100%);
     color: white;
     padding: 2rem;
     border-radius: 8px;
@@ -61,7 +61,7 @@
 .daon-stat-number {
     font-size: 2.5rem;
     font-weight: bold;
-    color: #667eea;
+    color: #155DFC;
     margin-bottom: 0.5rem;
 }
 
@@ -134,7 +134,7 @@
 }
 
 .daon-support-links a {
-    color: #667eea;
+    color: #155DFC;
     text-decoration: none;
     font-weight: 500;
 }
@@ -149,7 +149,7 @@
 }
 
 #daon-protection .postbox-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #155DFC 0%, #9810FA 100%);
 }
 
 #daon-protection .postbox-header h2 {
@@ -225,16 +225,16 @@
 /* Protection buttons */
 .daon-protect-post,
 .daon-retry-protection {
-    background: #667eea !important;
-    border-color: #667eea !important;
+    background: #155DFC !important;
+    border-color: #155DFC !important;
     color: white !important;
     transition: all 0.2s ease;
 }
 
 .daon-protect-post:hover,
 .daon-retry-protection:hover {
-    background: #5a67d8 !important;
-    border-color: #5a67d8 !important;
+    background: #1447E6 !important;
+    border-color: #1447E6 !important;
     transform: translateY(-1px);
 }
 

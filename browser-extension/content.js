@@ -74,7 +74,7 @@
       top: 20px;
       right: 20px;
       z-index: 10000;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #155DFC 0%, #9810FA 100%);
       color: white;
       padding: 16px;
       border-radius: 12px;

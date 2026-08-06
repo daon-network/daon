@@ -111,8 +111,8 @@ daon:
   
   # Brand colors
   colors:
-    primary: "#667eea"
-    secondary: "#764ba2"
+    primary: "#155DFC"
+    secondary: "#9810FA"
     success: "#4CAF50"
     warning: "#FF9800"
     danger: "#F44336"

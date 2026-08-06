@@ -82,7 +82,7 @@ export async function sendMagicLinkEmail(email: string, token: string, magicLink
           text-align: center;
           margin-bottom: 30px;
           padding: 20px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #155DFC 0%, #9810FA 100%);
           border-radius: 10px;
         }
         .header h1 {
@@ -99,7 +99,7 @@ export async function sendMagicLinkEmail(email: string, token: string, magicLink
         .button {
           display: inline-block;
           padding: 15px 30px;
-          background: #667eea;
+          background: #155DFC;
           color: white !important;
           text-decoration: none;
           border-radius: 5px;
@@ -107,7 +107,7 @@ export async function sendMagicLinkEmail(email: string, token: string, magicLink
           margin: 20px 0;
         }
         .button:hover {
-          background: #5568d3;
+          background: #1447E6;
         }
         .footer {
           text-align: center;
@@ -119,7 +119,7 @@ export async function sendMagicLinkEmail(email: string, token: string, magicLink
           background: white;
           padding: 15px;
           border-radius: 5px;
-          border: 2px dashed #667eea;
+          border: 2px dashed #155DFC;
           font-family: monospace;
           word-break: break-all;
           margin: 15px 0;
@@ -218,7 +218,7 @@ export async function sendEmailChangeConfirmation(
           text-align: center;
           margin-bottom: 30px;
           padding: 20px;
-          background: #667eea;
+          background: #155DFC;
           border-radius: 10px;
         }
         .header h1 {
@@ -233,7 +233,7 @@ export async function sendEmailChangeConfirmation(
         .button {
           display: inline-block;
           padding: 15px 30px;
-          background: #667eea;
+          background: #155DFC;
           color: white !important;
           text-decoration: none;
           border-radius: 5px;

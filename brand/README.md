@@ -15,8 +15,43 @@ hex so that tooling without oklch support renders it correctly.
 | 100% | `pink-600` | `oklch(59.2% 0.249 0.584)` | `#E60076` |
 
 This matches the app's existing `from-blue-600 to-purple-600` and `from-purple-600 to-pink-600`
-gradients. The previous teal mark (`#5DD5D5 → #3FB8AF → #173F5F`) was not used anywhere in the
-application and has been retired.
+gradients.
+
+Three palettes were previously in circulation and have all been retired: the teal mark
+(`#5DD5D5 → #3FB8AF → #173F5F`), which themed the whole documentation site; an indigo
+(`#667eea → #764ba2`) used by the browser extension, transactional email, the WordPress
+plugin, and a Grafana dashboard; and the app's own blue/purple/pink, which is what everything
+now uses.
+
+## Surfaces
+
+Everything is a **light** surface: white or a near-white tint, dark text, `600`-weight accents.
+The documentation site previously ran a near-black theme (`#0a0f1c`) and has been brought onto
+the application's light system, so one set of weights now works everywhere.
+
+`docs/assets/css/daon.css` drives its theme from variables at the top of the file:
+
+| Variable | Token | hex | contrast on white |
+| --- | --- | --- | --- |
+| `--md-primary-color` | `blue-600` | `#155DFC` | 5.25:1 |
+| `--md-primary-light` | `blue-700` | `#1447E6` | 6.83:1 |
+| `--md-primary-dark` | `blue-800` | `#193CB8` | 8.82:1 |
+| `--md-accent-color` | `purple-600` | `#9810FA` | 5.54:1 |
+| `--md-text-color` | `gray-900` | `#101828` | 17.75:1 |
+
+The `-light` / `-dark` suffixes are historical. On a light surface they mean "hover tone" and
+"strongest emphasis" — both *darker* than the base, not lighter. Renaming them was left alone
+to keep the diff reviewable.
+
+Page washes use the app's `blue-50 → purple-50 → pink-50` (`#EFF6FF → #FAF5FF → #FDF2F8`).
+Cards are white with a `gray-200` hairline and a soft shadow.
+
+Two surfaces stay dark on purpose, and the light-on-dark text inside them is correct: the
+call-to-action footer gradient (white text on `600` weights scores 5.25 / 5.54 / 4.54, all
+clearing AA) and the syntax-highlighted code blocks.
+
+For reference, the retired indigo `#667eea` scored 3.66:1 on white — it was already failing AA
+for body text wherever it was used as a link or label colour. `blue-600` at 5.25:1 fixes that.
 
 ## Which file to use
 

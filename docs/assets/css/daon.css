@@ -3,34 +3,36 @@
 /* DAON Documentation Site - MkDocs Material Inspired */
 
 :root {
-  /* Colors - DAON Brand (teal as accent only) */
-  --md-primary-color: #5DD5D5;
-  --md-primary-light: #7DE8E8; 
-  --md-primary-dark: #2BA7A7;
-  --md-accent-color: #5DD5D5;
+  /* Colors - the application's palette (see brand/README.md).
+     The -light / -dark suffixes are historical: on this light surface they mean
+     "hover tone" and "strongest emphasis", both of which are darker, not lighter. */
+  --md-primary-color: #155DFC;   /* blue-600   5.25:1 on white */
+  --md-primary-light: #1447E6;   /* blue-700   6.83:1  hover */
+  --md-primary-dark: #193CB8;    /* blue-800   8.82:1  emphasis */
+  --md-accent-color: #9810FA;    /* purple-600 5.54:1 */
   
   /* Text colors */
-  --md-text-color: #f1f5f9;
-  --md-text-color-light: #e2e8f0; 
-  --md-text-color-lighter: #94a3b8;
+  --md-text-color: #101828;         /* gray-900 17.75:1 */
+  --md-text-color-light: #364153;   /* gray-700 */
+  --md-text-color-lighter: #6A7282; /* gray-500 */
   
-  /* Background colors - neutral grays */
-  --md-default-bg-color: #0a0f1c;
-  --md-default-bg-color--light: #111827;
-  --md-default-bg-color--lighter: #1f2937;
-  --md-default-bg-color--lightest: #374151;
+  /* Background colors */
+  --md-default-bg-color: #ffffff;
+  --md-default-bg-color--light: #F9FAFB;    /* gray-50 */
+  --md-default-bg-color--lighter: #F3F4F6;  /* gray-100 */
+  --md-default-bg-color--lightest: #E5E7EB; /* gray-200 */
   
   /* Surface colors */
-  --md-surface-color: #111827;
-  --md-surface-color--light: #1f2937;
+  --md-surface-color: #ffffff;
+  --md-surface-color--light: #F9FAFB;
   
   /* Border colors */
-  --md-border-color: #374151;
-  --md-border-color--light: #4b5563;
+  --md-border-color: #E5E7EB;        /* gray-200 */
+  --md-border-color--light: #D1D5DC; /* gray-300 */
   
   /* Shadow */
-  --md-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.4), 0 0 0.05rem rgba(0, 0, 0, 0.3);
-  --md-shadow-hover: 0 0.4rem 1rem rgba(0, 0, 0, 0.5), 0 0 0.1rem rgba(0, 0, 0, 0.4);
+  --md-shadow: 0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px rgba(16, 24, 40, 0.06);
+  --md-shadow-hover: 0 10px 15px -3px rgba(16, 24, 40, 0.1), 0 4px 6px -4px rgba(16, 24, 40, 0.1);
   
   /* Typography - Fun modern fonts */
   --md-text-font: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -75,14 +77,14 @@ body {
 
 /* Header */
 .md-header {
-  background: rgba(10, 15, 28, 0.95);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
-  box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.3), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
   position: sticky;
   top: 0;
   z-index: 1000;
   height: 2.4rem;
-  border-bottom: 1px solid rgba(55, 65, 81, 0.3);
+  border-bottom: 1px solid var(--md-border-color);
 }
 
 .md-header__inner {
@@ -117,7 +119,8 @@ body {
   width: 2rem;
 }
 
-.md-logo svg {
+.md-logo svg,
+.md-logo img {
   height: 100%;
   width: 100%;
   display: block;
@@ -135,7 +138,7 @@ body {
   background: var(--md-default-bg-color--light);
   overflow-x: auto;
   scrollbar-width: none;
-  border-top: 1px solid rgba(55, 65, 81, 0.3);
+  border-top: 1px solid var(--md-border-color);
 }
 
 .md-tabs::-webkit-scrollbar {
@@ -171,7 +174,7 @@ body {
 
 .md-tabs__link--active {
   color: var(--md-text-color);
-  background: rgba(55, 65, 81, 0.3);
+  background: var(--md-default-bg-color--lighter);
 }
 
 /* Buttons */
@@ -200,27 +203,27 @@ body {
 
 .md-button--primary {
   background: var(--md-primary-color);
-  color: #0a0f1c !important;
+  color: #ffffff !important;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(93, 213, 213, 0.3);
+  box-shadow: 0 4px 12px rgba(21, 93, 252, 0.3);
 }
 
 .md-button--primary:hover {
   background: var(--md-primary-light);
-  color: #0a0f1c !important;
-  box-shadow: 0 6px 16px rgba(93, 213, 213, 0.4);
+  color: #ffffff !important;
+  box-shadow: 0 6px 16px rgba(21, 93, 252, 0.4);
 }
 
 .md-button--secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border: 0.1rem solid rgba(255, 255, 255, 0.3);
+  background: #ffffff;
+  color: var(--md-text-color);
+  border: 0.1rem solid var(--md-border-color--light);
 }
 
 .md-button--secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.5);
+  background: var(--md-default-bg-color--light);
+  color: var(--md-text-color);
+  border-color: var(--md-primary-color);
 }
 
 /* Hero section buttons */
@@ -264,13 +267,11 @@ body {
 .md-hero {
   background: linear-gradient(
     135deg,
-    #1f2937 0%,
-    #111827 25%,
-    #0f172a 50%,
-    #0a0f1c 75%,
-    #000000 100%
+    #EFF6FF 0%,
+    #FAF5FF 50%,
+    #FDF2F8 100%
   );
-  color: #ffffff;
+  color: var(--md-text-color);
   overflow: hidden;
   position: relative;
 }
@@ -292,7 +293,7 @@ body {
   line-height: 1.3;
   margin: 0 auto var(--md-spacing-large) auto;
   max-width: 48rem;
-  color: #ffffff;
+  color: var(--md-text-color);
 }
 
 .md-hero__description {
@@ -390,7 +391,7 @@ h6:hover .header-link {
 .header-link:active {
   color: var(--md-primary-color) !important;
   text-decoration: none !important;
-  background: rgba(93, 213, 213, 0.1);
+  background: rgba(21, 93, 252, 0.1);
   transform: scale(1.1);
 }
 
@@ -458,7 +459,7 @@ div a:active {
 .md-content__inner a,
 .doc-sections a,
 ul li a {
-  border-bottom: 1px solid rgba(93, 213, 213, 0.3) !important;
+  border-bottom: 1px solid rgba(21, 93, 252, 0.3) !important;
   transition: all 0.125s;
 }
 
@@ -471,8 +472,8 @@ ul li a:hover {
 /* Section backgrounds for visual separation */
 .md-content__inner h2:nth-of-type(even) {
   background: linear-gradient(135deg, 
-    rgba(31, 41, 55, 0.3) 0%, 
-    rgba(17, 24, 39, 0.2) 100%
+    rgba(239, 246, 255, 0.9) 0%, 
+    rgba(250, 245, 255, 0.7) 100%
   );
   margin: 3rem -2rem 2rem -2rem;
   padding: 2rem 2rem 0.5rem 2rem;
@@ -505,14 +506,14 @@ ul li a:hover {
 
 /* Feature cards */
 .md-feature {
-  background: rgba(17, 24, 39, 0.9);
+  background: var(--md-surface-color);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(55, 65, 81, 0.4);
+  border: 1px solid var(--md-border-color);
   border-radius: 16px;
   padding: 2.5rem;
   position: relative;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--md-shadow);
   overflow: hidden;
 }
 
@@ -533,10 +534,10 @@ ul li a:hover {
 }
 
 .md-feature:hover {
-  border-color: rgba(93, 213, 213, 0.4);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  border-color: rgba(21, 93, 252, 0.4);
+  box-shadow: var(--md-shadow-hover);
   transform: translateY(-8px);
-  background: rgba(17, 24, 39, 0.95);
+  background: var(--md-surface-color);
 }
 
 .md-feature:hover::before {
@@ -550,20 +551,20 @@ ul li a:hover {
   width: 3rem;
   height: 3rem;
   border-radius: 16px;
-  background: rgba(55, 65, 81, 0.5);
+  background: var(--md-default-bg-color--lighter);
   font-size: 1.4rem;
   margin-bottom: var(--md-spacing);
-  color: #d1d5db;
+  color: var(--md-text-color-light);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(75, 85, 99, 0.4);
+  border: 1px solid var(--md-border-color);
 }
 
 .md-feature:hover .md-feature__icon {
   transform: scale(1.1);
-  background: rgba(93, 213, 213, 0.15);
+  background: rgba(21, 93, 252, 0.15);
   color: var(--md-primary-color);
-  border-color: rgba(93, 213, 213, 0.3);
+  border-color: rgba(21, 93, 252, 0.3);
 }
 
 .md-feature__title {
@@ -621,9 +622,9 @@ ul li a:hover {
 .md-cta-footer {
   background: linear-gradient(
     135deg,
-    #5DD5D5 0%,
-    #3FB8AF 50%,
-    #173F5F 100%
+    #155DFC 0%,
+    #9810FA 50%,
+    #E60076 100%
   );
   color: #ffffff;
   padding: 4rem 0;
@@ -699,8 +700,8 @@ ul li a:hover {
 /* Footer */
 .md-footer {
   background: linear-gradient(135deg, 
-    rgba(10, 15, 28, 0.9) 0%, 
-    rgba(17, 24, 39, 0.8) 100%
+    rgba(249, 250, 251, 0.9) 0%, 
+    rgba(243, 244, 246, 0.8) 100%
   );
   backdrop-filter: blur(10px);
   margin-top: 0;
@@ -710,10 +711,10 @@ ul li a:hover {
 
 .md-footer-meta {
   background: linear-gradient(135deg, 
-    rgba(17, 24, 39, 0.9) 0%, 
-    rgba(10, 15, 28, 0.8) 100%
+    rgba(249, 250, 251, 0.9) 0%, 
+    rgba(243, 244, 246, 0.8) 100%
   );
-  border-top: 1px solid rgba(55, 65, 81, 0.3);
+  border-top: 1px solid var(--md-border-color);
   backdrop-filter: blur(10px);
 }
 
@@ -903,14 +904,14 @@ pre[class*="language-css"]::before { content: "CSS"; background: #1572b6; color:
 
 /* Inline code in different contexts */
 h1 code, h2 code, h3 code, h4 code, h5 code, h6 code {
-  background: rgba(63, 184, 175, 0.1);
-  border: 1px solid rgba(63, 184, 175, 0.2);
+  background: rgba(21, 93, 252, 0.1);
+  border: 1px solid rgba(21, 93, 252, 0.2);
   color: var(--md-primary-dark);
 }
 
 .md-feature code {
-  background: rgba(93, 213, 213, 0.1);
-  border: 1px solid rgba(93, 213, 213, 0.2);
+  background: rgba(21, 93, 252, 0.1);
+  border: 1px solid rgba(21, 93, 252, 0.2);
   color: var(--md-primary-dark);
 }
 
@@ -955,8 +956,8 @@ th {
 
 .platform-category,
 .doc-category {
-  background: rgba(17, 24, 39, 0.8);
-  border: 1px solid rgba(55, 65, 81, 0.4);
+  background: var(--md-surface-color);
+  border: 1px solid var(--md-border-color);
   border-radius: 12px;
   padding: 2rem;
   backdrop-filter: blur(10px);
@@ -1037,10 +1038,31 @@ th {
 * a:link, 
 * a:visited,
 * a:any-link {
-  color: #5DD5D5 !important;
+  color: #155DFC !important;
 }
 
 * a:hover,
 * a:active {
-  color: #7DE8E8 !important;
+  color: #1447E6 !important;
+}
+
+/* Buttons are <a> elements, so the blanket link colour above lands on them too --
+   and `* a:any-link` (0,1,1) outranks `.md-button` (0,1,0) with both marked
+   !important, which painted button text the same colour as the button. Reassert. */
+a.md-button,
+a.md-button:link,
+a.md-button:visited,
+a.md-button:any-link,
+a.md-button:hover,
+a.md-button:active {
+  color: #ffffff !important;
+}
+
+a.md-button--secondary,
+a.md-button--secondary:link,
+a.md-button--secondary:visited,
+a.md-button--secondary:any-link,
+a.md-button--secondary:hover,
+a.md-button--secondary:active {
+  color: var(--md-text-color) !important;
 }
