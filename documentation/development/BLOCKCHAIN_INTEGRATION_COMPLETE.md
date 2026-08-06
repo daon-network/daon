@@ -259,7 +259,7 @@ api-3
 ```bash
 # Blockchain
 export CHAIN_ID=daon-mainnet-1
-export API_MNEMONIC="blur cause boost pass stick allow hundred odor level erosion umbrella urban need indicate inject funny anchor kiss rain equal among unhappy sad dutch"
+export API_MNEMONIC="<YOUR_24_WORD_MNEMONIC>"
 
 # API
 export BLOCKCHAIN_ENABLED=true

@@ -5,16 +5,36 @@
 ## 🔴 HIGH PRIORITY - MUST DO BEFORE PUBLIC LAUNCH
 
 ### 1. Regenerate API Wallet Mnemonic
-**Status:** ❌ NOT DONE  
-**Risk Level:** CRITICAL  
-**Issue:** Currently using default/example mnemonic from development
+**Status:** ✅ DONE — rotated 27 February 2026  
+**Risk Level:** resolved  
 
-**Current mnemonic (DO NOT USE IN PRODUCTION):**
-```
-blur cause boost pass stick allow hundred odor level erosion umbrella urban need indicate inject funny anchor kiss rain equal among unhappy sad dutch
+The development mnemonic was previously printed in this file and in five other
+documents, all of which are public. It has been rotated and scrubbed.
+
+**Verification** (any of these can be re-run at any time):
+
+| | |
+| --- | --- |
+| Live `api-wallet` | `daon1l3lrs7u3wszkuu83gaklwyv26233tmnk3u77pd` |
+| Retired, exposed wallet | `daon1sjprvykgf0yj59f4nzjpwjyekj85a6gtl3qx3n` |
+
+The retired wallet holds a zero balance, appears nowhere in `genesis.json`, and has no
+role on the chain. The `API_MNEMONIC` GitHub secret was reset on 2026-02-27.
+
+```bash
+# live address — must NOT be the retired one above
+docker exec daon-blockchain daond keys show api-wallet -a \
+  --keyring-backend test --home /daon/.daon
+
+# retired wallet should report an empty balance
+docker exec daon-blockchain daond query bank balances \
+  daon1sjprvykgf0yj59f4nzjpwjyekj85a6gtl3qx3n --output json
 ```
 
-**Action Required:**
+**Do not paste a mnemonic into this file to document a mnemonic problem.** It lives in the
+`API_MNEMONIC` GitHub secret and the server environment, nowhere else.
+
+**If rotation is ever needed again:**
 1. Generate new secure mnemonic with proper entropy
 2. Fund the new wallet with sufficient tokens for operations
 3. Update GitHub Secret: `API_MNEMONIC`

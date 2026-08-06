@@ -16,7 +16,7 @@ Create a `.env` file in the project root:
 POSTGRES_PASSWORD=daon_secure_password_2024
 
 # API Configuration
-API_MNEMONIC=blur cause boost pass stick allow hundred odor level erosion umbrella urban need indicate inject funny anchor kiss rain equal among unhappy sad dutch
+API_MNEMONIC=<YOUR_24_WORD_MNEMONIC>
 API_KEY_SECRET=daon_production_secret_key_2024_change_this_in_production
 
 # Blockchain Configuration

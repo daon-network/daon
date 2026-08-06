@@ -85,7 +85,7 @@ API_KEY_SECRET=your-secret-key-here-change-this-in-production
 # Blockchain
 BLOCKCHAIN_ENABLED=true
 CHAIN_ID=daon-mainnet-1
-API_MNEMONIC=blur cause boost pass stick allow hundred odor level erosion umbrella urban need indicate inject funny anchor kiss rain equal among unhappy sad dutch
+API_MNEMONIC=<YOUR_24_WORD_MNEMONIC>
 
 # Optional
 LOG_LEVEL=info
