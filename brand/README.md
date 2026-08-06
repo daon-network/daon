@@ -104,9 +104,9 @@ node scripts/build-icon-sprite.mjs
 | --- | --- | --- |
 | Frontend (React) | `import { Shield } from 'lucide-react'` | -- |
 | Docs site | sprite, inlined via `{% raw %}{% include icons.svg %}{% endraw %}` | `docs/_includes/icons.svg` |
-| Browser extension | `daonIcon()` / `daonIconMarkup()` | `browser-extension/icons.js` |
 | WordPress plugin | inline `<svg>` pasted into PHP | `brand/icons/*.svg` |
 | Transactional email | **none -- see below** | -- |
+| Browser extension | **none -- deliberately left alone** | -- |
 
 Icons take their colour from `currentColor` and are sized in `em`, so they track whatever text
 they sit beside. The docs stylesheet carries a matching `.icon` rule.
@@ -120,10 +120,26 @@ substituting anything -- the headings carry themselves. If an email ever genuine
 icon, the only reliable mechanism is a hosted PNG, and it must survive being blocked, because
 most clients suppress remote images by default.
 
-The same constraint applies to a few browser-extension call sites: `chrome.contextMenus` titles,
+The same constraint would apply to parts of the browser extension: `chrome.contextMenus` titles,
 `chrome.notifications` bodies, `confirm()` and `alert()` are plain-text APIs that cannot hold
-markup. Those dropped their emoji too. The notification already passes `iconUrl: icons/icon48.png`,
-which is the supported way to put an icon there.
+markup either.
+
+### Why the browser extension was left alone
+
+`browser-extension/` is untouched by this brand work, on purpose.
+
+It was scaffolded in November 2025 and has not been developed since. `documentation/project/
+CURRENT_PRIORITIES.md` still lists it as *"Not started"* and *"Designed but not coded"*, no CI
+job builds or releases it, and its wallet code is a placeholder rather than an implementation:
+`generateMnemonic()` draws 12 words from a 12-word list using `Math.random()` (43 bits of
+keyspace against BIP-39's 132, from a non-cryptographic PRNG), the address is generated
+independently of the mnemonic so the phrase derives nothing, and it is stored unencrypted --
+while the UI instructs the user to save that phrase to restore their wallet.
+
+Its `manifest.json` declares `icon{16,32,48,128}.png` while the directory holds `.txt` files
+containing an emoji, so the extension cannot load cleanly. **That broken state is doing useful
+work.** Giving it real icons would make an abandoned, unsafe prototype look shippable. If the
+extension is ever revived, the wallet needs rebuilding before anything cosmetic matters.
 
 ### A note on the sprite
 

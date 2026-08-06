@@ -77,23 +77,23 @@ async function checkProtectionStatus(workData) {
     
     if (response.protected) {
       statusElement.className = 'protection-status protected';
-      daonSetStatus(statusText, 'circle-check', 'Protected by DAON blockchain');
-      daonSetStatus(protectButton, 'shield', 'Already Protected');
+      statusText.textContent = '✅ Protected by DAON blockchain';
+      protectButton.textContent = '🛡️ Already Protected';
       protectButton.disabled = true;
       
       if (response.details) {
-        statusText.innerHTML = `${daonIconMarkup('circle-check')} Protected by DAON blockchain<br><small>License: ${response.details.license || 'Unknown'}</small>`;
+        statusText.innerHTML = `✅ Protected by DAON blockchain<br><small>License: ${response.details.license || 'Unknown'}</small>`;
       }
     } else {
       statusElement.className = 'protection-status unprotected';
-      daonSetStatus(statusText, 'triangle-alert', 'Unprotected - Vulnerable to AI scraping');
+      statusText.textContent = '⚠️ Unprotected - Vulnerable to AI scraping';
       protectButton.disabled = false;
       document.getElementById('license-section').style.display = 'block';
     }
   } catch (error) {
     console.error('DAON: Error checking protection:', error);
     statusElement.className = 'protection-status pending';
-    daonSetStatus(statusText, 'zap', 'Unable to verify protection status');
+    statusText.textContent = '⚡ Unable to verify protection status';
     protectButton.disabled = false;
     document.getElementById('license-section').style.display = 'block';
   }
@@ -116,7 +116,7 @@ async function protectCurrentWork() {
   protectButton.disabled = true;
   protectButton.textContent = '⏳ Protecting...';
   statusElement.className = 'protection-status pending';
-  daonSetStatus(statusText, 'refresh-cw', 'Registering with DAON blockchain...');
+  statusText.textContent = '🔄 Registering with DAON blockchain...';
   
   try {
     const contentHash = await generateContentHash(workData.content);
@@ -133,8 +133,8 @@ async function protectCurrentWork() {
     
     if (response.success) {
       statusElement.className = 'protection-status protected';
-      statusText.innerHTML = `${daonIconMarkup('circle-check')} Protected by DAON blockchain!<br><small>TX: ${response.txHash}</small>`;
-      daonSetStatus(protectButton, 'shield', 'Protection Active');
+      statusText.innerHTML = `✅ Protected by DAON blockchain!<br><small>TX: ${response.txHash}</small>`;
+      protectButton.textContent = '🛡️ Protection Active';
       document.getElementById('license-section').style.display = 'none';
       
       // Show verification URL if available
@@ -147,7 +147,7 @@ async function protectCurrentWork() {
           
           // Show support message after a delay
           setTimeout(() => {
-            if (confirm('Your work is now protected! Consider supporting DAON to keep this service free for creators. Open Ko-fi?')) {
+            if (confirm('🎉 Your work is now protected! Consider supporting DAON to keep this service free for creators. Open Ko-fi?')) {
               chrome.tabs.create({ url: 'https://ko-fi.com/greenfieldoverride' });
             }
           }, 2000);
@@ -159,8 +159,8 @@ async function protectCurrentWork() {
   } catch (error) {
     console.error('DAON: Protection error:', error);
     statusElement.className = 'protection-status unprotected';
-    daonSetStatus(statusText, 'circle-x', 'Protection failed - Try again');
-    daonSetStatus(protectButton, 'shield', 'Protect This Work');
+    statusText.textContent = '❌ Protection failed - Try again';
+    protectButton.textContent = '🛡️ Protect This Work';
     protectButton.disabled = false;
     
     // Show error details if wallet not configured
@@ -210,13 +210,13 @@ function onLicenseChange() {
   
   if (licenseSelect.value === 'liberation_v1') {
     liberationInfo.style.display = 'block';
-    liberationInfo.innerHTML = daonIconMarkup('lightbulb') + ' <strong>Liberation License</strong> allows personal use, education, and humanitarian purposes while blocking corporate AI training without compensation.';
+    liberationInfo.innerHTML = '💡 <strong>Liberation License</strong> allows personal use, education, and humanitarian purposes while blocking corporate AI training without compensation.';
   } else if (licenseSelect.value.startsWith('cc_')) {
     liberationInfo.style.display = 'block';
-    liberationInfo.innerHTML = daonIconMarkup('file-pen') + ' <strong>Creative Commons</strong> license allows broad reuse with attribution requirements.';
+    liberationInfo.innerHTML = '📝 <strong>Creative Commons</strong> license allows broad reuse with attribution requirements.';
   } else if (licenseSelect.value === 'all_rights_reserved') {
     liberationInfo.style.display = 'block';
-    liberationInfo.innerHTML = daonIconMarkup('lock') + ' <strong>All Rights Reserved</strong> - Traditional copyright protection.';
+    liberationInfo.innerHTML = '🔒 <strong>All Rights Reserved</strong> - Traditional copyright protection.';
   } else {
     liberationInfo.style.display = 'none';
   }
@@ -230,7 +230,7 @@ async function checkWalletStatus() {
     // Show wallet setup hint
     const infoText = document.querySelector('.info-text');
     infoText.innerHTML = `
-      <strong>${daonIconMarkup('triangle-alert')} Wallet Setup Required</strong><br>
+      <strong>⚠️ Wallet Setup Required</strong><br>
       Click the extension icon to generate a DAON wallet for protecting your works.
       <button id="setup-wallet" style="
         display: block;
@@ -274,11 +274,11 @@ function showWalletSetup() {
       color: black;
       text-align: center;
     ">
-      <h3 style="margin-top: 0;">${daonIconMarkup('key-round')} Setup DAON Wallet</h3>
+      <h3 style="margin-top: 0;">🔑 Setup DAON Wallet</h3>
       <p>Generate a secure wallet to protect your works on the DAON blockchain.</p>
       
       <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin: 16px 0; font-size: 12px;">
-        ${daonIconMarkup('triangle-alert')} <strong>Important:</strong> Save your recovery phrase securely. You'll need it to restore your wallet.
+        ⚠️ <strong>Important:</strong> Save your recovery phrase securely. You'll need it to restore your wallet.
       </div>
       
       <div style="margin: 16px 0;">
@@ -322,7 +322,7 @@ function showWalletSetup() {
           color: black;
           text-align: center;
         ">
-          <h3 style="color: #4CAF50;">${daonIconMarkup('circle-check')} Wallet Created!</h3>
+          <h3 style="color: #4CAF50;">✅ Wallet Created!</h3>
           <p><strong>Address:</strong><br><code style="font-size: 10px; background: #f5f5f5; padding: 4px;">${response.wallet.address}</code></p>
           <p style="font-size: 12px; color: #666;">Your wallet is now ready to protect your works!</p>
           <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
@@ -371,7 +371,7 @@ function createVerificationPopup(contentHash) {
       font-family: inherit;
     ">
       <div style="text-align: center; margin-bottom: 20px;">
-        <h3 style="margin: 0 0 8px 0;">${daonIconMarkup('search')} DAON Verification</h3>
+        <h3 style="margin: 0 0 8px 0;">🔍 DAON Verification</h3>
         <p style="margin: 0; color: #666;">Cryptographic proof of ownership</p>
       </div>
       
@@ -381,7 +381,7 @@ function createVerificationPopup(contentHash) {
       </div>
       
       <div id="verification-result" style="padding: 12px; border-radius: 8px; text-align: center;">
-        ${daonIconMarkup('refresh-cw')} Checking DAON blockchain...
+        🔄 Checking DAON blockchain...
       </div>
       
       <div style="text-align: center; margin-top: 16px;">
@@ -408,7 +408,7 @@ function updateVerificationPopup(popup, response) {
     resultDiv.style.background = 'rgba(76, 175, 80, 0.1)';
     resultDiv.style.border = '1px solid #4CAF50';
     resultDiv.innerHTML = `
-      ${daonIconMarkup('circle-check')} <strong>Verified Protected</strong><br>
+      ✅ <strong>Verified Protected</strong><br>
       <small>
         ${response.timestamp ? `Registered: ${new Date(response.timestamp * 1000).toLocaleString()}<br>` : ''}
         ${response.license ? `License: ${response.license}<br>` : ''}
@@ -419,7 +419,7 @@ function updateVerificationPopup(popup, response) {
     resultDiv.style.background = 'rgba(244, 67, 54, 0.1)';
     resultDiv.style.border = '1px solid #F44336';
     resultDiv.innerHTML = `
-      ${daonIconMarkup('circle-x')} <strong>Not Protected</strong><br>
+      ❌ <strong>Not Protected</strong><br>
       <small>This work is vulnerable to AI scraping</small>
     `;
   }

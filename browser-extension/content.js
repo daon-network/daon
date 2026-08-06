@@ -74,7 +74,7 @@
       top: 20px;
       right: 20px;
       z-index: 10000;
-      background: linear-gradient(135deg, #155DFC 0%, #9810FA 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       padding: 16px;
       border-radius: 12px;
@@ -87,7 +87,7 @@
     
     widget.innerHTML = `
       <div style="display: flex; align-items: center; margin-bottom: 12px;">
-        <div style="font-size: 18px; margin-right: 8px;">${daonIconMarkup('shield')}</div>
+        <div style="font-size: 18px; margin-right: 8px;">🛡️</div>
         <div>
           <div style="font-weight: bold; font-size: 16px;">DAON Protection</div>
           <div style="font-size: 11px; opacity: 0.8;">Creator Rights Guardian</div>
@@ -100,7 +100,7 @@
       </div>
       
       <div style="margin-bottom: 12px;">
-        <div style="font-weight: bold; margin-bottom: 4px;">${daonIconMarkup('file-pen')} "${document.querySelector('h2.title')?.textContent?.trim() || 'Current Work'}"</div>
+        <div style="font-weight: bold; margin-bottom: 4px;">📝 "${document.querySelector('h2.title')?.textContent?.trim() || 'Current Work'}"</div>
         <div style="font-size: 11px; opacity: 0.8;">By ${document.querySelector('a[rel="author"]')?.textContent?.trim() || 'Author'}</div>
       </div>
       
@@ -116,7 +116,7 @@
         margin-bottom: 8px;
         transition: background 0.2s;
       " disabled>
-        ${daonIconMarkup('shield')} Protect with DAON
+        🛡️ Protect with DAON
       </button>
       
       <button id="daon-verify" style="
@@ -130,12 +130,12 @@
         margin-bottom: 8px;
         font-size: 12px;
       ">
-        ${daonIconMarkup('search')} Verify Protection
+        🔍 Verify Protection
       </button>
       
       <div style="font-size: 10px; opacity: 0.7; text-align: center; line-height: 1.3;">
         Cryptographic proof fights AI exploitation<br>
-        ${daonIconMarkup('globe')} German hosting • GDPR protected
+        🇪🇺 German hosting • GDPR protected
       </div>
     `;
     
@@ -171,7 +171,7 @@
     
     if (!workData || !workData.content) {
       statusDiv.style.background = 'rgba(244, 67, 54, 0.3)';
-      daonSetStatus(statusDiv, 'circle-x', 'Cannot extract work content');
+      statusDiv.textContent = '❌ Cannot extract work content';
       return;
     }
     
@@ -181,12 +181,12 @@
       
       if (isProtected) {
         statusDiv.style.background = 'rgba(76, 175, 80, 0.3)';
-        daonSetStatus(statusDiv, 'circle-check', 'Protected by DAON');
-        daonSetStatus(protectButton, 'shield', 'Already Protected');
+        statusDiv.textContent = '✅ Protected by DAON';
+        protectButton.textContent = '🛡️ Already Protected';
         protectButton.style.background = '#4CAF50';
       } else {
         statusDiv.style.background = 'rgba(244, 67, 54, 0.3)';
-        daonSetStatus(statusDiv, 'triangle-alert', 'Unprotected - Vulnerable to AI scraping');
+        statusDiv.textContent = '⚠️ Unprotected - Vulnerable to AI scraping';
         protectButton.disabled = false;
         protectButton.style.background = '#4CAF50';
         protectButton.style.cursor = 'pointer';
@@ -194,7 +194,7 @@
     } catch (error) {
       console.error('DAON: Error checking protection:', error);
       statusDiv.style.background = 'rgba(255, 152, 0, 0.3)';
-      daonSetStatus(statusDiv, 'zap', 'Connect to DAON network to check protection');
+      statusDiv.textContent = '⚡ Connect to DAON network to check protection';
       protectButton.disabled = false;
       protectButton.style.background = '#FF9800';
       protectButton.style.cursor = 'pointer';
@@ -231,7 +231,7 @@
     protectButton.disabled = true;
     protectButton.textContent = '⏳ Protecting...';
     statusDiv.style.background = 'rgba(255, 152, 0, 0.3)';
-    daonSetStatus(statusDiv, 'refresh-cw', 'Registering with DAON blockchain...');
+    statusDiv.textContent = '🔄 Registering with DAON blockchain...';
     
     try {
       const contentHash = await generateContentHash(workData.content);
@@ -248,12 +248,12 @@
       
       if (response.success) {
         statusDiv.style.background = 'rgba(76, 175, 80, 0.3)';
-        daonSetStatus(statusDiv, 'circle-check', 'Protected by DAON blockchain!');
-        daonSetStatus(protectButton, 'shield', 'Protection Active');
+        statusDiv.textContent = '✅ Protected by DAON blockchain!';
+        protectButton.textContent = '🛡️ Protection Active';
         protectButton.style.background = '#4CAF50';
         
         // Show success notification
-        showNotification('Work protected! Your creation is now safe from AI exploitation.', 'success');
+        showNotification('🎉 Work protected! Your creation is now safe from AI exploitation.', 'success');
         
         // Store protection locally
         chrome.storage.local.set({
@@ -270,8 +270,8 @@
     } catch (error) {
       console.error('DAON: Protection failed:', error);
       statusDiv.style.background = 'rgba(244, 67, 54, 0.3)';
-      daonSetStatus(statusDiv, 'circle-x', 'Protection failed - Try again');
-      daonSetStatus(protectButton, 'shield', 'Protect with DAON');
+      statusDiv.textContent = '❌ Protection failed - Try again';
+      protectButton.textContent = '🛡️ Protect with DAON';
       protectButton.disabled = false;
       
       showNotification('Protection failed. Please try again or check your connection.', 'error');
@@ -309,7 +309,7 @@
       
       popup.innerHTML = `
         <div style="text-align: center; margin-bottom: 20px;">
-          <h3 style="margin: 0 0 8px 0;">${daonIconMarkup('search')} DAON Verification</h3>
+          <h3 style="margin: 0 0 8px 0;">🔍 DAON Verification</h3>
           <p style="margin: 0; color: #666;">Cryptographic proof of ownership</p>
         </div>
         
@@ -319,7 +319,7 @@
         </div>
         
         <div id="verification-result" style="padding: 12px; border-radius: 8px; text-align: center;">
-          ${daonIconMarkup('refresh-cw')} Checking DAON blockchain...
+          🔄 Checking DAON blockchain...
         </div>
         
         <div style="text-align: center; margin-top: 16px;">
@@ -351,7 +351,7 @@
         resultDiv.style.background = 'rgba(76, 175, 80, 0.1)';
         resultDiv.style.border = '1px solid #4CAF50';
         resultDiv.innerHTML = `
-          ${daonIconMarkup('circle-check')} <strong>Verified Protected</strong><br>
+          ✅ <strong>Verified Protected</strong><br>
           <small>Registered: ${new Date(response.timestamp).toLocaleString()}<br>
           License: ${response.license}<br>
           Creator: ${response.creator}</small>
@@ -359,7 +359,7 @@
       } else {
         resultDiv.style.background = 'rgba(244, 67, 54, 0.1)';
         resultDiv.style.border = '1px solid #F44336';
-        resultDiv.innerHTML = daonIconMarkup('circle-x') + ' <strong>Not Protected</strong><br><small>This work is vulnerable to AI scraping</small>';
+        resultDiv.innerHTML = '❌ <strong>Not Protected</strong><br><small>This work is vulnerable to AI scraping</small>';
       }
     } catch (error) {
       console.error('DAON: Verification failed:', error);

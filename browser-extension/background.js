@@ -1,7 +1,7 @@
 // DAON Background Service Worker
 // Handles DAON blockchain communication and data persistence
 
-console.log('DAON Background Service: Initialized');
+console.log('🛡️ DAON Background Service: Initialized');
 
 // DAON API configuration
 const DAON_CONFIG = {
@@ -29,7 +29,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   // Create context menu for AO3 works
   chrome.contextMenus.create({
     id: 'daon-protect',
-    title: 'Protect with DAON',
+    title: '🛡️ Protect with DAON',
     contexts: ['page'],
     documentUrlPatterns: [
       'https://archiveofourown.org/works/*',
@@ -188,7 +188,7 @@ async function handleProtectWork(request, sendResponse) {
       
       // Show success notification
       showNotification(
-        `"${workData.title}" protected by DAON blockchain!`,
+        `🛡️ "${workData.title}" protected by DAON blockchain!`,
         'https://verify.daon.network/' + contentHash
       );
     } else {
