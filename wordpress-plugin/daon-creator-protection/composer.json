@@ -1,0 +1,23 @@
+{
+    "name": "daon/creator-protection",
+    "description": "DAON Creator Protection WordPress Plugin",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "brain/monkey": "^2.6",
+        "mockery/mockery": "^1.6"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DAON\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --configuration phpunit.xml",
+        "test:coverage": "phpunit --configuration phpunit.xml --coverage-html coverage"
+    }
+}
