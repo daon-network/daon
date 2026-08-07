@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { apiClient } from '../../lib/api-client';
 import type { User } from '../../lib/types';
+import { Check } from 'lucide-react';
 
 interface SecuritySettingsProps {
   user: User;
@@ -109,7 +110,7 @@ export default function SecuritySettings({ user }: SecuritySettingsProps) {
         </div>
         <div className="flex items-center">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-            ✓ Active
+            <Check size={14} aria-hidden="true" /> Active
           </span>
         </div>
       </div>

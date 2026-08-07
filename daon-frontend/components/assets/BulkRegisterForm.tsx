@@ -7,6 +7,7 @@
  */
 
 import React, { useState } from 'react';
+import { Check, X } from 'lucide-react';
 
 interface BulkItem {
   title: string;
@@ -250,7 +251,7 @@ export default function BulkRegisterForm() {
               )}
               {!processing && successCount > 0 && (
                 <p className="text-sm text-green-600">
-                  ✓ {successCount} successful, {errorCount} errors
+                  <Check size={14} aria-hidden="true" /> {successCount} successful, {errorCount} errors
                 </p>
               )}
             </div>
@@ -332,11 +333,11 @@ export default function BulkRegisterForm() {
                         <span className="text-blue-600">Processing...</span>
                       )}
                       {item.status === 'success' && (
-                        <span className="text-green-600">✓ Success</span>
+                        <span className="text-green-600 inline-flex items-center gap-1"><Check size={14} aria-hidden="true" /> Success</span>
                       )}
                       {item.status === 'error' && (
                         <span className="text-red-600" title={item.error}>
-                          ✗ Error
+                          <X size={14} aria-hidden="true" /> Error
                         </span>
                       )}
                     </td>

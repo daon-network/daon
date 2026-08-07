@@ -10,6 +10,7 @@ import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { LibIcon } from '@greenfieldoverride/liberation-ui';
 import { useAuth } from '../../hooks/useAuth';
+import { Check, Lightbulb, Lock } from 'lucide-react';
 
 interface RegisterContentFormProps {
   onSuccess?: () => void;
@@ -347,7 +348,7 @@ export function RegisterContentForm() {
                 {result.blockchain?.enabled && (
                   <div>
                     <p className="text-xs font-medium text-gray-500 mb-1">Blockchain Status</p>
-                    <p className="text-sm text-green-600 font-medium">✓ Registered on Blockchain</p>
+                    <p className="text-sm text-green-600 font-medium inline-flex items-center gap-1"><Check size={14} aria-hidden="true" /> Registered on Blockchain</p>
                     {result.blockchain.creator && (
                       <p className="text-xs text-gray-600 mt-1">Creator: {result.blockchain.creator}</p>
                     )}
@@ -485,7 +486,7 @@ export function RegisterContentForm() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          🔒 Restricted
+          <Lock size={14} aria-hidden="true" /> Restricted
         </button>
       </div>
 
@@ -499,7 +500,7 @@ export function RegisterContentForm() {
             <div className="flex items-start space-x-3">
               <LibIcon icon="Privacy" size="lg" className="text-yellow-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-yellow-900 font-medium mb-1">🔒 Restricted Mode</p>
+                <p className="text-sm text-yellow-900 font-medium mb-1"><Lock size={14} aria-hidden="true" /> Restricted Mode</p>
                 <p className="text-sm text-yellow-700">
                   Your file will be hashed <strong>locally in your browser</strong>. The actual content will <strong>never be uploaded</strong> to the server. 
                   Only the hash and metadata will be registered on the blockchain.
@@ -524,7 +525,7 @@ export function RegisterContentForm() {
                 <div className="bg-gray-50 rounded-lg p-3">
                   <p className="text-xs font-medium text-gray-500 mb-1">Local SHA-256 Hash</p>
                   <p className="text-xs font-mono text-gray-900 break-all">{localHash}</p>
-                  <p className="text-xs text-green-600 mt-2">✓ Hash generated locally - file content never uploaded</p>
+                  <p className="text-xs text-green-600 mt-2 inline-flex items-center gap-1"><Check size={14} aria-hidden="true" /> Hash generated locally - file content never uploaded</p>
                 </div>
               )}
             </div>
@@ -821,7 +822,7 @@ export function RegisterContentForm() {
                 This is traditional copyright protection - like Disney, publishers, and authors use.
               </p>
               <p className="text-sm text-purple-800 mt-2">
-                💡 <strong>Tip:</strong> Use <strong>🔒 Restricted mode</strong> above to register your novel without uploading the content itself.
+                <Lightbulb size={14} aria-hidden="true" /> <strong>Tip:</strong> Use <strong><Lock size={14} aria-hidden="true" /> Restricted mode</strong> above to register your novel without uploading the content itself.
               </p>
             </div>
           </div>
