@@ -207,12 +207,17 @@ Should return `verified: true`.
 
 ## Wallet Details
 
-**Mnemonic** (from `.env`):
-```
-blur cause boost pass stick allow hundred odor level erosion umbrella urban need indicate inject funny anchor kiss rain equal among unhappy sad dutch
-```
+**Mnemonic**: held only in the `API_MNEMONIC` GitHub secret and the server environment.
+Never record it in this repository.
 
-**Address**: `daon1sjprvykgf0yj59f4nzjpwjyekj85a6gtl3qx3n`
+**Address**: `daon1l3lrs7u3wszkuu83gaklwyv26233tmnk3u77pd`
+
+To read the live address:
+
+```bash
+docker exec daon-blockchain daond keys show api-wallet -a \
+  --keyring-backend test --home /daon/.daon
+```
 
 **Initial Balance**: 5,000,000,000 stake (5 billion)
 

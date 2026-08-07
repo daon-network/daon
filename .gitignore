@@ -18,3 +18,13 @@ sdks/ruby/vendor/
 
 # Test artifacts
 load-results-*.json
+
+# Application logs — never commit these
+api-server/logs/
+*.log
+
+# Build artefacts and vendored dependencies
+wordpress-plugin/daon-creator-protection/vendor/
+wordpress-plugin/daon-creator-protection/.phpunit.result.cache
+.playwright-mcp/
+verification-service/.next/
