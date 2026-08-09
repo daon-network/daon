@@ -131,14 +131,54 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          # Read the version from go.mod so this can never drift from it.
+          go-version-file: daon-core/go.mod
       - name: Build blockchain binary
+        # GOTOOLCHAIN=local matches the Docker builder, which cannot reach the
+        # network to fetch a newer toolchain. Without it setup-go silently
+        # downloads whatever go.mod asks for, so this job passes while the
+        # release build fails -- exactly what happened on #98.
+        env:
+          GOTOOLCHAIN: local
         run: |
           cd daon-core
           go mod download
           make install || go build -o build/daon-cored ./cmd/daon-cored
       - name: Test blockchain binary
         run: cd daon-core && ./build/daon-cored version || echo "Binary created successfully"
+
+  blockchain-docker-build:
+    name: Blockchain Docker Build
+    needs: [changes, blockchain-build-test]
+    # Builds the real validator image from the same context deploy.yml uses, so
+    # a Dockerfile, toolchain or dependency-resolution failure surfaces here
+    # rather than after merge. deploy.yml only triggers on push to main, so
+    # before this job existed the image was first built post-merge.
+    #
+    # amd64 only, deliberately. The release build does amd64 and arm64, but
+    # arm64 runs under qemu and takes over 25 minutes for a cosmos-sdk chain --
+    # go mod download and a full compile, emulated. Native amd64 takes minutes
+    # and catches the same failures, all of which are architecture independent.
+    # An arm64-only regression cannot reach production regardless: deploy.yml
+    # gates deployment on its own multi-arch build, so it would fail there the
+    # way #98 did, with nothing shipped.
+    if: |
+      always() &&
+      needs.changes.outputs.blockchain == 'true' &&
+      needs.blockchain-build-test.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build validator image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./daon-core
+          platforms: linux/amd64
+          push: false
+          tags: daonnetwork/validator:pr-${{ github.event.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   # ── Frontend ──────────────────────────────────────────────────────────────
 
