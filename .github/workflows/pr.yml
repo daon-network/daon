@@ -150,10 +150,18 @@ jobs:
   blockchain-docker-build:
     name: Blockchain Docker Build
     needs: [changes, blockchain-build-test]
-    # Mirrors the "Build Validator Image" job in deploy.yml -- same context and
-    # platforms -- so a release build cannot fail in a way this job passes.
-    # deploy.yml only triggers on push to main, so before this job existed the
-    # image was first built after merge, and a bad build took production with it.
+    # Builds the real validator image from the same context deploy.yml uses, so
+    # a Dockerfile, toolchain or dependency-resolution failure surfaces here
+    # rather than after merge. deploy.yml only triggers on push to main, so
+    # before this job existed the image was first built post-merge.
+    #
+    # amd64 only, deliberately. The release build does amd64 and arm64, but
+    # arm64 runs under qemu and takes over 25 minutes for a cosmos-sdk chain --
+    # go mod download and a full compile, emulated. Native amd64 takes minutes
+    # and catches the same failures, all of which are architecture independent.
+    # An arm64-only regression cannot reach production regardless: deploy.yml
+    # gates deployment on its own multi-arch build, so it would fail there the
+    # way #98 did, with nothing shipped.
     if: |
       always() &&
       needs.changes.outputs.blockchain == 'true' &&
@@ -161,13 +169,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - name: Build validator image
         uses: docker/build-push-action@v5
         with:
           context: ./daon-core
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: false
           tags: daonnetwork/validator:pr-${{ github.event.number }}
           cache-from: type=gha
