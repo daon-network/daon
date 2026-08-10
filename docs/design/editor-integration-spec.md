@@ -130,6 +130,29 @@ queryable.
 Lineage *between* entities, where one work genuinely derives from another, is what forks are for
 (P2). That is a provenance relation. Belonging to the same series is not.
 
+### Anthologies: the entity model already covers this
+
+The case that looks like it needs collections does not. An anthology **is** an assembled
+artifact, which is what an entity is. Who registers it follows from who holds the rights:
+
+| Rights | What is registered | Signed by |
+| --- | --- | --- |
+| Publisher holds copyright in the collected whole | the anthology, as its own entity | the publisher's key |
+| Author retains rights in their contribution | that contribution, as its own entity | the author's key |
+| Both, which is common | both entities, independently | their respective keys |
+
+The key that signs **is** the ownership assertion. DAON records who claimed what and never
+encodes the rights deal itself, which is a negotiated creative and legal choice between the
+parties — not something a format should presume.
+
+**Overlapping entities are correct, not a conflict.** When a publisher registers an anthology
+containing a work the author has also registered, the same content sits under two entities with
+different keys. That is an accurate representation of the arrangement: two true claims at
+different scopes. An implementation **must not** treat overlapping or identical content across
+entities as duplication, conflict, or a signal of anything. There is nothing to reconcile, and
+reconciling would mean adjudicating a rights question we have neither the standing nor the
+information to decide.
+
 ### `POST /v1/session/open`
 
 Begin editing an entity. Returns a session handle used for subsequent calls.
@@ -399,6 +422,7 @@ ours to close.
 - [ ] Styles absence and `paste` neutrally — no badges, warnings, or highlighting
 - [ ] Offers no streak, meter, or prompt encouraging more frequent commits
 - [ ] Opens one session per assembled artifact, not per file (§3)
+- [ ] Treats identical content under different entities as normal, never as duplication
 - [ ] Sends `reason: "explicit"` only for creator-named milestones, and never in a loop
 
 ---
