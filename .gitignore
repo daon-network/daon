@@ -31,3 +31,7 @@ wordpress-plugin/daon-creator-protection/vendor/
 wordpress-plugin/daon-creator-protection/.phpunit.result.cache
 .playwright-mcp/
 verification-service/.next/
+
+# Python bytecode
+__pycache__/
+*.pyc
