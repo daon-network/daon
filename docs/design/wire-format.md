@@ -8,7 +8,7 @@ every proof already made, and re-witnessing the past is impossible — the times
 Bitcoin, not from us.
 
 Everything here is chosen to be reimplementable from this document alone, in any language,
-byte-for-byte. Test vectors in §7 are the acceptance test for a second implementation.
+byte-for-byte. Test vectors in §8 are the acceptance test for a second implementation.
 
 ---
 
@@ -19,21 +19,25 @@ byte-for-byte. Test vectors in §7 are the acceptance test for a second implemen
 | Hash | **SHA-256**, output 32 bytes |
 | Integers | **fixed-width big-endian**. No varints, no LEB128 |
 | Signatures | **Ed25519** over `leaf_id` |
-| Text | **raw bytes, hashed as supplied** |
+| Text and content | **raw bytes, hashed exactly as supplied** |
 
 **No varints.** Variable-length integer encodings admit multiple representations of the same
 value, and every such ambiguity is a place two implementations can silently disagree about a
 hash. Fixed width costs a few bytes and removes the class entirely.
 
-**No Unicode normalisation, anywhere in hashed data.** Normalisation tables change between
-Unicode versions, so normalising would make a leaf's hash depend on which Unicode revision the
-implementation was built against — a hash that changes over time is not a hash. Text is hashed
-exactly as received. `tool_id` is therefore constrained to ASCII (§3) so the question cannot
-arise.
+**No canonicalisation of any hashed bytes.** Not Unicode normalisation, not line-ending
+translation, not trailing-newline insertion. Normalisation tables change between Unicode
+versions, so a normalised hash would depend on which Unicode revision the implementation was
+built against — a hash that drifts over time is not a hash. The same reasoning rules out every
+other "helpful" transformation: each one is an algorithm that must then be specified exactly and
+implemented identically forever.
+
+The tool decides what the document *is*. This format hashes those bytes verbatim. `tool_id` is
+constrained to ASCII (§3) so the question cannot arise there either.
 
 **No optional fields in hashed structures.** Absence is expressed by a defined sentinel value,
 never by omitting bytes or setting a presence flag. A genesis leaf's `parent_head` is 32 zero
-bytes. This keeps every encoding fixed-length and removes any "was this field present?" ambiguity.
+bytes. Every leaf body is therefore exactly 218 bytes with nothing to disagree about.
 
 ---
 
@@ -43,16 +47,20 @@ Every hashed structure is prefixed with a one-byte tag:
 
 | Tag | Structure |
 | --- | --- |
-| `0x00` | revision leaf |
+| `0x00` | revision leaf, and Merkle leaf input |
 | `0x01` | internal Merkle node |
 | `0x02` | observation |
-| `0x03` | content delta |
+| `0x03` | content |
 
 Without distinct prefixes, a crafted leaf preimage could be reinterpreted as an internal node,
 which is the second-preimage attack RFC 6962 exists to prevent. The `0x00`/`0x01` assignment
-deliberately matches Certificate Transparency, so the empty-leaf hash is the familiar
-`96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7` and existing CT tooling and
-intuitions carry over.
+deliberately matches Certificate Transparency, so existing CT tooling and intuitions carry over.
+
+> **Note on RFC 6962 constants.** For cross-checking against CT: `MTH({})`, the empty *tree*, is
+> `SHA256("")` = `e3b0c442…`; an empty *leaf* is `SHA256(0x00)` = `6e340b9c…`. Neither appears in
+> §8 — the vectors there build leaves from single non-empty bytes, so `leaf[0]` is
+> `SHA256(0x00 ‖ 0x00)` = `96a296d2…`. Stated explicitly because an earlier draft of this
+> document misattributed that value as a CT constant.
 
 ---
 
@@ -76,36 +84,54 @@ lets a holder disclose metadata without content.
 ingress:  0 unknown   1 keystroke_stream   2 paste   3 import   4 programmatic
 ```
 
+### One leaf, many observations
+
+A coalescing window routinely contains several observations with different `ingress` values —
+typing, then a paste, then more typing. The integration spec requires these be reported
+separately and **not averaged**, because averaging destroys exactly the distinction that makes
+the record worth having.
+
+`meta_commit` is therefore a **Merkle root over the observation sequence**, in the order the
+agent recorded them, using the same node hashing as §5:
+
 ```
-meta_commit = SHA256( 0x02 || observation_bytes )
+observation_leaf(i) = SHA256( 0x02 || observation_bytes(i) )
+meta_commit         = merkle_root([ observation_leaf(0), … ])
 ```
+
+A leaf commits to **at least one** observation. With exactly one, the root is that leaf's hash,
+so `meta_commit = SHA256(0x02 ‖ observation_bytes)` and the common case is unchanged. This also
+means a holder can disclose one observation with an inclusion proof, without revealing the rest
+of the window.
+
+### What is deliberately absent
 
 `authoritative` from the data model is **not encoded.** It is a structural constant, always
 false; giving it a byte would imply it could be otherwise. Its absence from the wire is the
 strongest possible statement that tools do not adjudicate source.
 
-There is deliberately **no field for content source** and no extension mechanism that could
-carry one. New `ingress` values require a format version bump, which is a decision, not a
-vendor's option.
+There is no field for content source and **no extension mechanism that could carry one.** New
+`ingress` values require a format version bump, which is a decision, not a vendor's option.
 
 ---
 
 ## 4. Revision leaf
 
-**Fixed 186 bytes.** No length prefixes, no optional fields, nothing to disagree about.
+**Fixed 218 bytes.** No length prefixes, no optional fields.
 
 | Offset | Size | Field | Notes |
 | --- | --- | --- | --- |
 | 0 | 1 | format version = `0x01` | |
 | 1 | 8 | `seq`, u64 BE | 0 = genesis, monotonic |
 | 9 | 32 | `parent_head` | **32 zero bytes for genesis** |
-| 41 | 32 | `content_commit` | `SHA256(0x03 ‖ delta)` |
+| 41 | 32 | `content_commit` | §6 |
 | 73 | 32 | `meta_commit` | §3 |
 | 105 | 1 | beacon chain tag | `1` bitcoin, `2` daon |
 | 106 | 8 | beacon height, u64 BE | |
 | 114 | 32 | beacon block hash | |
 | 146 | 32 | `author_key` | Ed25519 public key |
-| 178 | 8 | `local_time`, **i64** BE | unix ms, **untrusted** |
+| 178 | 32 | `recovery_key` | §7 |
+| 210 | 8 | `local_time`, **i64** BE | unix ms, **untrusted** |
 
 ```
 leaf_id = SHA256( 0x00 || leaf_body )
@@ -150,9 +176,80 @@ disqualifying. RFC 6962's split has no such collision.
 An inclusion proof is the sibling hashes from leaf to root, each tagged with the side it sits on.
 Verification is a fold: `h = node(h, sib)` for a right sibling, `node(sib, h)` for a left one.
 
+The same construction serves both the entity log (over revision leaves) and `meta_commit` (over
+observations). One tree implementation, one set of proofs.
+
 ---
 
-## 6. Versioning
+## 6. Content commitment
+
+```
+content_commit = SHA256( 0x03 || content_bytes )
+```
+
+**Not a delta.** The data model describes `content_commit` as hashing the delta from the parent,
+and that is the wrong layer for it. In a disclosure, an adjudicator holds the content and must
+confirm it produces the committed hash — in whatever language they have, years later. Hashing a
+delta makes that reproduction contingent on a diff algorithm, its version, and its tie-breaking
+rules. Hashing content makes it a hash.
+
+Delta storage remains a perfectly good **local** optimisation. It is simply not what we commit
+to, because the commitment must be reproducible by someone who has never seen our storage.
+
+### Flat, not chunked — deliberately
+
+A Merkle root over fixed-size chunks would be equally reproducible and would additionally permit
+**passage-level disclosure**: revealing one part of a revision while withholding the rest. That
+capability is deliberately **not** built.
+
+The reasoning is the same discipline that keeps a `source` field out of §3. A disclosure
+capability is also a **disclosure demand surface**. If a creator *can* reveal a single passage,
+they can be asked to — and then asked for another, with declining framed as having something to
+hide. Fine-grained disclosure does not give creators fine-grained control; it gives adversaries
+fine-grained leverage, and it does so specifically against people already under pressure to
+prove their work is "really theirs."
+
+Coarse disclosure is protective. All-or-nothing per revision means "prove this paragraph" is not
+a question the format can answer, so it is not a question a creator has to refuse.
+
+Chunk boundaries would compound it: a 4 KiB boundary has no relationship to a paragraph, so
+disclosing a passage would drag in whatever neighbouring text shares its chunk — exposure beyond
+intent, arriving as a technical side effect rather than a decision.
+
+This can be revisited in a later format version if the need is ever demonstrated. It cannot be
+un-shipped once creators depend on it.
+
+---
+
+## 7. Key recovery
+
+`recovery_key` is a second Ed25519 public key, committed in **every** leaf and signed alongside
+the rest of the body.
+
+Without it, losing the author key freezes an entity permanently. History stays verifiable but
+can never be extended — and for a work in progress, continuity *was* the evidence. A fourteen-month
+chain that stops dead is not a small loss.
+
+`ForkGenesis` does not solve this. A new entity pointing at the old one's witnessed head is
+signed by a different key, so it demonstrates nothing an adversary with a copy of the public
+history could not also demonstrate.
+
+**Why it must be here now, before rotation semantics exist.** Adding rotation later requires the
+verifier to decide when a key change is legitimate, which means walking a rotation chain — work
+the four-step minimum verifier does not do, and which the data model explicitly protects it from.
+Committing the key in genesis means a future rotation rule can be checked against something that
+was there from the beginning, instead of requiring the verifier to be extended to establish it.
+
+Thirty-two bytes now, in a format that by its own terms can never be revised.
+
+Rotation semantics — what a rotation leaf looks like, what a verifier must check, whether the
+recovery key can itself rotate — are **P1** and specified elsewhere. This document reserves the
+field and requires it be committed; it does not yet define its use. An implementation that has no
+recovery key **must** commit 32 zero bytes and accept that the entity is unrecoverable.
+
+---
+
+## 8. Versioning
 
 Every hashed structure carries its format version in its **first byte**, inside the hash
 preimage. A v2 leaf cannot be mistaken for a v1 leaf, because the version participates in the
@@ -166,59 +263,70 @@ Rules for any future version:
 
 ---
 
-## 7. Test vectors
+## 9. Test vectors
 
-Computed by the reference encoder in [`../../scripts/provenance/wire_ref.py`](../../scripts/provenance/wire_ref.py).
-A second implementation is conforming when it reproduces all of these.
+Computed by [`../../scripts/provenance/wire_ref.py`](../../scripts/provenance/wire_ref.py), which
+regenerates them and self-checks on run. A second implementation is conforming when it reproduces
+all of these.
 
-### 7.1 Observation
+### 9.1 Observations and `meta_commit`
 
 ```
-tool_id      "ref/1.0"
-ingress      paste (2)
-added        214        removed   12
-duration_ms  45200      op_count  87
+observation[0]  tool_id "ref/1.0"  ingress paste (2)
+                added 214  removed 12  duration_ms 45200  op_count 87
 
-encoded (43 bytes)
+observation[1]  tool_id "ref/1.0"  ingress keystroke_stream (1)
+                added 1180  removed 96  duration_ms 51000  op_count 1431
+
+encoded[0] (43 bytes)
 0100077265662f312e300200000000000000d6000000000000000c000000000000b090
 0000000000000057
 
-meta_commit  86bf7780630473515767599095e90e35b92266e1d5860d172591e8ab6cc3da65
+obs_leaf[0]      86bf7780630473515767599095e90e35b92266e1d5860d172591e8ab6cc3da65
+obs_leaf[1]      3cf97112729a2de6c51b7ae3372541d70b813e0a7c589cc4a66383e6aec1761b
+
+meta_commit, one observation   86bf7780630473515767599095e90e35b92266e1d5860d172591e8ab6cc3da65
+meta_commit, both observations f806164d604f0a608cc55ad1339d37a7d6a196251f09b305998b1a9078217cd8
 ```
 
-### 7.2 Content commit
+The single-observation `meta_commit` equals `obs_leaf[0]` — the degenerate root of a one-leaf
+tree. An implementation that special-cases it differently will disagree here.
+
+### 9.2 Content commitment
 
 ```
-delta           "the quick brown fox"
+content         "the quick brown fox"
 content_commit  04d4bb06c05c7593ea1cfb3b63c92cfe061f3e737afef00b213fc4b3963ae958
 ```
 
-### 7.3 Genesis leaf
+### 9.3 Genesis leaf
 
 ```
 seq             0
 parent_head     0000…0000  (32 zero bytes)
-content_commit  §7.2
-meta_commit     §7.1
+content_commit  §9.2
+meta_commit     §9.1, both observations
 beacon          bitcoin, height 880000, hash 00…00deadbeef
 author_key      1111…1111  (32 × 0x11)
+recovery_key    2222…2222  (32 × 0x22)
 local_time      1754000000000
 
-body (186 bytes)
+body (218 bytes)
 010000000000000000000000000000000000000000000000000000000000000000000000
 00000000000004d4bb06c05c7593ea1cfb3b63c92cfe061f3e737afef00b213fc4b3963a
-e95886bf7780630473515767599095e90e35b92266e1d5860d172591e8ab6cc3da650100
+e958f806164d604f0a608cc55ad1339d37a7d6a196251f09b305998b1a9078217cd80100
 000000000d6d8000000000000000000000000000000000000000000000000000000000de
-adbeef1111111111111111111111111111111111111111111111111111111111111100000
-198628c0400
+adbeef1111111111111111111111111111111111111111111111111111111111111111222
+2222222222222222222222222222222222222222222222222222222222200000198628c0
+400
 
-leaf_id  b515ccba6108166c28e6e8073700211c41a49094b247da070bcaf0a42a47da52
+leaf_id  c6167ccbb8af644c7b7a478e8a64c0a8695bac272fa8fbcc597c4b2182efad78
 ```
 
-### 7.4 Merkle root over 5 leaves
+### 9.4 Merkle root over 5 leaves
 
-Leaves are `SHA256(0x00 || <single byte i>)` for i = 0…4 — chosen so the vector tests the tree,
-not the leaf encoder. `leaf[0]` is the RFC 6962 empty-leaf hash.
+Leaves are `SHA256(0x00 ‖ <single byte i>)` for i = 0…4 — chosen so the vector tests the tree,
+not the leaf encoder.
 
 ```
 leaf[0]  96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7
@@ -233,7 +341,7 @@ root     b855b42d6c30f5b087e05266783fbd6e394f7b926013ccaa67700a8b0c5a596f
 Five leaves is the smallest count that exercises an unbalanced split (k = 4), so an
 implementation using last-node duplication produces a different root here and fails.
 
-### 7.5 Inclusion proof for `leaf[3]`
+### 9.5 Inclusion proof for `leaf[3]`
 
 ```
 L  fcf0a6c700dd13e274b6fba8deea8dd9b26e4eedde3495717cac8408c9c5177f
@@ -241,15 +349,19 @@ L  a20bf9a7cc2dc8a08f5f415a71b19f6ac427bab54d24eec868b5d3103449953a
 R  4f35212d12f9ad2036492c95f1fe79baf4ec7bd9bef3dffa7579f2293ff546a4
 ```
 
-Folds to the §7.4 root. Substituting `leaf[2]` must fail.
+Folds to the §9.4 root. Substituting `leaf[2]` must fail.
 
 ---
 
-## 8. Open
+## 10. Open
 
+- **Rotation semantics** — §7 reserves `recovery_key` but does not define its use. P1.
+- **Content store** — bytes stay local and the format no longer constrains how they are stored,
+  since the commitment is over content rather than a delta. Git remains a strong candidate and
+  the decision is now purely local.
 - **Beacon chain tags** are an enum, so adding a source is a format change. Only `bitcoin` and
   `daon` are defined; `daon` is unused until the P2 multi-witness work.
-- **`tool_id` is ASCII ≤ 64** to sidestep normalisation. If richer identifiers are ever needed,
-  they belong in unhashed transport metadata, not the commitment.
-- **No consistency-proof encoding yet.** P1 in the data model; it constrains nothing here, since
-  consistency proofs are derived from the same node hashing.
+- **`tool_id` is ASCII ≤ 64** to sidestep normalisation. Richer identifiers belong in unhashed
+  transport metadata, not the commitment.
+- **No consistency-proof encoding yet.** P1; it constrains nothing here, since consistency proofs
+  derive from the same node hashing.

@@ -62,8 +62,24 @@ else's behalf. Those are the properties worth defending.
 
 ## 3. API
 
-Local HTTP on loopback, or a language binding over the same shapes. Loopback so any editor in
-any language can integrate without an FFI story.
+### Transport — normative
+
+The agent holds the author key. **TCP loopback is not a security boundary**: any local process,
+including anything malicious that gains a foothold, can connect to it. There is no listener on
+any TCP port, loopback included.
+
+| Platform | Transport | Protection |
+| --- | --- | --- |
+| macOS, Linux | Unix domain socket | file mode `0600`, owned by the running user |
+| Windows | named pipe | DACL restricted to the current user SID |
+
+HTTP semantics over that socket, so any language with an HTTP client can integrate without an
+FFI story. Implementations **must not** offer a TCP fallback, including as a development
+convenience — a debug flag that opens a port is a debug flag that ships.
+
+A caller that can open the socket is already running as the creator and can read the key
+material directly; the socket is not trying to defend against that. It is defending against every
+process that cannot, which on a shared or compromised machine is the population that matters.
 
 ### `POST /v1/session/open`
 
@@ -111,7 +127,12 @@ and decides when they become a leaf.
 | `unknown` | the tool genuinely cannot tell — **a valid and honest answer** |
 
 `unknown` is not a failure. A tool that cannot distinguish should say so rather than guess.
-Mixed activity is reported as multiple `observe` calls, not averaged into one.
+
+**Mixed activity is reported as multiple `observe` calls, never averaged into one.** Averaging a
+paste and a typing burst into a single blended record destroys precisely the distinction the log
+exists to preserve. The agent commits all observations in a window to the leaf as a Merkle tree
+over the sequence, so a leaf carries each one intact and a holder can later disclose one without
+the others. See `wire-format.md` §3.
 
 ### `POST /v1/commit`
 
@@ -120,7 +141,7 @@ Request that accumulated observations become a revision leaf.
 ```jsonc
 // request
 { "session": "s_01J…",
-  "content": "…",              // full buffer; the agent computes the delta
+  "content": "…",              // full buffer; committed as SHA256(0x03‖bytes)
   "reason":  "idle" }          // | save | close | explicit
 
 // response — committed
@@ -219,7 +240,66 @@ Editors must not implement their own retry loops on `429`. Honour `Retry-After`.
 
 ---
 
-## 6. What the editor must never do
+## 6. What a history does not mean
+
+Normative, and aimed at whatever renders this data — the editor, a viewer, a future dashboard.
+
+A DAON history is **evidence a creator may choose to offer**. It is not a credential, and its
+absence is not a deficiency. Almost all writing that exists was made without one, including
+almost all of the writing anyone reading a history has ever valued.
+
+### Absence and sparseness carry no meaning
+
+- **No history is the norm.** Anyone writing in Google Docs, on paper, in Notes, or in any tool
+  that has never heard of this spec has none. That is the overwhelming majority of all work.
+- **A thin history is not a weak one.** Someone who saves twice a day produces a fraction of the
+  leaves of someone who saves constantly. The difference is a habit, not a fact about authorship.
+- **A creator who never discloses has said nothing**, and must not be treated as having said
+  something. Default silence is the design's position (`provenance-data-model.md`), not evasion.
+
+### The metrics describe writing, not authorship
+
+`op_count`, `duration_ms`, `span_bytes` and `ingress` record mechanism. They do not measure
+effort, originality, or honesty, and they are not comparable between people:
+
+| Pattern that looks "suspicious" | What it actually is |
+| --- | --- |
+| Mostly `paste` | drafted somewhere else — a notes app, Docs, a phone, a collaborator's message |
+| Very few, very large leaves | writes in long sittings; saves rarely |
+| Fast `op_count`, short `duration_ms` | a touch typist, or dictation, or an assistive input device |
+| Long gaps, sporadic bursts | a job, children, illness, a life |
+
+Every row is ordinary. A reading that treats any of them as a red flag is not detecting anything
+— it is penalising people for how they work, and it will land hardest on the people with the
+least control over how they work.
+
+### Therefore, implementations must not
+
+1. **Score, rank, grade, or rate** a history, or compute any single number intended to summarise
+   its trustworthiness.
+2. **Compare** one creator's history to another's, to an average, or to a threshold.
+3. **Present absence as negative** — no "unverified" badges, no warning colours, no empty-state
+   copy implying something is missing or wrong.
+4. **Present `paste` as negative** — no highlighting, no distinct warning styling, no ordering
+   that surfaces it as exceptional.
+5. **Nudge toward more leaves** — no streaks, no completeness meters, no prompts to save more
+   often "for better provenance." That converts a record into a performance.
+
+A tool that ships any of these has built the gatekeeping instrument this project exists to
+refuse, regardless of what its documentation says.
+
+### Why this is in a wire format spec's companion
+
+Because the pressure is structural, not accidental. The moment a history is legible, someone will
+want to read it as a verdict — and the people asking will usually have more power than the person
+being asked. The format's job is to make that reading unsupported: no score to cite, no
+comparison to draw, nothing to disclose at finer grain than a whole revision (`wire-format.md`
+§6). Implementations must not reintroduce at the presentation layer what the format deliberately
+withholds.
+
+---
+
+## 7. What the editor must never do
 
 1. **Infer or report content source.** No `source`, `is_human`, `ai_generated`, or equivalent —
    including via `tool_id`, `ingress`, or a vendor extension field.
@@ -232,7 +312,7 @@ Editors must not implement their own retry loops on `429`. Honour `Retry-After`.
 
 ---
 
-## 7. Conformance checklist
+## 8. Conformance checklist
 
 - [ ] Reads `limits` from `session/open` rather than hard-coding §5
 - [ ] Treats `committed: false` as normal flow, not an error
@@ -241,14 +321,20 @@ Editors must not implement their own retry loops on `429`. Honour `Retry-After`.
 - [ ] Honours `Retry-After` with no client-side retry loop
 - [ ] Contains no field, anywhere, asserting content source
 - [ ] Never opens a network connection on the versioning layer's behalf
+- [ ] Connects over a Unix socket or named pipe, never TCP — including in debug builds
+- [ ] Displays no score, rank, grade, or trustworthiness summary of a history
+- [ ] Compares no history to another, to an average, or to a threshold
+- [ ] Styles absence and `paste` neutrally — no badges, warnings, or highlighting
+- [ ] Offers no streak, meter, or prompt encouraging more frequent commits
 
 ---
 
-## 8. Open questions
+## 9. Open questions
 
-- **Content store.** `content_commit = hash(delta from parent)` with bytes staying local is
-  precisely what git already is — a content-addressed delta store with append-only history.
-  Worth a deliberate decision on using it as the backing store rather than reimplementing it.
+- **Content store.** `content_commit` is over content bytes, not a delta (`wire-format.md` §6),
+  so storage is now purely a local decision with no effect on any commitment. Git remains a
+  strong candidate — a content-addressed delta store with append-only history — and choosing it
+  no longer constrains anything an adjudicator has to reproduce.
 - **Key loss.** Losing the author key ends the ability to append to an entity; history stays
   verifiable but frozen. Needs a recovery story before anyone depends on this.
 - **Multi-device.** Out of MVP scope (single-writer), but the `seq`/`parent_head` shape should be

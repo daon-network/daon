@@ -55,7 +55,9 @@ Entity {
 RevisionLeaf {
   seq            : uint       // 0 = genesis, monotonic
   parent_head    : Hash       // head this revision extended (fork = parent in another entity)
-  content_commit : Hash       // hash(delta from parent) — raw bytes stay in the creator's store
+  content_commit : Hash       // hash(content bytes) — raw bytes stay in the creator's store
+                              // (was: delta. See wire-format.md §6 — a delta is not
+                              //  reproducible by an adjudicator years later.)
   meta_commit    : Hash       // hash(Observation) — committed separately so metadata opens without content
   beacon         : BeaconRef  // recent public unpredictable value (block hash) → free lower time bound
   author_key     : PubKey     // creator-held key — the only authorship anchor
