@@ -218,14 +218,22 @@ for demanding more.**
 
 Capability and surface are different things, and the distinction is the whole point:
 
+The **revision** is the unit. Every leaf is one revision, and everything DAON stores, proves and
+certifies operates at that grain. Segments live *inside* a single revision's content; they are a
+finer grain than anything DAON's own surfaces work in.
+
 | | |
 | --- | --- |
-| **A creator may choose** to prove a segment | the format supports it |
-| **DAON issues, displays, or exposes** anything finer than a whole revision | never |
+| DAON stores, proves and certifies **revisions** | always — this is the entire system |
+| A creator may choose to prove **one segment within** a revision | the format supports it |
+| DAON issues, renders, or serves an endpoint for **segment-level** detail | never |
 
 Nothing DAON produces — certificate, viewer, API — asks for, renders, or makes queryable a
-sub-revision disclosure. There is no endpoint that takes a segment index. Fine-grained proof is
-an affirmative act by the holder, performed with material only they possess, exactly as
+segment-level disclosure. Concretely: `GET /v1/entity/{id}/proof?seq=N` returns a proof for
+revision N and there is no `?segment=` parameter, on that endpoint or any other.
+
+A creator wanting to prove one segment generates that proof themselves, from content only they
+hold, and hands it to whoever they choose. It is an affirmative act by the holder, exactly as
 `provenance-data-model.md` requires of disclosure generally.
 
 The coercion risk that argues against fine granularity lives in what a system *issues and
