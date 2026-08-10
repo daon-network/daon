@@ -112,6 +112,24 @@ An editor that stores a work as multiple files opens **one session per assembled
 sends the assembled content at `commit`. How it maps files to that assembly is its business; the
 entity boundary is not.
 
+**Collections are a non-goal.** There is no series, anthology, or body-of-work primitive, and
+there should not be one.
+
+Provenance is a property of a work. Grouping works is cataloguing, and it is cataloguing with a
+cost: a collection is an **aggregation surface**, and aggregation is where scoring becomes
+possible. "Prove this manuscript is yours" and "show me your body of work" are different asks,
+and only the first is answerable without characterising a person. A grouping primitive would make
+a creator's whole output legible as a unit, which is the creator profile
+`provenance-data-model.md` refuses to build.
+
+The legitimate need is already met without one: works by the same creator share an `author_key`.
+That link exists for any creator who chooses to reveal it, and exists for nobody else — which is
+the correct default. A collection primitive would move that from something disclosed to something
+queryable.
+
+Lineage *between* entities, where one work genuinely derives from another, is what forks are for
+(P2). That is a provenance relation. Belonging to the same series is not.
+
 ### `POST /v1/session/open`
 
 Begin editing an entity. Returns a session handle used for subsequent calls.
@@ -395,8 +413,5 @@ ours to close.
   verifiable but frozen. Needs a recovery story before anyone depends on this.
 - **Multi-device.** Out of MVP scope (single-writer), but the `seq`/`parent_head` shape should be
   checked against a future where two devices append to one entity.
-- **Collections.** An entity is one assembled artifact (§3). A series, an anthology, or a body of
-  work spanning several entities has no representation yet. Forks (P2) give lineage between
-  entities; grouping is a separate question and deliberately unanswered.
 - **Limit defaults.** The §5 numbers are reasoned, not measured. Revisit against real editing
   traffic once instrumented.
