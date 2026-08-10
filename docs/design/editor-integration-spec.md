@@ -81,6 +81,37 @@ A caller that can open the socket is already running as the creator and can read
 material directly; the socket is not trying to defend against that. It is defending against every
 process that cannot, which on a shared or compromised machine is the population that matters.
 
+### What an entity is — normative
+
+**An entity is one canonical assembled artifact.** The manuscript, not the project; the
+manuscript, not the chapter file.
+
+The data model defines an entity structurally — identity is its genesis, position is its head —
+but not what it corresponds to in the world. That is the first decision an implementer faces, and
+getting it wrong is silently corrosive rather than loud.
+
+**Why not one entity per file.** Long-form writing is mostly restructuring. Move a scene from
+chapter 3 to chapter 7 and, with chapter files as entities, chapter 7 records `ingress: paste` —
+byte-identical to pasting from a model. Split a chapter and you create a fresh genesis with no
+lineage at all until forks land in P2.
+
+So an author reorganising their own manuscript would accumulate exactly the pattern §6 warns
+against reading as suspicious, *by doing the ordinary work of writing a book.* The system would
+be manufacturing the signal, then disclaiming it. That is worse than not recording it.
+
+**Why the assembled artifact works.** Internal restructuring adds no bytes from outside the
+entity, so it produces no `paste` and needs no fork. Which is correct: **reorganising your own
+work is not an evidentiary event.** Bytes crossing the boundary — from another document, another
+person, a model — are, and those still register.
+
+**Project-level is too coarse** for the opposite reason: unrelated works would share a head, so
+witnessing one would carry the others, and disclosing about one would mean disclosing a head
+covering all of them.
+
+An editor that stores a work as multiple files opens **one session per assembled artifact** and
+sends the assembled content at `commit`. How it maps files to that assembly is its business; the
+entity boundary is not.
+
 ### `POST /v1/session/open`
 
 Begin editing an entity. Returns a session handle used for subsequent calls.
@@ -177,8 +208,24 @@ little about how the work was made. That judgement has to be consistent across e
 touching an entity, so it belongs on one side of the boundary — and it is baked into every
 historic leaf, so it cannot be renegotiated later.
 
-Default policy: coalesce until **90 s idle**, or an explicit `reason: "save" | "close"`, subject
-to the §5 floor. Editors should call `commit` liberally and let the agent absorb it.
+Default policy: coalesce until **90 s idle**, or `reason: "save" | "close" | "explicit"`, subject
+to the §5 minimum interval. Editors should call `commit` liberally and let the agent absorb it.
+
+**`explicit` always produces a leaf.** It is the one reason the agent may not coalesce away.
+
+`explicit` means the creator named this moment — "Draft 2 complete", the version going to a
+committee, the state submitted to a publisher. That is the most evidentially significant leaf in
+a chain, and it is the only one whose position the creator chose deliberately rather than as a
+side effect of when they stopped typing. Absorbing it into surrounding idle work would discard
+precisely the boundary that was worth recording.
+
+The §5 minimum interval still applies, so `explicit` cannot be used to bypass rate limiting — a
+client sending it in a loop is refused like any other. It bypasses *coalescing*, not the floor.
+
+Note that an `explicit` leaf carries no name. The milestone is the leaf's position in the chain,
+witnessed like any other; a creator-supplied label would have to enter the hashed layer, where it
+would become part of what a disclosure reveals. A title can be sensitive on its own. If labelling
+is ever wanted it is a format decision, not something a client may add.
 
 `duration_ms` is measured across the coalesced window, so it stays meaningful regardless of how
 often the editor asked.
@@ -333,6 +380,8 @@ ours to close.
 - [ ] Compares no history to another, to an average, or to a threshold
 - [ ] Styles absence and `paste` neutrally — no badges, warnings, or highlighting
 - [ ] Offers no streak, meter, or prompt encouraging more frequent commits
+- [ ] Opens one session per assembled artifact, not per file (§3)
+- [ ] Sends `reason: "explicit"` only for creator-named milestones, and never in a loop
 
 ---
 
@@ -346,5 +395,8 @@ ours to close.
   verifiable but frozen. Needs a recovery story before anyone depends on this.
 - **Multi-device.** Out of MVP scope (single-writer), but the `seq`/`parent_head` shape should be
   checked against a future where two devices append to one entity.
+- **Collections.** An entity is one assembled artifact (§3). A series, an anthology, or a body of
+  work spanning several entities has no representation yet. Forks (P2) give lineage between
+  entities; grouping is a separate question and deliberately unanswered.
 - **Limit defaults.** The §5 numbers are reasoned, not measured. Revisit against real editing
   traffic once instrumented.
