@@ -292,10 +292,17 @@ refuse, regardless of what its documentation says.
 
 Because the pressure is structural, not accidental. The moment a history is legible, someone will
 want to read it as a verdict — and the people asking will usually have more power than the person
-being asked. The format's job is to make that reading unsupported: no score to cite, no
-comparison to draw, nothing to disclose at finer grain than a whole revision (`wire-format.md`
-§6). Implementations must not reintroduce at the presentation layer what the format deliberately
-withholds.
+being asked. The format's job is to leave that reading unsupported: no score to cite, no
+comparison to draw. Implementations must not reintroduce at the presentation layer what the
+format deliberately withholds.
+
+**The distinction to hold onto is capability versus surface.** A creator may choose to prove a
+single segment of a revision (`wire-format.md` §6) — that exists so they can disclose *less*,
+since the alternative is revealing an entire manuscript to answer one question. But nothing this
+system issues, renders, or accepts works at that grain. There is no endpoint taking a segment
+index, no certificate showing one, no view that invites the question. What a holder can
+volunteer and what an adversary can demand are not the same surface, and only the second one is
+ours to close.
 
 ---
 

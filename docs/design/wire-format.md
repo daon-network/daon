@@ -184,42 +184,65 @@ observations). One tree implementation, one set of proofs.
 ## 6. Content commitment
 
 ```
-content_commit = SHA256( 0x03 || content_bytes )
+SEGMENT_SIZE   = 1024 bytes
+segments(c)    = [ c[0:1024], c[1024:2048], … ]     last may be short; empty c → one empty segment
+content_commit = merkle_root([ SHA256(0x03 || seg) for seg in segments(content) ])
 ```
+
+Content under 1 KiB is a single segment, so `content_commit = SHA256(0x03 ‖ content)` and small
+documents behave exactly like a flat content hash.
 
 **Not a delta.** The data model describes `content_commit` as hashing the delta from the parent,
 and that is the wrong layer for it. In a disclosure, an adjudicator holds the content and must
 confirm it produces the committed hash — in whatever language they have, years later. Hashing a
 delta makes that reproduction contingent on a diff algorithm, its version, and its tie-breaking
-rules. Hashing content makes it a hash.
+rules. Hashing content makes it a hash. Delta storage remains a perfectly good **local**
+optimisation; it is simply not what we commit to.
 
-Delta storage remains a perfectly good **local** optimisation. It is simply not what we commit
-to, because the commitment must be reproducible by someone who has never seen our storage.
+### Why segmented rather than flat
 
-### Flat, not chunked — deliberately
+A flat hash would force **maximal disclosure**. To prove anything at all about a revision — that
+one paragraph existed before a date — a creator would have to reveal the entire revision. For
+someone with an unpublished manuscript, answering one question would mean handing over the book.
 
-A Merkle root over fixed-size chunks would be equally reproducible and would additionally permit
-**passage-level disclosure**: revealing one part of a revision while withholding the rest. That
-capability is deliberately **not** built.
+Segmenting inverts that. A holder can disclose one segment plus an inclusion proof:
 
-The reasoning is the same discipline that keeps a `source` field out of §3. A disclosure
-capability is also a **disclosure demand surface**. If a creator *can* reveal a single passage,
-they can be asked to — and then asked for another, with declining framed as having something to
-hide. Fine-grained disclosure does not give creators fine-grained control; it gives adversaries
-fine-grained leverage, and it does so specifically against people already under pressure to
-prove their work is "really theirs."
+```
+disclose( segment_bytes, index, sibling_hashes )  →  verifies against content_commit
+```
 
-Coarse disclosure is protective. All-or-nothing per revision means "prove this paragraph" is not
-a question the format can answer, so it is not a question a creator has to refuse.
+Everything else stays hidden. **Fine-grained proof is a tool for disclosing less, not a mechanism
+for demanding more.**
 
-Chunk boundaries would compound it: a 4 KiB boundary has no relationship to a paragraph, so
-disclosing a passage would drag in whatever neighbouring text shares its chunk — exposure beyond
-intent, arriving as a technical side effect rather than a decision.
+### The line this does not cross
 
-This can be revisited in a later format version if the need is ever demonstrated. It cannot be
-un-shipped once creators depend on it.
+Capability and surface are different things, and the distinction is the whole point:
 
----
+| | |
+| --- | --- |
+| **A creator may choose** to prove a segment | the format supports it |
+| **DAON issues, displays, or exposes** anything finer than a whole revision | never |
+
+Nothing DAON produces — certificate, viewer, API — asks for, renders, or makes queryable a
+sub-revision disclosure. There is no endpoint that takes a segment index. Fine-grained proof is
+an affirmative act by the holder, performed with material only they possess, exactly as
+`provenance-data-model.md` requires of disclosure generally.
+
+The coercion risk that argues against fine granularity lives in what a system *issues and
+displays*, because that is what an adversary can point at and demand. It does not live in what a
+creator can voluntarily choose to prove about their own work — refusing them that only means the
+sole way to prove anything is to expose everything.
+
+### Segment boundaries leak, and that is the creator's call
+
+A 1 KiB boundary has no relationship to a paragraph. Disclosing a passage discloses the segments
+it spans, which may include adjacent text the holder did not intend to reveal. Smaller segments
+reduce the spill and enlarge the tree; the proof stays O(log n) either way.
+
+This cost is real and is not hidden: a holder choosing segment-level disclosure is choosing to
+reveal up to `SEGMENT_SIZE − 1` bytes of neighbouring content on each side. An implementation
+offering this **must** show the holder the exact bytes that will be disclosed before they
+disclose them. Consent to reveal a passage is not consent to reveal whatever shares its segment.
 
 ## 7. Key recovery
 
@@ -295,9 +318,24 @@ tree. An implementation that special-cases it differently will disagree here.
 ### 9.2 Content commitment
 
 ```
-content         "the quick brown fox"
+content         "the quick brown fox"     (19 bytes — one segment)
 content_commit  04d4bb06c05c7593ea1cfb3b63c92cfe061f3e737afef00b213fc4b3963ae958
 ```
+
+Under `SEGMENT_SIZE` the root is the single segment's hash, so this equals
+`SHA256(0x03 ‖ content)`. An implementation that special-cases short content differently will
+still agree here — which is the point of the degenerate case.
+
+Multi-segment, to exercise the tree. Content is `0x01 × 1024 ‖ 0x02 × 1024 ‖ 0x03 × 1024`:
+
+```
+segments        3
+content_commit  6f530589075448eb1369f2188bf4115e04aeafe4f73954c49dbfbb5b3cbaabc9
+segment[1] hash 10c283b2a1ca587fcdf599494dbf6b0be12d5ca720bc3aabb524d13531415ae5
+```
+
+Boundary cases: 1024 bytes is **one** segment, 1025 is **two**, empty content is **one empty
+segment**.
 
 ### 9.3 Genesis leaf
 

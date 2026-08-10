@@ -31,17 +31,35 @@ def meta_commit(observations):
     assert observations, 'a leaf commits to at least one observation'
     return merkle_root([observation_leaf(**o) for o in observations])
 
+SEGMENT_SIZE = 1024   # bytes. Spec constant — see docs/design/wire-format.md §6.
+
+def segments(content):
+    """Fixed-size split. Fully reproducible: no rolling hash, no content sniffing,
+    no parsing. The last segment may be short. Empty content is one empty segment."""
+    if not content: return [b'']
+    return [content[i:i+SEGMENT_SIZE] for i in range(0, len(content), SEGMENT_SIZE)]
+
 def content_commit(content):
-    """Hash of the content bytes exactly as the tool committed them.
+    """Merkle root over fixed-size segments of the content bytes.
 
-    NOT a delta. An adjudicator holding the content must be able to reproduce
-    this in any language, years later; hashing a delta would make that depend on
-    a diff algorithm. Delta storage remains a purely local optimisation.
+    NOT a delta. An adjudicator holding the content must reproduce this in any
+    language years later; a delta would make that depend on a diff algorithm.
 
-    Deliberately flat rather than a Merkle root over chunks. Chunking would
-    permit passage-level disclosure, and a disclosure capability is also a
-    disclosure demand surface -- see docs/design/wire-format.md."""
-    return H(T_CONTENT + content)
+    Segmented rather than flat so a creator who wants to prove one passage can
+    disclose that passage alone, instead of revealing an entire revision to
+    prove one thing about it. Content under SEGMENT_SIZE yields a single
+    segment, so the root is that segment's hash and small documents behave
+    exactly like a flat content hash.
+
+    What DAON issues and displays stays whole-revision regardless -- fine
+    grained proof is a creator-initiated act, never a queryable surface."""
+    return merkle_root([H(T_CONTENT + seg) for seg in segments(content)])
+
+def segment_proof(content, index):
+    """(segment_bytes, inclusion_proof) — lets a holder prove one segment
+    against content_commit without disclosing the others."""
+    segs = segments(content)
+    return segs[index], inclusion_proof([H(T_CONTENT + s) for s in segs], index)
 
 def encode_leaf_body(seq, parent_head, content_commit, meta_commit,
                      beacon_chain, beacon_height, beacon_hash, author_key,
@@ -120,5 +138,16 @@ if __name__ == '__main__':
     assert not verify_inclusion(leaves[2], proof, root),  'wrong leaf must be rejected'
     assert len(encode_leaf_body(**g)) == 218,             'leaf body is fixed at 218 bytes'
     assert mc1 == observation_leaf(**o1),                 'single observation degenerates to its leaf'
-    assert content_commit(b'x') == H(T_CONTENT + b'x'),   'content_commit is flat, not a delta'
+    seg_doc = b''.join(bytes([i])*1024 for i in (1, 2, 3))
+    seg_root = content_commit(seg_doc)
+    seg1, seg1_proof = segment_proof(seg_doc, 1)
+    print('7.2  seg_root (3x1KiB)', hexs(seg_root))
+    print('7.2  segment[1] hash  ', hexs(H(T_CONTENT + seg1)))
+
+    assert content_commit(b'x') == H(T_CONTENT + b'x'),    'sub-segment content is a single leaf'
+    assert len(segments(b'a'*1024)) == 1,                  '1024 bytes is one segment'
+    assert len(segments(b'a'*1025)) == 2,                  '1025 bytes is two'
+    assert len(segments(b'')) == 1,                        'empty content is one empty segment'
+    assert verify_inclusion(H(T_CONTENT+seg1), seg1_proof, seg_root), 'segment proof must verify'
+    assert not verify_inclusion(H(T_CONTENT+b'x'*1024), seg1_proof, seg_root), 'tamper must fail'
     print('\nself-checks passed')
