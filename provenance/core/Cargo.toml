@@ -1,0 +1,15 @@
+[package]
+name = "daon-provenance-core"
+version = "0.0.0"          # not published; the wire format is not frozen yet
+description = "Leaf encoding, Merkle log and inclusion proofs for DAON provenance versioning"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+sha2.workspace = true
+
+[features]
+default = ["std"]
+std = []

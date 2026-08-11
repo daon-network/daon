@@ -35,3 +35,6 @@ verification-service/.next/
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Rust build artifacts
+provenance/target/
