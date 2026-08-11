@@ -268,6 +268,15 @@ impl RevisionLeaf {
     }
 }
 
+/// Hash bytes under a domain separation tag: `SHA256(tag || bytes)`.
+///
+/// Exposed so downstream crates can recompute a tagged hash — a content segment,
+/// say — without taking a direct dependency on a hash implementation. Keeping the
+/// verifier's dependency surface small is a design goal, not an accident.
+pub fn hash_tagged(tag: u8, bytes: &[u8]) -> Hash {
+    sha256(&[&[tag], bytes])
+}
+
 /// Hash arbitrary bytes as a Merkle leaf: `SHA256(0x00 || bytes)`.
 ///
 /// Callers building a log of revisions want [`RevisionLeaf::leaf_id`]; this is
