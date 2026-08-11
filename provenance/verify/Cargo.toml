@@ -1,0 +1,19 @@
+[package]
+name = "daon-provenance-verify"
+version = "0.0.0"          # not published; the wire format is not frozen yet
+description = "The four-step minimum verifier for DAON provenance claims"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+daon-provenance-core.workspace = true
+ed25519-dalek = { workspace = true, optional = true }
+
+[features]
+default = ["std", "signatures"]
+std = ["daon-provenance-core/std"]
+# Step 4 only. Steps 1-3 must keep working without it, so a verifier that does
+# not care about authorship can be built smaller.
+signatures = ["dep:ed25519-dalek"]
