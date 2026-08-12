@@ -1,0 +1,17 @@
+[package]
+name = "daon-provenance-agent"
+version = "0.0.0"          # not published; the wire format is not frozen yet
+description = "Local store and leaf construction for DAON provenance versioning"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+daon-provenance-core.workspace = true
+hex.workspace = true
+
+[dev-dependencies]
+ed25519-dalek = { workspace = true, features = ["rand_core"] }
+tempfile.workspace = true
+rand = "0.8"
