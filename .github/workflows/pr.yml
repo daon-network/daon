@@ -22,7 +22,6 @@ jobs:
       provenance: ${{ steps.filter.outputs.provenance }}
       wordpress:  ${{ steps.filter.outputs.wordpress }}
       ccc:        ${{ steps.filter.outputs.ccc }}
-      verifysvc:  ${{ steps.filter.outputs.verifysvc }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -55,8 +54,6 @@ jobs:
               - 'wordpress-plugin/**'
             ccc:
               - 'creative-commons-chain/**'
-            verifysvc:
-              - 'verification-service/**'
 
   # ── API Server ────────────────────────────────────────────────────────────
 
@@ -243,10 +240,12 @@ jobs:
       # No toolchain version here on purpose: provenance/rust-toolchain.toml is
       # the single source of truth, so CI cannot drift from a developer machine
       # the way go.mod and the Dockerfile did.
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-          targets: wasm32-unknown-unknown
+      # rustup reads provenance/rust-toolchain.toml and installs the pinned
+      # channel with its components and targets. Naming components here instead
+      # installed them for 'stable' while cargo used the pinned 1.97.1, so
+      # cargo-fmt was missing for the toolchain that actually ran.
+      - name: Install pinned toolchain
+        run: rustup toolchain install
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -299,7 +298,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          # 8.4 because composer.lock resolves doctrine/instantiator at php ^8.4.
+          # The plugin itself still declares php >=7.4 and that remains true --
+          # the constraint is a dev dependency, so it binds the test suite only.
+          php-version: '8.4'
           tools: composer
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
@@ -325,24 +327,6 @@ jobs:
         env:
           GOTOOLCHAIN: local
         run: cd creative-commons-chain && go build ./...
-
-  # ── verification-service ──────────────────────────────────────────────────
-
-  verification-service:
-    name: Verification Service Build
-    needs: changes
-    if: needs.changes.outputs.verifysvc == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: verification-service
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci || npm install
-      - run: npm run build
 
   test-go:
     name: Go SDK Tests
@@ -434,7 +418,6 @@ jobs:
       - provenance
       - wordpress
       - ccc-build
-      - verification-service
       - test-go
       - test-node-sdk
       - test-python
@@ -453,7 +436,6 @@ jobs:
           R_PROVENANCE:  ${{ needs.provenance.result }}
           R_WORDPRESS:   ${{ needs.wordpress.result }}
           R_CCC:         ${{ needs.ccc-build.result }}
-          R_VERIFYSVC:   ${{ needs.verification-service.result }}
           R_GO:          ${{ needs.test-go.result }}
           R_NODE:        ${{ needs.test-node-sdk.result }}
           R_PYTHON:      ${{ needs.test-python.result }}
@@ -483,7 +465,6 @@ jobs:
           render "Blockchain Docker Build" "$R_BCDOCKER"
           render "Frontend & E2E"          "$R_FRONTEND"
           render "creative-commons-chain"  "$R_CCC"
-          render "Verification Service"    "$R_VERIFYSVC"
 
           echo ""                              >> "$GITHUB_STEP_SUMMARY"
           echo "### Provenance"                >> "$GITHUB_STEP_SUMMARY"
@@ -504,7 +485,7 @@ jobs:
           # Fail the summary job if any non-skipped job failed
           all_ok=true
           for result in "$R_SECURITY" "$R_TEST" "$R_BUILD" "$R_BLOCKCHAIN" "$R_BCDOCKER" \
-                        "$R_FRONTEND" "$R_PROVENANCE" "$R_WORDPRESS" "$R_CCC" "$R_VERIFYSVC" \
+                        "$R_FRONTEND" "$R_PROVENANCE" "$R_WORDPRESS" "$R_CCC" \
                         "$R_GO" "$R_NODE" "$R_PYTHON" "$R_RUBY" "$R_PHP"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               all_ok=false

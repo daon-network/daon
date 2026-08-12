@@ -3,4 +3,5 @@
 # it and get the same bytes; that is not true if the toolchain floats.
 [toolchain]
 channel = "1.97.1"
+components = ["rustfmt", "clippy"]
 targets = ["wasm32-unknown-unknown"]
