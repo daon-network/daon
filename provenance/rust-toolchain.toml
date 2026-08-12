@@ -1,0 +1,6 @@
+# Pinned so this machine, CI, and anyone rebuilding the WASM verifier all use the
+# same compiler. The verifier's value depends on a skeptic being able to rebuild
+# it and get the same bytes; that is not true if the toolchain floats.
+[toolchain]
+channel = "1.97.1"
+targets = ["wasm32-unknown-unknown"]
