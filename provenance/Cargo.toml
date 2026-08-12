@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["core"]
+members = ["core", "verify"]
 
 [workspace.package]
 edition = "2021"
@@ -10,3 +10,5 @@ repository = "https://github.com/daon-network/daon"
 
 [workspace.dependencies]
 sha2 = { version = "0.10", default-features = false }
+ed25519-dalek = { version = "2", default-features = false }
+daon-provenance-core = { path = "core", default-features = false }
