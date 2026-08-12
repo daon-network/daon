@@ -273,9 +273,12 @@ was there from the beginning, instead of requiring the verifier to be extended t
 
 Thirty-two bytes now, in a format that by its own terms can never be revised.
 
-Rotation semantics — what a rotation leaf looks like, what a verifier must check, whether the
-recovery key can itself rotate — are **P1** and specified elsewhere. This document reserves the
-field and requires it be committed; it does not yet define its use. An implementation that has no
+Rotation semantics are proposed in [`key-recovery.md`](./key-recovery.md): the recovery key may
+sign a rotation leaf naming a new `author_key` and **nothing else**, rotation is an ordinary
+witnessed leaf so takeover is visible and ordered, and the minimum verifier is untouched — a leaf
+signed by the `author_key` in that leaf is valid, and whether the key legitimately changed is an
+audit question rather than a verification step. This document reserves the field and requires it
+be committed; the encoding of a rotation leaf is still open. An implementation that has no
 recovery key **must** commit 32 zero bytes and accept that the entity is unrecoverable.
 
 ---
