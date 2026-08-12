@@ -110,6 +110,63 @@ would be additive rather than a change to how existing leaves verify.
 
 ---
 
+## Transfer is the easy case
+
+Rotation and transfer produce the same shape of leaf and are authorised differently:
+
+| | Why | Signed by |
+| --- | --- | --- |
+| **Rotation** | the key is lost or compromised | `recovery_key` |
+| **Transfer** | ownership changes hands | the outgoing `author_key` |
+
+Transfer has none of the knot above, because **the outgoing key exists.** The current owner is
+present and can sign the handover. That is the ordinary case — a work sold, rights acquired, an
+estate settled — and it needs no special mechanism.
+
+The new owner inherits a chain they cannot alter. Everything up to the transfer is witnessed and
+fixed; they can only extend it. So the record reads honestly:
+
+```
+seq 0…400    signed by key A        the author wrote these
+seq 401      transfer, signed by A  naming key B
+seq 402…     signed by key B        the new owner extends
+```
+
+A publisher who acquires a work gets the continuation and not a claim on the authorship of what
+came before. That is the correct outcome and it falls out of the structure rather than needing a
+rule.
+
+### A transfer must replace both keys
+
+**This is the part that would otherwise be a hole.** If a transfer leaf named a new `author_key`
+but carried the previous owner's `recovery_key` forward, the seller could later sign a rotation
+and take the chain back. They would be doing it visibly, but they would be able to do it.
+
+So a transfer leaf names **a new `author_key` and a new `recovery_key`**, and the outgoing owner
+retains nothing that can extend or reclaim the entity.
+
+### What a former owner can still do
+
+Nothing, on that chain. They may hold old key material, but leaves after the transfer must be
+signed by the new `author_key`, and the chain is witnessed.
+
+They could start a **competing chain** forked from an earlier head — as could anyone holding the
+content. It resolves the way every competing claim does: on evidence. The transfer is in the
+witnessed history, and a fork created afterwards carries a later first witness.
+
+### Relationship to the registry's transfer
+
+`MsgTransferOwnership` on the content registry is a different system with a different anchor,
+exactly as described in [`registry-and-provenance.md`](./registry-and-provenance.md). It records
+that DAON moved a registry entry between accounts. A provenance transfer records that a key
+handed a chain to another key, witnessed against Bitcoin.
+
+They can both happen for the same work and neither depends on the other. Nothing should try to
+keep them in sync — two records that can disagree is worse than two records that are plainly
+about different things.
+
+---
+
 ## Honest limits
 
 - **A stolen recovery key means a stolen future.** Nothing here prevents that; it makes it visible
