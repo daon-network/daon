@@ -435,7 +435,9 @@ ours to close.
   no longer constrains anything an adjudicator has to reproduce.
 - **Key loss.** Losing the author key ends the ability to append to an entity; history stays
   verifiable but frozen. Needs a recovery story before anyone depends on this.
-- **Multi-device.** Out of MVP scope (single-writer), but the `seq`/`parent_head` shape should be
-  checked against a future where two devices append to one entity.
+- **Multi-device.** Was listed here as out of scope under "single-writer", which conflated two
+  different things: single-*writer* (no concurrent authors) is deferrable, single-*device* never
+  described real writing. See [`key-authorization.md`](./key-authorization.md) — the question is
+  which keys may extend an entity, and it must be settled before the agent is built.
 - **Limit defaults.** The §5 numbers are reasoned, not measured. Revisit against real editing
   traffic once instrumented.
