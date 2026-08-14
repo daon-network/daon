@@ -23,6 +23,9 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
+#[cfg(feature = "keychain")]
+pub mod keychain;
+
 use daon_provenance_core::{
     content_commit, inclusion_proof, merkle_root, meta_commit, tag, Beacon, Hash, Observation,
     ProofStep, RevisionLeaf, SEGMENT_SIZE,

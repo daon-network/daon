@@ -10,6 +10,16 @@ repository.workspace = true
 [dependencies]
 daon-provenance-core.workspace = true
 hex.workspace = true
+# Only pulled in by the `keychain` feature. The store itself stays free of
+# platform code so it can be tested anywhere, including in CI on Linux.
+keyring = { workspace = true, optional = true }
+ed25519-dalek = { workspace = true, optional = true, features = ["rand_core"] }
+rand = { workspace = true, optional = true }
+
+[features]
+default = []
+# OS keychain: macOS Keychain, Windows Credential Manager, Linux Secret Service.
+keychain = ["dep:keyring", "dep:ed25519-dalek", "dep:rand"]
 
 [dev-dependencies]
 ed25519-dalek = { workspace = true, features = ["rand_core"] }

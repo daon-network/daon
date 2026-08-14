@@ -14,3 +14,5 @@ ed25519-dalek = { version = "2", default-features = false }
 daon-provenance-core = { path = "core", default-features = false }
 hex = "0.4"
 tempfile = "3"
+keyring = "4"
+rand = "0.8"
