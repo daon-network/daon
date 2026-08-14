@@ -150,3 +150,21 @@ fn a_recovery_secret_cannot_be_retrieved_after_creation() {
     );
     // There is deliberately no `loaded.recovery_secret()` to call here.
 }
+
+/// The backend is decided once and reported honestly.
+///
+/// This asserts the *contract*, not a particular answer: what you get depends on
+/// how the binary was signed, and `cargo test` produces an unsigned one. The
+/// thing that must hold everywhere is that repeated calls agree — a process that
+/// registered the file keychain and later claimed to sync would be lying about
+/// where a creator's key lives.
+#[test]
+fn backend_is_stable_and_reports_its_sync_behaviour() {
+    use daon_provenance_agent::keystore::{self, Backend};
+
+    let first = keystore::init();
+    assert_eq!(first, keystore::init(), "backend changed between calls");
+
+    // Only the synchronized protected store syncs. Anything else must say so.
+    assert_eq!(first.sync_requested(), first == Backend::SyncRequested);
+}

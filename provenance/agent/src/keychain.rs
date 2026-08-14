@@ -17,16 +17,22 @@
 //! on this type that can retrieve a recovery secret, because it was never
 //! written down.
 
+use crate::keystore;
 use crate::Signer;
 use daon_provenance_core::Hash;
 use ed25519_dalek::{Signer as _, SigningKey, VerifyingKey};
-use keyring::Entry;
+// `keyring_core::Entry`, deliberately, not `keyring::Entry`. The latter is the
+// v1 compatibility shim, and its `new` forces a `LazyLock` that calls
+// `set_default_store` with the file keychain — silently discarding whatever
+// `keystore::init` registered. Using it would make the protected store
+// unreachable while every probe still reported success.
+use keyring_core::{Entry, Error as KeyringError};
 
 /// Something that went wrong talking to the keychain.
 #[derive(Debug)]
 pub enum KeychainError {
     /// The platform keychain refused or failed.
-    Keyring(keyring::Error),
+    Keyring(KeyringError),
     /// No key is stored for this identity.
     NotFound,
     /// Stored bytes are not a valid key.
@@ -53,10 +59,10 @@ impl std::fmt::Display for KeychainError {
 
 impl std::error::Error for KeychainError {}
 
-impl From<keyring::Error> for KeychainError {
-    fn from(e: keyring::Error) -> Self {
+impl From<KeyringError> for KeychainError {
+    fn from(e: KeyringError) -> Self {
         match e {
-            keyring::Error::NoEntry => KeychainError::NotFound,
+            KeyringError::NoEntry => KeychainError::NotFound,
             other => KeychainError::Keyring(other),
         }
     }
@@ -65,10 +71,12 @@ impl From<keyring::Error> for KeychainError {
 const SERVICE: &str = "network.daon.provenance";
 
 fn author_entry(identity: &str) -> Result<Entry, KeychainError> {
+    keystore::init();
     Ok(Entry::new(SERVICE, &format!("{identity}.author"))?)
 }
 
 fn recovery_pub_entry(identity: &str) -> Result<Entry, KeychainError> {
+    keystore::init();
     Ok(Entry::new(SERVICE, &format!("{identity}.recovery-public"))?)
 }
 

@@ -25,6 +25,8 @@
 
 #[cfg(feature = "keychain")]
 pub mod keychain;
+#[cfg(feature = "keychain")]
+pub mod keystore;
 pub mod policy;
 
 use daon_provenance_core::{
