@@ -72,18 +72,20 @@ has no universal equivalent. Today `keyring` gives us macOS, Windows and Linux t
 interface. Enclave support forks that into a per-platform hardware story, and the platforms are
 not equally good.
 
-### 5. It complicates the verifier — and we said we would not
+### 5. Per-device keys were already rejected, and for this reason
 
-This is the cost I want to be loudest about, because it is not a schedule cost.
+Enclave keys are device-bound, so they push toward **one chain signed by several keys** — a
+verifier walking an authorisation graph (B was authorised by A at seq N) with revocation effective
+dates, instead of checking one signature against one committed key.
 
-Per-device Enclave keys mean **one chain signed by several keys**. A verifier can no longer check
-one signature against one committed key; it has to walk an authorisation graph — B was authorised
-by A at seq N, so B's leaves after N are good — and handle revocation with an effective date, or
-a stolen device retroactively invalidates honest history.
+[`key-authorization.md`](./key-authorization.md) already ruled on this and chose **Option A, one
+key moved deliberately**, explicitly because it is the only option that leaves the verifier at
+four steps. Option D, device-bound entities, was considered and not taken.
 
-`wire-format.md` names the four-step minimum verifier as a thing to protect. This turns step 4
-from "check a signature" into "evaluate a key-authorisation graph over time." That is a real tax
-on the property we said mattered most, paid by every future implementer, forever.
+So this is not a fresh objection — it is the existing decision still holding. Enclave support that
+stayed inside Option A (one identity key, Enclave-held, moved by rotation) would not incur the
+graph cost. Enclave support that drifted into per-device identities would reopen a question that
+is closed.
 
 ---
 
@@ -108,6 +110,12 @@ authorised device to vouch. If the only laptop is dead, stolen, or in a drawer a
 there is no enrollment — there is only the recovery phrase, and people lose recovery phrases at a
 rate that should inform the whole design. Every "add a device" flow is easy; every "I have no
 devices" flow is a support ticket or a loss.
+
+The employment case is the sharp edge of this and it is worse than loss. When the employer owns
+the laptop, the key is not gone — it is **held by someone else, entirely legitimately**, and they
+can sign as the creator. See [`key-recovery.md`](./key-recovery.md) § *Custody domains*: the
+answer is structural (the recovery key never enters the employer's custody, and work runs under a
+work identity) rather than a ceremony anyone has to remember to perform on their last day.
 
 **b) The mental model fights everything else in their life.** Email, photos, passwords and notes
 all follow people between devices now. "Your signing key is on this Mac only" violates a

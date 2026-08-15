@@ -167,6 +167,91 @@ about different things.
 
 ---
 
+## Custody domains — when someone else owns the hardware
+
+§3 says the two keys must not share a medium. Employment sharpens that into a different rule,
+because the threat is not a thief but **a party with a legitimate claim to the device.**
+
+A researcher, staff writer, in-house designer or journalist works on an employer-owned laptop.
+They leave — or are laid off, or terminated with the machine collected the same afternoon, or the
+device is remotely wiped by MDM. Whatever key sat on that laptop is now held by someone else, and
+unlike a theft, nobody did anything wrong.
+
+This is worse than losing access. **The employer can sign as the creator.** Where a lost key ends
+a chain, a captured key continues it in someone else's hands.
+
+### The rule that follows
+
+The normative constraint is not "don't put both keys in one place." For work done on hardware
+someone else controls it is:
+
+> **The recovery key must not live in any medium the employer controls.** Not the work laptop, not
+> a managed Apple Account, not the corporate password manager, not work email.
+
+The corporate password manager is the trap worth naming explicitly, because it is exactly where a
+conscientious person would put a secret they were told to keep safe, and it is exactly wrong. It
+is the employer's vault. Offboarding may empty it, and IT can read it.
+
+### Structural, not procedural
+
+The obvious mitigation — rotate before you lose the device — is unreliable, because departure is
+frequently unannounced. Nobody gets warning of a layoff, and a terminated employee often does not
+get ten minutes alone with the laptop.
+
+So the protection has to hold **without anyone remembering to act.** That means the recovery key
+was never in the employer's custody in the first place, which is a decision made at genesis, on a
+day when nothing is going wrong. An agent that offers to "keep it safe for you" on a work machine
+is offering to lose it for you.
+
+### One identity per custody domain
+
+The cleanest answer is not cryptographic. **Do not use a personal identity on an employer's
+device.** Run a work identity there and keep the personal one on hardware you own.
+
+This is the anthology reasoning again. If the work is made for hire and the employer holds the
+copyright, then the employer's identity signing it is **correct, not a failure** — the chain is
+recording something true. The failure case is narrower and more specific: a creator's *personal*
+identity, which vouches for work they own, captured on hardware they do not.
+
+Separating the two makes the ordinary case honest and the bad case impossible, which is a better
+result than any key ceremony.
+
+### Rotation makes the boundary a fact
+
+For a creator who did put a personal key on a work machine, rotation is the remedy and it does
+something better than revocation: it **puts a witnessed date on the boundary.**
+
+```
+seq 0…400   signed by key A     the creator's work, witnessed as it happened
+seq 401     rotation, by recovery key, naming key B
+seq 402…    signed by key B     on hardware the creator owns
+```
+
+Anything the retained key A signs afterwards is not merely disputed — it is provably after a
+timestamp neither party controls. An unbounded risk becomes a dated one. A creator leaving a job
+should rotate promptly for exactly this reason: the value is in the anchor, not the revocation.
+
+### This settles the immediate-versus-delayed question
+
+The open decision above leans immediate; this scenario decides it.
+
+Delayed rotation exists to protect against a stolen **recovery** key, by giving the creator a
+window to counter-rotate. But here the compromised key is the **author** key, and the holder is a
+motivated party who knows exactly what they have. A delay window is time in which the old key
+still validly signs. **Immediate**, and the delayed variant should not be built for this.
+
+### What remains
+
+The employer keeps key A forever, and can fork the chain from an earlier head. That resolves the
+way §"What a former owner can still do" describes — the genuine branch was witnessed
+contemporaneously and a later fork carries a later first witness.
+
+But the limit below about detection bites harder here than anywhere else in this document. An
+abandoned chain going unwatched is bad luck. This is a **motivated** adversary who knows the
+chain exists, knows what it is worth, and had months of legitimate access.
+
+---
+
 ## Honest limits
 
 - **A stolen recovery key means a stolen future.** Nothing here prevents that; it makes it visible
