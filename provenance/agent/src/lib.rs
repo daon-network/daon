@@ -28,6 +28,7 @@ pub mod keychain;
 #[cfg(feature = "keychain")]
 pub mod keystore;
 pub mod policy;
+pub mod witness;
 
 use daon_provenance_core::{
     content_commit, inclusion_proof, merkle_root, meta_commit, tag, Beacon, Hash, Observation,
@@ -73,6 +74,11 @@ pub enum Error {
     },
     /// A leaf must commit to at least one observation.
     NoObservations,
+    /// Witness state on disk is not the shape this code writes.
+    ///
+    /// Carries what was being read rather than an offset, because the useful
+    /// question when this fires is which file to look at, not which byte.
+    Malformed(&'static str),
 }
 
 impl From<std::io::Error> for Error {
@@ -87,6 +93,7 @@ impl std::fmt::Display for Error {
             Error::Io(e) => write!(f, "io: {e}"),
             Error::EmptyEntity => write!(f, "entity has no leaves"),
             Error::NoSuchLeaf(s) => write!(f, "no leaf at seq {s}"),
+            Error::Malformed(what) => write!(f, "malformed {what}"),
             Error::CorruptLeaf { seq, len } => {
                 write!(f, "leaf {seq} is {len} bytes, expected 218")
             }

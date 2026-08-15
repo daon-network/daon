@@ -101,6 +101,8 @@ version = "0.0.0"
 dependencies = [
  "apple-native-keyring-store",
  "daon-provenance-core",
+ "daon-provenance-verify",
+ "daon-provenance-witness",
  "ed25519-dalek",
  "hex",
  "keyring-core",
@@ -121,6 +123,16 @@ version = "0.0.0"
 dependencies = [
  "daon-provenance-core",
  "ed25519-dalek",
+]
+
+[[package]]
+name = "daon-provenance-witness"
+version = "0.0.0"
+dependencies = [
+ "daon-provenance-core",
+ "hex",
+ "ripemd",
+ "sha2",
 ]
 
 [[package]]
@@ -309,6 +321,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom 0.2.17",
+]
+
+[[package]]
+name = "ripemd"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd124222d17ad93a644ed9d011a40f4fb64aa54275c08cc216524a9ea82fb09f"
+dependencies = [
+ "digest",
 ]
 
 [[package]]

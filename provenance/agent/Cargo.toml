@@ -9,6 +9,7 @@ repository.workspace = true
 
 [dependencies]
 daon-provenance-core.workspace = true
+daon-provenance-witness.workspace = true
 hex.workspace = true
 # Only pulled in by the `keychain` feature. The store itself stays free of
 # platform code so it can be tested anywhere, including in CI on Linux.
@@ -34,7 +35,14 @@ keychain = [
     "dep:apple-native-keyring-store",
 ]
 
+# Reports the resolved credential store, which only exists with the feature that
+# provides one.
+[[example]]
+name = "backend"
+required-features = ["keychain"]
+
 [dev-dependencies]
+daon-provenance-verify = { path = "../verify" }
 ed25519-dalek = { workspace = true, features = ["rand_core"] }
 tempfile.workspace = true
 rand = "0.8"
