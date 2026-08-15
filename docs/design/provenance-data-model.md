@@ -1,3 +1,10 @@
+---
+layout: default
+title: "DAON Provenance & Versioning — Data Model (Design)"
+description: "The append-only revision ledger: leaves, heads, witnesses, and what each one proves."
+permalink: /design/provenance-data-model/
+mermaid: true
+---
 # DAON Provenance & Versioning — Data Model (Design)
 
 **Status:** draft · MVP scope locked (July 2026)

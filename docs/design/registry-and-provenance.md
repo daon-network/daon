@@ -1,3 +1,10 @@
+---
+layout: default
+title: "Registry and Provenance — How the Two Systems Relate"
+description: "Two systems, two anchors, two different claims — and why nothing should try to keep them in sync."
+permalink: /design/registry-and-provenance/
+mermaid: true
+---
 # Registry and Provenance — How the Two Systems Relate
 
 **Status:** design, pre-implementation · **Companion to:** [`provenance-data-model.md`](./provenance-data-model.md), [`key-authorization.md`](./key-authorization.md)

@@ -14,3 +14,9 @@ ed25519-dalek = { version = "2", default-features = false }
 daon-provenance-core = { path = "core", default-features = false }
 hex = "0.4"
 tempfile = "3"
+# Registering the protected (data-protection) store ourselves means talking to
+# keyring-core directly: keyring's own `v1` shim hardcodes the file-based
+# keychain on macOS and offers no way to override it.
+keyring-core = "1"
+apple-native-keyring-store = { version = "1", features = ["keychain", "protected"] }
+rand = "0.8"

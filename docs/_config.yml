@@ -25,6 +25,10 @@ plugins:
   - jekyll-feed
   - jekyll-sitemap
   - jekyll-seo-tag
+  # Rewrites ./foo.md cross-links to the target page's permalink, so design docs
+  # read correctly both on GitHub and on the published site without maintaining
+  # two sets of links.
+  - jekyll-relative-links
 
 # Navigation
 nav_links:
@@ -44,6 +48,8 @@ nav_links:
     url: "/legal/"
   - title: "Community"
     url: "/community/"
+  - title: "Design"
+    url: "/design/"
   - title: "Roadmap"
     url: "/roadmap/"
 

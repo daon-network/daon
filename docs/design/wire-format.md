@@ -1,3 +1,10 @@
+---
+layout: default
+title: "Wire Format — DAON Provenance Leaves"
+description: "Normative byte layout for provenance leaves. Fixed widths, big-endian, no optional fields."
+permalink: /design/wire-format/
+mermaid: true
+---
 # Wire Format — DAON Provenance Leaves
 
 **Status:** draft, pre-`0.1.0` · **Normative** · **Companion to:** [`provenance-data-model.md`](./provenance-data-model.md), [`editor-integration-spec.md`](./editor-integration-spec.md)

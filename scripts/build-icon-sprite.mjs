@@ -50,6 +50,40 @@ const ICONS = {
   target: '🎯',
   'key-round': '🔑',
   circle: '🔵 🔴 🟦',
+
+  // Used on the marketing pages, which previously reached for lucide's CDN
+  // build via `data-lucide` attributes. Sourced here instead so the site loads
+  // no third-party script and cannot silently render an icon lucide no longer
+  // ships -- which is exactly what had happened to `python` and `fingerprint`.
+  award: '',
+  book: '',
+  'book-open': '',
+  braces: '',            // Python SDK card; lucide has no language marks
+  building: '',
+  'clipboard-list': '',
+  code: '',
+  'code-xml': '',       // was code-2
+  cpu: '',
+  'file-text': '',
+  gavel: '',
+  gem: '',
+  'graduation-cap': '',
+  handshake: '',
+  hash: '',              // "DAON creates fingerprint" -- a hash, literally
+  heart: '',
+  'circle-question-mark': '', // was help-circle, then circle-help; both are aliases now
+  'message-circle': '',
+  palette: '',
+  'pen-tool': '',
+  'circle-play': '',    // likewise play-circle
+  plug: '',
+  server: '',
+  settings: '',
+  'shield-check': '',
+  'trending-up': '',
+  user: '',
+  users: '',
+  wrench: '',
 };
 
 /**
@@ -58,7 +92,15 @@ const ICONS = {
  */
 async function readIconNode(name) {
   const { __iconNode } = await import(pathToFileURL(join(ICON_DIR, `${name}.mjs`)).href);
-  if (!Array.isArray(__iconNode)) throw new Error(`no __iconNode exported from ${name}.mjs`);
+  if (!Array.isArray(__iconNode)) {
+    // Renamed icons keep a module at the old path that only re-exports the
+    // component, with no geometry. `help-circle` -> `circle-help` is one.
+    // Use the canonical name rather than the alias.
+    throw new Error(
+      `${name}.mjs exports no __iconNode -- it is probably a deprecated alias. ` +
+        `Use lucide's current name for this icon.`
+    );
+  }
   return __iconNode;
 }
 

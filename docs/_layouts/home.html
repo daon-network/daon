@@ -22,9 +22,6 @@
     <link rel="stylesheet" href="{{ '/assets/css/daon.css' | relative_url }}">
     <link rel="icon" type="image/x-icon" href="{{ '/assets/images/favicon.ico' | relative_url }}">
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
     {% seo %}
 </head>
 <body>
@@ -97,7 +94,7 @@
         <div class="md-footer-meta">
             <div class="md-footer-meta__inner md-container">
                 <div class="md-footer-copyright">
-                    <p>&copy; {{ 'now' | date: "%Y" }} DAON Network. Open source under MIT License.</p>
+                    <p>&copy; {{ 'now' | date: "%Y" }} DAON Network. Open source under the <a href="https://github.com/daon-network/daon/blob/main/LICENSE.md">Liberation License v1.0</a>.</p>
                     <p><small><svg class="icon"><use href="#i-shield"/></svg> Every protected work is a victory against exploitation.</small></p>
                 </div>
             </div>
@@ -105,10 +102,10 @@
     </footer>
     
     <script>
-        // Initialize Lucide icons and add permalinks after DOM load
+        // Add permalink anchors to headers. Icons come from the inlined sprite
+        // (_includes/icons.svg), so there is no icon library to initialise and
+        // no third-party script on the page.
         document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-            
             // Add permalink anchors to headers
             const headers = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
             headers.forEach(function(header) {
@@ -116,14 +113,11 @@
                     const link = document.createElement('a');
                     link.href = '#' + header.id;
                     link.className = 'header-link';
-                    link.innerHTML = '<i data-lucide="link" aria-hidden="true"></i>';
+                    link.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-link"/></svg>';
                     link.setAttribute('aria-label', 'Permalink to ' + header.textContent);
                     header.appendChild(link);
                 }
             });
-            
-            // Re-initialize Lucide icons for dynamically added content
-            lucide.createIcons();
         });
     </script>
 </body>

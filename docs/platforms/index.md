@@ -14,7 +14,7 @@ description: "Add DAON creator protection to your platform in 3 lines of code"
 
 <div class="md-grid">
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="users"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg></div>
     <h3 class="md-feature__title">Your Creators Get</h3>
     <ul class="md-feature__list">
       <li>Cryptographic ownership proof for their content</li>
@@ -25,7 +25,7 @@ description: "Add DAON creator protection to your platform in 3 lines of code"
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="building"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-building"/></svg></div>
     <h3 class="md-feature__title">Your Platform Gets</h3>
     <ul class="md-feature__list">
       <li>Competitive advantage over platforms without protection</li>
@@ -36,7 +36,7 @@ description: "Add DAON creator protection to your platform in 3 lines of code"
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="trending-up"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-trending-up"/></svg></div>
     <h3 class="md-feature__title">Business Benefits</h3>
     <ul class="md-feature__list">
       <li>Higher creator retention rates</li>
@@ -53,7 +53,7 @@ description: "Add DAON creator protection to your platform in 3 lines of code"
 
 <div class="md-grid">
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="code-2"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-code-xml"/></svg></div>
     <h3 class="md-feature__title">SDK Integration (Recommended)</h3>
     <p class="md-feature__description">Add protection directly to your codebase</p>
     <ul class="md-feature__list">
@@ -67,7 +67,7 @@ description: "Add DAON creator protection to your platform in 3 lines of code"
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="plug"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-plug"/></svg></div>
     <h3 class="md-feature__title">WordPress Plugin</h3>
     <p class="md-feature__description">Ready-made solution for WordPress sites</p>
     <ul class="md-feature__list">
@@ -81,7 +81,7 @@ description: "Add DAON creator protection to your platform in 3 lines of code"
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="globe"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg></div>
     <h3 class="md-feature__title">Web API Integration</h3>
     <p class="md-feature__description">REST API for any platform or language</p>
     <ul class="md-feature__list">
@@ -95,7 +95,7 @@ description: "Add DAON creator protection to your platform in 3 lines of code"
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="settings"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg></div>
     <h3 class="md-feature__title">Custom Solutions</h3>
     <p class="md-feature__description">Tailored integration for enterprise needs</p>
     <ul class="md-feature__list">
@@ -401,28 +401,28 @@ curl -X POST https://api.daon.network/protect
 
 <div class="md-grid">
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="clipboard-list"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-clipboard-list"/></svg></div>
     <h3 class="md-feature__title">See Examples</h3>
     <p class="md-feature__description">Copy-paste integration code</p>
     <a href="/examples/" class="md-feature__link">See Examples →</a>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="book"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></div>
     <h3 class="md-feature__title">API Docs</h3>
     <p class="md-feature__description">Complete technical reference</p>
     <a href="/api/reference/" class="md-feature__link">API Docs →</a>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="message-circle"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg></div>
     <h3 class="md-feature__title">Get Help</h3>
     <p class="md-feature__description">Chat with developers</p>
     <a href="https://discord.gg/daon" class="md-feature__link">Get Help →</a>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="handshake"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-handshake"/></svg></div>
     <h3 class="md-feature__title">Enterprise</h3>
     <p class="md-feature__description">Custom solutions & support</p>
     <a href="mailto:integrations@daon.network" class="md-feature__link">Enterprise →</a>

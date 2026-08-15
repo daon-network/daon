@@ -22,6 +22,7 @@ jobs:
       provenance: ${{ steps.filter.outputs.provenance }}
       wordpress:  ${{ steps.filter.outputs.wordpress }}
       ccc:        ${{ steps.filter.outputs.ccc }}
+      docs:       ${{ steps.filter.outputs.docs }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -54,6 +55,12 @@ jobs:
               - 'wordpress-plugin/**'
             ccc:
               - 'creative-commons-chain/**'
+            # The docs site deploys straight from main:/docs via GitHub Pages'
+            # legacy Jekyll builder, so merge is publish and there is no staging
+            # step. A build error would surface only after merge, with the live
+            # site quietly serving the last good build.
+            docs:
+              - 'docs/**'
 
   # ── API Server ────────────────────────────────────────────────────────────
 
@@ -256,6 +263,13 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D warnings
       - name: Tests
         run: cargo test --all-features
+      - name: Check the keychain backend compiles
+        # The feature is off by default and its tests are #[ignore] -- they talk
+        # to a real OS keychain, which CI does not have. Compiling it here is
+        # what stops platform code rotting unnoticed between releases.
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libdbus-1-dev pkg-config
+          cargo check -p daon-provenance-agent --features keychain
       - name: Tests without optional features
         # Steps 1-3 of the verifier must work without signature support, and a
         # build lacking it must fail closed rather than accept any signature.
@@ -404,6 +418,83 @@ jobs:
 
   # ── Summary ───────────────────────────────────────────────────────────────
 
+  # ── Docs site ─────────────────────────────────────────────────────────────
+
+  docs:
+    name: Docs Site Build
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
+    steps:
+      - uses: actions/checkout@v4
+
+      # The github-pages gem pins the exact Jekyll, plugin and Ruby versions
+      # GitHub's builder uses, so a green run here means the real build works.
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          # No Gemfile.lock is committed (the github-pages gem pins everything
+          # transitively), so this resolves fresh each run rather than caching.
+          bundler-cache: false
+          working-directory: docs
+
+      - name: Install gems
+        run: bundle install --jobs 4
+
+      - name: Build the site
+        # --strict_front_matter turns malformed front matter into a failure
+        # rather than a page that silently renders as raw YAML.
+        run: bundle exec jekyll build --strict_front_matter --trace
+
+      - name: Check internal links resolve
+        # A page that links to a permalink which does not exist still builds
+        # cleanly and simply 404s for whoever follows it, so the build alone
+        # cannot catch this.
+        #
+        # 86 such links already existed when this check was added. They are
+        # listed in .broken-links-baseline.txt rather than fixed here, because
+        # blocking every docs change on a backlog of unwritten pages would just
+        # get the check deleted. New breakage fails; the baseline can only
+        # shrink.
+        run: |
+          grep -rhoE 'href="/[^"#?]*"' _site --include='*.html' \
+            | sed -E 's/^href="//; s/"$//' | sort -u > /tmp/links.txt
+
+          : > /tmp/broken.txt
+          while IFS= read -r target; do
+            case "$target" in
+              /assets/*|/*.xml|/*.txt) continue ;;
+            esac
+            path="_site${target%/}"
+            if [ ! -e "$path" ] && [ ! -e "$path/index.html" ] && [ ! -e "${path}.html" ]; then
+              echo "$target" >> /tmp/broken.txt
+            fi
+          done < /tmp/links.txt
+
+          grep -vE '^\s*(#|$)' .broken-links-baseline.txt | sort -u > /tmp/baseline.txt
+          sort -u /tmp/broken.txt -o /tmp/broken.txt
+
+          new_breaks=$(comm -23 /tmp/broken.txt /tmp/baseline.txt)
+          now_fixed=$(comm -13 /tmp/broken.txt /tmp/baseline.txt)
+
+          if [ -n "$now_fixed" ]; then
+            echo "These baseline entries no longer break. Delete them from"
+            echo ".broken-links-baseline.txt so it keeps shrinking:"
+            echo "$now_fixed" | sed 's/^/  /'
+          fi
+
+          if [ -n "$new_breaks" ]; then
+            echo "$new_breaks" | while read -r l; do
+              echo "::error::broken internal link: $l"
+            done
+            exit 1
+          fi
+
+          echo "No new broken links ($(wc -l < /tmp/baseline.txt) known, unchanged)."
+
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
@@ -418,6 +509,7 @@ jobs:
       - provenance
       - wordpress
       - ccc-build
+      - docs
       - test-go
       - test-node-sdk
       - test-python
@@ -436,6 +528,7 @@ jobs:
           R_PROVENANCE:  ${{ needs.provenance.result }}
           R_WORDPRESS:   ${{ needs.wordpress.result }}
           R_CCC:         ${{ needs.ccc-build.result }}
+          R_DOCS:        ${{ needs.docs.result }}
           R_GO:          ${{ needs.test-go.result }}
           R_NODE:        ${{ needs.test-node-sdk.result }}
           R_PYTHON:      ${{ needs.test-python.result }}
@@ -475,6 +568,10 @@ jobs:
           render "WordPress Plugin" "$R_WORDPRESS"
 
           echo ""                              >> "$GITHUB_STEP_SUMMARY"
+          echo "### Docs"                      >> "$GITHUB_STEP_SUMMARY"
+          render "Docs Site Build" "$R_DOCS"
+
+          echo ""                              >> "$GITHUB_STEP_SUMMARY"
           echo "### SDKs"                      >> "$GITHUB_STEP_SUMMARY"
           render "Go SDK"           "$R_GO"
           render "Node.js SDK"      "$R_NODE"
@@ -485,7 +582,7 @@ jobs:
           # Fail the summary job if any non-skipped job failed
           all_ok=true
           for result in "$R_SECURITY" "$R_TEST" "$R_BUILD" "$R_BLOCKCHAIN" "$R_BCDOCKER" \
-                        "$R_FRONTEND" "$R_PROVENANCE" "$R_WORDPRESS" "$R_CCC" \
+                        "$R_FRONTEND" "$R_PROVENANCE" "$R_WORDPRESS" "$R_CCC" "$R_DOCS" \
                         "$R_GO" "$R_NODE" "$R_PYTHON" "$R_RUBY" "$R_PHP"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               all_ok=false
