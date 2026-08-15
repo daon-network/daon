@@ -1,0 +1,99 @@
+# Known-broken internal links on the docs site.
+#
+# Every line is a link some published page points at, that resolves to nothing.
+# They predate the link check in .github/workflows/pr.yml and are recorded here
+# so the check can fail on NEW breakage without blocking every docs change on a
+# backlog of pages that were never written.
+#
+# This file is a to-do list, not a permanent exemption. It should only ever get
+# shorter. To clear an entry: create the page, then delete the line -- CI reports
+# entries that no longer break so they do not linger.
+#
+# Worth doing first: /legal/privacy and /verify. A privacy policy that 404s is
+# not a good look on a site about creator rights, and /verify is linked from the
+# front page.
+/api/authentication
+/api/errors/
+/api/go/
+/api/go/concurrent/
+/api/go/grpc/
+/api/go/microservices/
+/api/go/performance/
+/api/nodejs/
+/api/nodejs/express/
+/api/nodejs/react/
+/api/nodejs/types/
+/api/nodejs/vue/
+/api/php/
+/api/php/laravel/
+/api/php/legacy/
+/api/php/symfony/
+/api/php/wordpress/
+/api/python/
+/api/python/academic/
+/api/python/django/
+/api/python/fastapi/
+/api/python/flask/
+/api/rate-limits/
+/api/reference/auth/
+/api/reference/errors/
+/api/reference/rate-limits/
+/api/reference/webhooks/
+/api/ruby/
+/api/ruby/activerecord/
+/api/ruby/rails/
+/api/ruby/sinatra/
+/blog/
+/blog/legal/
+/blog/technical/
+/community/appeals/
+/community/cases/
+/community/code-of-conduct/
+/community/contributing/
+/community/cookbook/
+/community/copyright-ai/
+/community/enforcement/
+/community/guidelines/
+/community/guides/
+/community/handbook/
+/community/international/
+/community/legal-primer/
+/community/office-hours/
+/community/report/
+/community/stories/
+/creators/best-practices/
+/creators/faq/
+/creators/legal/
+/events/legal-webinars/
+/examples/browser-extension/
+/examples/wordpress/
+/get-started/security
+/get-started/trusted-devices
+/get-started/validator/
+/legal/ai-compliance/
+/legal/creator-rights/
+/legal/liberation-license/calculator/
+/legal/liberation-license/enforcement/
+/legal/liberation-license/faq/
+/legal/liberation-license/templates/
+/legal/platforms/compliance/
+/legal/platforms/safe-harbor/
+/legal/platforms/terms/
+/legal/platforms/user-agreements/
+/legal/policy/eu-ai-act/
+/legal/policy/international/
+/legal/policy/us-copyright/
+/legal/privacy
+/legal/privacy/
+/legal/professionals/briefs/
+/legal/professionals/cases/
+/legal/professionals/experts/
+/legal/professionals/forensics/
+/legal/tools/dmca/
+/legal/tools/evidence-kit/
+/legal/tools/letters/
+/legal/tools/violation-report/
+/newsletter/
+/platforms/overview/
+/platforms/wordpress/
+/verify

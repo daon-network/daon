@@ -450,23 +450,50 @@ jobs:
         run: bundle exec jekyll build --strict_front_matter --trace
 
       - name: Check internal links resolve
-        # Pages that link to a permalink that does not exist still build fine;
-        # they just 404 for readers. This catches the ones we control.
+        # A page that links to a permalink which does not exist still builds
+        # cleanly and simply 404s for whoever follows it, so the build alone
+        # cannot catch this.
+        #
+        # 86 such links already existed when this check was added. They are
+        # listed in .broken-links-baseline.txt rather than fixed here, because
+        # blocking every docs change on a backlog of unwritten pages would just
+        # get the check deleted. New breakage fails; the baseline can only
+        # shrink.
         run: |
-          fail=0
+          grep -rhoE 'href="/[^"#?]*"' _site --include='*.html' \
+            | sed -E 's/^href="//; s/"$//' | sort -u > /tmp/links.txt
+
+          : > /tmp/broken.txt
           while IFS= read -r target; do
             case "$target" in
               /assets/*|/*.xml|/*.txt) continue ;;
             esac
             path="_site${target%/}"
             if [ ! -e "$path" ] && [ ! -e "$path/index.html" ] && [ ! -e "${path}.html" ]; then
-              echo "::error::broken internal link: $target"
-              fail=1
+              echo "$target" >> /tmp/broken.txt
             fi
-          done < <(grep -rhoE 'href="/[^"#?]*"' _site --include='*.html' \
-                     | sed -E 's/^href="//; s/"$//' | sort -u)
-          [ "$fail" -eq 0 ] && echo "internal links OK"
-          exit "$fail"
+          done < /tmp/links.txt
+
+          grep -vE '^\s*(#|$)' .broken-links-baseline.txt | sort -u > /tmp/baseline.txt
+          sort -u /tmp/broken.txt -o /tmp/broken.txt
+
+          new_breaks=$(comm -23 /tmp/broken.txt /tmp/baseline.txt)
+          now_fixed=$(comm -13 /tmp/broken.txt /tmp/baseline.txt)
+
+          if [ -n "$now_fixed" ]; then
+            echo "These baseline entries no longer break. Delete them from"
+            echo ".broken-links-baseline.txt so it keeps shrinking:"
+            echo "$now_fixed" | sed 's/^/  /'
+          fi
+
+          if [ -n "$new_breaks" ]; then
+            echo "$new_breaks" | while read -r l; do
+              echo "::error::broken internal link: $l"
+            done
+            exit 1
+          fi
+
+          echo "No new broken links ($(wc -l < /tmp/baseline.txt) known, unchanged)."
 
   pr-summary:
     name: PR Summary
