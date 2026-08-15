@@ -151,3 +151,55 @@ fn register() -> Backend {
     let _ = HashMap::<&str, &str>::new();
     Backend::Platform
 }
+
+/// Whether this machine appears to be centrally managed by an organisation.
+///
+/// `key-recovery.md` § *Custody domains* is normative: the recovery key must not
+/// be stored in any medium under an employer's control. Software cannot enforce
+/// that — it cannot see where a person types a phrase — but it can tell them at
+/// the one moment the advice is actionable.
+///
+/// That moment is **genesis**. The recovery secret is shown once, and the
+/// decision about where it goes is made on a day when nothing is going wrong. A
+/// creator generating an identity on a managed laptop should be told plainly
+/// that the machine is not theirs, before they put the recovery key somewhere
+/// their employer can reach.
+///
+/// # This is a hint, not a control
+///
+/// A `false` means "no management detected", never "this device is yours". A
+/// personally-owned machine can be enrolled; a company machine can be
+/// unenrolled. Callers should warn on `true` and must not treat `false` as
+/// permission to store anything.
+pub fn is_managed_device() -> bool {
+    static MANAGED: OnceLock<bool> = OnceLock::new();
+    *MANAGED.get_or_init(detect_managed)
+}
+
+#[cfg(target_os = "macos")]
+fn detect_managed() -> bool {
+    // `profiles status -type enrollment` needs no privileges and prints
+    // "MDM enrollment: Yes" / "No". Shelling out is unlovely, but the
+    // alternative is a private framework, and a wrong answer here is only ever
+    // a missing warning.
+    let Ok(out) = std::process::Command::new("/usr/bin/profiles")
+        .args(["status", "-type", "enrollment"])
+        .output()
+    else {
+        return false;
+    };
+    let text = String::from_utf8_lossy(&out.stdout);
+    text.lines().any(|line| {
+        let line = line.trim();
+        (line.starts_with("MDM enrollment:") || line.starts_with("Enrolled via DEP:"))
+            && line.contains("Yes")
+    })
+}
+
+#[cfg(not(target_os = "macos"))]
+fn detect_managed() -> bool {
+    // Windows would be domain/Entra join, Linux has no general answer. Until
+    // those are implemented, report the honest "don't know" — which is `false`,
+    // and which callers are told above not to read as reassurance.
+    false
+}

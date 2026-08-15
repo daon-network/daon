@@ -1,3 +1,10 @@
+---
+layout: default
+title: "Key Authorization — Which Keys May Extend an Entity"
+description: "Which keys are allowed to extend an entity, and why the answer must keep the verifier at four steps."
+permalink: /design/key-authorization/
+mermaid: true
+---
 # Key Authorization — Which Keys May Extend an Entity
 
 **Status:** design proposal, pre-`0.1.0` · **Decision required before the agent is built**

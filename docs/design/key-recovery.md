@@ -1,3 +1,10 @@
+---
+layout: default
+title: "Key Recovery and Rotation"
+description: "Rotation, recovery and custody: how a creator survives a lost key without DAON holding a backdoor."
+permalink: /design/key-recovery/
+mermaid: true
+---
 # Key Recovery and Rotation
 
 **Status:** design proposal · **The last undefined thing in the format**
@@ -185,12 +192,46 @@ a chain, a captured key continues it in someone else's hands.
 The normative constraint is not "don't put both keys in one place." For work done on hardware
 someone else controls it is:
 
-> **The recovery key must not live in any medium the employer controls.** Not the work laptop, not
-> a managed Apple Account, not the corporate password manager, not work email.
+> **Normative:** the recovery key MUST NOT be stored in any medium under the employer's control —
+> the work laptop, a managed Apple Account, work email, or a corporate or team password vault. An
+> agent MUST NOT offer to place it in one, and MUST NOT provide an export or integration path that
+> ends in one.
 
 The corporate password manager is the trap worth naming explicitly, because it is exactly where a
 conscientious person would put a secret they were told to keep safe, and it is exactly wrong. It
 is the employer's vault. Offboarding may empty it, and IT can read it.
+
+**The axis is custody, not locality.** It is tempting to shorten this to "on-device password
+managers only," and that is the wrong rule, because it collapses the recovery key onto the same
+device as the author key — precisely what §3 forbids, and for the reason §3 gives: one dead laptop
+then takes both. A recovery key that cannot survive the loss of the device is not a recovery key.
+
+Sorting by who controls the medium rather than where it sits gives the right answer in every case:
+
+| | Permitted | Why |
+| --- | --- | --- |
+| Paper the creator takes home | yes | outside anyone else's custody, survives the device |
+| A personal password manager, personal account | yes | syncs, but the creator holds the account |
+| A second device the creator owns | yes | §3's existing advice |
+| A **team or corporate vault** | **no** | employer custody, whatever product it runs on |
+| A managed Apple Account | **no** | employer custody |
+| The work laptop | **no** | employer custody *and* beside the author key |
+
+The same product can land on both sides of that table. A personal 1Password account is fine; the
+company's shared vault in the same 1Password is not. That is not a contradiction — it is the point.
+Nothing about the software matters here. Only who can be told to hand it over.
+
+```mermaid
+flowchart TD
+    Q["Where should the recovery key live?"] --> C{"Who can be told<br/>to hand it over?"}
+    C -->|"Only you"| OK["<b>Permitted</b>"]
+    C -->|"Your employer"| NO["<b>Refused</b>"]
+    OK --- OKL["Paper at home<br/>Personal password manager, personal account<br/>A second device you own"]
+    NO --- NOL["Corporate or team vault<br/>Managed Apple Account<br/>Work email · the work laptop"]
+```
+
+The same product can appear on both sides. That is the point: nothing about the software matters
+here, only who controls the account.
 
 ### Structural, not procedural
 

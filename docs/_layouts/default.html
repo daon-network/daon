@@ -59,6 +59,9 @@
                         <a href="{{ '/examples/' | relative_url }}" class="md-tabs__link">Examples</a>
                     </li>
                     <li class="md-tabs__item">
+                        <a href="{{ '/design/' | relative_url }}" class="md-tabs__link">Design</a>
+                    </li>
+                    <li class="md-tabs__item">
                         <a href="{{ '/legal/' | relative_url }}" class="md-tabs__link">Legal</a>
                     </li>
                 </ul>
@@ -82,13 +85,50 @@
         <div class="md-footer-meta">
             <div class="md-footer-meta__inner md-container">
                 <div class="md-footer-copyright">
-                    <p>&copy; {{ 'now' | date: "%Y" }} DAON Network. Open source under MIT License.</p>
+                    <p>&copy; {{ 'now' | date: "%Y" }} DAON Network. Open source under the <a href="https://github.com/daon-network/daon/blob/main/LICENSE.md">Liberation License v1.0</a>.</p>
                     <p><small><svg class="icon"><use href="#i-shield"/></svg> Every protected work is a victory against exploitation.</small></p>
                 </div>
             </div>
         </div>
     </footer>
     
+    {% if page.mermaid %}
+    <!-- Mermaid, loaded only on pages that declare `mermaid: true` in front matter.
+         Kramdown renders ```mermaid fences as <pre><code class="language-mermaid">,
+         which Mermaid does not recognise, so the blocks are rewritten to
+         <pre class="mermaid"> before init. -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+        document.querySelectorAll('pre > code.language-mermaid').forEach(function (code) {
+            const pre = document.createElement('pre');
+            pre.className = 'mermaid';
+            pre.textContent = code.textContent;
+            code.parentElement.replaceWith(pre);
+        });
+
+        // Palette taken from assets/css/daon.css so diagrams match the page
+        // rather than shipping Mermaid's default purple.
+        mermaid.initialize({
+            startOnLoad: true,
+            securityLevel: 'strict',
+            theme: 'base',
+            themeVariables: {
+                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                primaryColor: '#F9FAFB',
+                primaryTextColor: '#101828',
+                primaryBorderColor: '#155DFC',
+                lineColor: '#6A7282',
+                secondaryColor: '#F3F4F6',
+                tertiaryColor: '#ffffff',
+                noteBkgColor: '#F3F4F6',
+                noteTextColor: '#101828',
+                noteBorderColor: '#D1D5DC'
+            }
+        });
+    </script>
+    {% endif %}
+
     <script>
         // Initialize Lucide icons and add permalinks after DOM load
         document.addEventListener('DOMContentLoaded', function() {

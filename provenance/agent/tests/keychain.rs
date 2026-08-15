@@ -168,3 +168,16 @@ fn backend_is_stable_and_reports_its_sync_behaviour() {
     // Only the synchronized protected store syncs. Anything else must say so.
     assert_eq!(first.sync_requested(), first == Backend::SyncRequested);
 }
+
+/// Managed-device detection answers, is stable, and never panics.
+///
+/// Asserts the contract rather than a value: the answer depends on whether the
+/// machine running the tests is MDM-enrolled. What must hold is that it is
+/// cached (it shells out, so a per-call cost would be a real regression) and
+/// that it degrades to `false` rather than failing on a platform where the
+/// probe does not exist.
+#[test]
+fn managed_device_detection_is_stable() {
+    use daon_provenance_agent::keystore::is_managed_device;
+    assert_eq!(is_managed_device(), is_managed_device());
+}

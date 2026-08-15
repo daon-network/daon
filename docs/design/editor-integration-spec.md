@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Editor Integration Spec — DAON Provenance Versioning"
+description: "How an editor talks to the provenance agent: what it may send, how often, and what errors it must handle."
+permalink: /design/editor-integration-spec/
+---
 # Editor Integration Spec — DAON Provenance Versioning
 
 **Status:** draft for implementers · **Companion to:** [`provenance-data-model.md`](./provenance-data-model.md)

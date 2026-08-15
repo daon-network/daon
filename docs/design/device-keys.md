@@ -1,3 +1,10 @@
+---
+layout: default
+title: "Secure Enclave and Device Enrollment — What It Would Cost"
+description: "What Secure Enclave keys would cost, and whether device enrollment is friction an ordinary person can absorb."
+permalink: /design/device-keys/
+mermaid: true
+---
 # Secure Enclave and Device Enrollment — What It Would Cost
 
 **Status:** analysis, no decision taken · **Companion to:** [`wire-format.md`](./wire-format.md), [`key-recovery.md`](./key-recovery.md)
@@ -97,6 +104,19 @@ is closed.
 2. Old device: **Add a device** → camera → scan.
 3. Old device signs an authorisation: *"author key A authorises device key B from seq N."*
 4. New device receives it. Done.
+
+```mermaid
+sequenceDiagram
+    participant N as New device
+    participant P as Person
+    participant O as Existing device
+    N->>N: Generate an Enclave key
+    N-->>P: Show a QR code
+    P->>O: "Add a device" → scan it
+    O->>O: Sign "key A authorises key B from seq N"
+    O-->>N: Signed authorisation
+    N->>N: Ready to append
+```
 
 Install, scan, confirm. Under a minute, no typing, nothing to understand. This is exactly how
 Signal and WhatsApp link devices, and it is how passkeys move between ecosystems. **An average
