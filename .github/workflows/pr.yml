@@ -22,6 +22,7 @@ jobs:
       provenance: ${{ steps.filter.outputs.provenance }}
       wordpress:  ${{ steps.filter.outputs.wordpress }}
       ccc:        ${{ steps.filter.outputs.ccc }}
+      docs:       ${{ steps.filter.outputs.docs }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -54,6 +55,12 @@ jobs:
               - 'wordpress-plugin/**'
             ccc:
               - 'creative-commons-chain/**'
+            # The docs site deploys straight from main:/docs via GitHub Pages'
+            # legacy Jekyll builder, so merge is publish and there is no staging
+            # step. A build error would surface only after merge, with the live
+            # site quietly serving the last good build.
+            docs:
+              - 'docs/**'
 
   # ── API Server ────────────────────────────────────────────────────────────
 
@@ -411,6 +418,56 @@ jobs:
 
   # ── Summary ───────────────────────────────────────────────────────────────
 
+  # ── Docs site ─────────────────────────────────────────────────────────────
+
+  docs:
+    name: Docs Site Build
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
+    steps:
+      - uses: actions/checkout@v4
+
+      # The github-pages gem pins the exact Jekyll, plugin and Ruby versions
+      # GitHub's builder uses, so a green run here means the real build works.
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          # No Gemfile.lock is committed (the github-pages gem pins everything
+          # transitively), so this resolves fresh each run rather than caching.
+          bundler-cache: false
+          working-directory: docs
+
+      - name: Install gems
+        run: bundle install --jobs 4
+
+      - name: Build the site
+        # --strict_front_matter turns malformed front matter into a failure
+        # rather than a page that silently renders as raw YAML.
+        run: bundle exec jekyll build --strict_front_matter --trace
+
+      - name: Check internal links resolve
+        # Pages that link to a permalink that does not exist still build fine;
+        # they just 404 for readers. This catches the ones we control.
+        run: |
+          fail=0
+          while IFS= read -r target; do
+            case "$target" in
+              /assets/*|/*.xml|/*.txt) continue ;;
+            esac
+            path="_site${target%/}"
+            if [ ! -e "$path" ] && [ ! -e "$path/index.html" ] && [ ! -e "${path}.html" ]; then
+              echo "::error::broken internal link: $target"
+              fail=1
+            fi
+          done < <(grep -rhoE 'href="/[^"#?]*"' _site --include='*.html' \
+                     | sed -E 's/^href="//; s/"$//' | sort -u)
+          [ "$fail" -eq 0 ] && echo "internal links OK"
+          exit "$fail"
+
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
@@ -425,6 +482,7 @@ jobs:
       - provenance
       - wordpress
       - ccc-build
+      - docs
       - test-go
       - test-node-sdk
       - test-python
@@ -443,6 +501,7 @@ jobs:
           R_PROVENANCE:  ${{ needs.provenance.result }}
           R_WORDPRESS:   ${{ needs.wordpress.result }}
           R_CCC:         ${{ needs.ccc-build.result }}
+          R_DOCS:        ${{ needs.docs.result }}
           R_GO:          ${{ needs.test-go.result }}
           R_NODE:        ${{ needs.test-node-sdk.result }}
           R_PYTHON:      ${{ needs.test-python.result }}
@@ -482,6 +541,10 @@ jobs:
           render "WordPress Plugin" "$R_WORDPRESS"
 
           echo ""                              >> "$GITHUB_STEP_SUMMARY"
+          echo "### Docs"                      >> "$GITHUB_STEP_SUMMARY"
+          render "Docs Site Build" "$R_DOCS"
+
+          echo ""                              >> "$GITHUB_STEP_SUMMARY"
           echo "### SDKs"                      >> "$GITHUB_STEP_SUMMARY"
           render "Go SDK"           "$R_GO"
           render "Node.js SDK"      "$R_NODE"
@@ -492,7 +555,7 @@ jobs:
           # Fail the summary job if any non-skipped job failed
           all_ok=true
           for result in "$R_SECURITY" "$R_TEST" "$R_BUILD" "$R_BLOCKCHAIN" "$R_BCDOCKER" \
-                        "$R_FRONTEND" "$R_PROVENANCE" "$R_WORDPRESS" "$R_CCC" \
+                        "$R_FRONTEND" "$R_PROVENANCE" "$R_WORDPRESS" "$R_CCC" "$R_DOCS" \
                         "$R_GO" "$R_NODE" "$R_PYTHON" "$R_RUBY" "$R_PHP"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               all_ok=false

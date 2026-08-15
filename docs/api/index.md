@@ -56,7 +56,7 @@ console.log('Verified:', verification.isValid);
 <div class="md-grid">
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="code"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg></div>
     <h3 class="md-feature__title">JavaScript/TypeScript</h3>
     <p class="md-feature__description">For web apps, Node.js, React, Vue, Angular</p>
     <ul class="md-feature__list">
@@ -70,7 +70,7 @@ console.log('Verified:', verification.isValid);
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="python"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-braces"/></svg></div>
     <h3 class="md-feature__title">Python</h3>
     <p class="md-feature__description">For Django, Flask, FastAPI, academic platforms</p>
     <ul class="md-feature__list">
@@ -84,7 +84,7 @@ console.log('Verified:', verification.isValid);
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="gem"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-gem"/></svg></div>
     <h3 class="md-feature__title">Ruby</h3>
     <p class="md-feature__description">For Rails, AO3-style platforms, fanfiction sites</p>
     <ul class="md-feature__list">
@@ -98,7 +98,7 @@ console.log('Verified:', verification.isValid);
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="server"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-server"/></svg></div>
     <h3 class="md-feature__title">PHP</h3>
     <p class="md-feature__description">For WordPress, Laravel, Symfony, legacy systems</p>
     <ul class="md-feature__list">
@@ -112,7 +112,7 @@ console.log('Verified:', verification.isValid);
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="cpu"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-cpu"/></svg></div>
     <h3 class="md-feature__title">Go</h3>
     <p class="md-feature__description">For high-performance systems, microservices</p>
     <ul class="md-feature__list">
@@ -126,7 +126,7 @@ console.log('Verified:', verification.isValid);
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="globe"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg></div>
     <h3 class="md-feature__title">REST API</h3>
     <p class="md-feature__description">For any language or custom integrations</p>
     <ul class="md-feature__list">
@@ -372,28 +372,28 @@ mockDAON.enable();
 
 <div class="md-grid">
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="book"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></div>
     <h3 class="md-feature__title">API Reference</h3>
     <p class="md-feature__description">Complete technical docs</p>
     <a href="/api/reference/" class="md-feature__link">API Reference →</a>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="clipboard-list"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-clipboard-list"/></svg></div>
     <h3 class="md-feature__title">Code Examples</h3>
     <p class="md-feature__description">Copy-paste snippets</p>
     <a href="/examples/" class="md-feature__link">Code Examples →</a>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="message-circle"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg></div>
     <h3 class="md-feature__title">Get Help</h3>
     <p class="md-feature__description">Chat with developers</p>
     <a href="https://discord.gg/daon" class="md-feature__link">Get Help →</a>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="wrench"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-wrench"/></svg></div>
     <h3 class="md-feature__title">Technical Support</h3>
     <p class="md-feature__description">Direct developer help</p>
     <a href="mailto:api-support@daon.network" class="md-feature__link">Technical Support →</a>

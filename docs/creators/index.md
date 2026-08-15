@@ -16,7 +16,7 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
 
 <div class="md-grid">
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="pen-tool"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-pen-tool"/></svg></div>
     <h3 class="md-feature__title">Writers & Bloggers</h3>
     <p class="md-feature__description">WordPress, Medium, personal blogs</p>
     <p><strong>Best Tool:</strong> WordPress Plugin or Web Protection Tool</p>
@@ -30,7 +30,7 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="book-open"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-book-open"/></svg></div>
     <h3 class="md-feature__title">Fanfiction Authors</h3>
     <p class="md-feature__description">AO3, FanFiction.Net, Wattpad</p>
     <p><strong>Best Tool:</strong> Browser Extension</p>
@@ -44,7 +44,7 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="palette"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg></div>
     <h3 class="md-feature__title">Visual Artists</h3>
     <p class="md-feature__description">DeviantArt, Instagram, portfolio sites</p>
     <p><strong>Best Tool:</strong> Bulk Protection Tool</p>
@@ -58,7 +58,7 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="graduation-cap"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-graduation-cap"/></svg></div>
     <h3 class="md-feature__title">Academic Writers</h3>
     <p class="md-feature__description">Research blogs, preprint servers</p>
     <p><strong>Best Tool:</strong> Platform Integration or Web Tool</p>
@@ -100,25 +100,25 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
 
 <div class="md-grid">
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="file-text"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-file-text"/></svg></div>
     <h3 class="md-feature__title">1. You Create Content</h3>
     <p class="md-feature__description">Write your story, article, or any creative work</p>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="fingerprint"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-hash"/></svg></div>
     <h3 class="md-feature__title">2. DAON Creates Fingerprint</h3>
     <p class="md-feature__description">Mathematical hash proves it's your unique content</p>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="link"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-link"/></svg></div>
     <h3 class="md-feature__title">3. Blockchain Registration</h3>
     <p class="md-feature__description">Permanent, tamper-proof record with timestamp</p>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="shield-check"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-shield-check"/></svg></div>
     <h3 class="md-feature__title">4. Legal Protection Active</h3>
     <p class="md-feature__description">Liberation License blocks unauthorized AI training</p>
   </div>
@@ -261,28 +261,28 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 
 <div class="md-grid">
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="shield"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg></div>
     <h3 class="md-feature__title">Start Protection</h3>
     <p class="md-feature__description">2-minute setup guide</p>
     <a href="/get-started/" class="md-feature__link">Start Protection →</a>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="help-circle"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-circle-question-mark"/></svg></div>
     <h3 class="md-feature__title">Read FAQ</h3>
     <p class="md-feature__description">Common questions answered</p>
     <a href="/creators/faq/" class="md-feature__link">Read FAQ →</a>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="wrench"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-wrench"/></svg></div>
     <h3 class="md-feature__title">See Tools</h3>
     <p class="md-feature__description">Plugin, extension, bulk tool</p>
     <a href="/examples/" class="md-feature__link">See Tools →</a>
   </div>
 
   <div class="md-feature">
-    <div class="md-feature__icon"><i data-lucide="message-circle"></i></div>
+    <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg></div>
     <h3 class="md-feature__title">Join Community</h3>
     <p class="md-feature__description">Chat with other creators</p>
     <a href="https://discord.gg/daon" class="md-feature__link">Join Community →</a>
