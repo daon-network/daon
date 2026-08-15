@@ -72,6 +72,19 @@ static BACKEND: OnceLock<Backend> = OnceLock::new();
 
 /// Register the credential store, once per process.
 ///
+/// # This probes the keychain, and probing prompts
+///
+/// Each candidate is tried with a real write, so on macOS an **unsigned build
+/// prompts the user on every process start** -- and "Always Allow" does not
+/// help, because that grant is bound to the binary's exact code signature and
+/// `cargo build` re-signs ad-hoc on every rebuild. Every build looks like a
+/// different application.
+///
+/// A signed app with a stable Developer ID is granted once and never asked
+/// again. So this is not only about iCloud sync: an unsigned agent is unusable
+/// in daily practice regardless of entitlements, because it interrogates the
+/// creator every time it starts.
+///
 /// Must run before any credential is built. Note that this crate deliberately
 /// does not use `keyring::Entry`: that shim's `new` forces a `LazyLock` which
 /// calls `set_default_store` with the file keychain, discarding whatever was
