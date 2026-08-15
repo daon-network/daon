@@ -174,6 +174,83 @@ about different things.
 
 ---
 
+## Rotating the recovery key
+
+**Decided.** The `author_key` may sign a leaf naming a new `recovery_key`, and it takes effect
+only after **N witnessed heads**, not at its own `seq`.
+
+### Why the recovery key must be replaceable at all
+
+A recovery key gets exposed in the ordinary course of being used. Scenario 1 of the runbook has
+the creator type it into a machine to rotate a lost author key — if that machine was the problem,
+the recovery key is now the problem. Without a way to replace it, the only remedy is abandoning
+the chain, which is the outcome this whole document exists to prevent.
+
+### Why the *author* key signs it
+
+Each key may replace the other; **neither may replace itself.**
+
+| Signed by | May replace | May not |
+| --- | --- | --- |
+| `recovery_key` | the `author_key` | the `recovery_key` |
+| `author_key` | the `recovery_key` | the `author_key` |
+
+The second row is the new rule. The first row's restriction is not new but is worth stating,
+because symmetry with transfer suggests otherwise and symmetry is wrong here.
+
+**A recovery-signed rotation must not replace the recovery key.** §4 says a hostile rotation is
+answered by counter-rotating with the same recovery key — that defence exists *because* the
+recovery key survives the rotation. If a rotation replaced it, a thief who obtained it would
+install their own on first use and the legitimate holder would have nothing left to answer with.
+Transfer replaces both keys deliberately, but transfer is authorised by the outgoing author key
+and hands the entity away on purpose; rotation is a recovery from loss and must remain
+answerable.
+
+### Why delayed, when author-key rotation is immediate
+
+Immediate would be simpler, and it is the wrong trade here — this is the one case where the
+delayed variant reserved above earns its cost.
+
+An immediate rule makes a stolen **author** key strictly more dangerous than it is today. A thief
+would replace the recovery key first, and the creator would be left holding nothing; at present
+their recovery key still rotates the thief out. Delay removes that: during the window the old
+recovery key remains valid, so an unexpected recovery-rotation can be answered.
+
+```
+seq 400   author key A, recovery key R
+seq 401   recovery-rotation, signed by A, naming R'    ← not yet in effect
+seq 402   …
+seq 415   N heads witnessed                            ← R' governs, R is dead
+```
+
+Hostile case, same leaves. The thief holds `A` and signs 401 naming their own `R'`. Because `R`
+is still valid during the window, the creator answers:
+
+```
+seq 403   rotation, signed by R → new author key B     ← the thief's A is dead
+                                                          their pending R' dies with it
+```
+
+A pending recovery-rotation is void if the author key that signed it is itself rotated out before
+the delay elapses. Otherwise the thief's replacement would land after they had already been
+removed.
+
+### What it costs the verifier
+
+**Not a fifth step.** The minimum verifier checks a signature against the `author_key` committed
+*in that leaf* and never asks whether a key legitimately changed — that was already an audit
+question, answered by walking the chain. The delay rule lives in the audit layer with the rest of
+it. An auditor comparing witness times is doing arithmetic on values it already holds.
+
+### Still to settle in implementation
+
+- **What N is.** It must exceed the time a creator plausibly takes to notice, without leaving a
+  compromised recovery key live for months. Days rather than hours or years.
+- **Encoding.** A recovery-rotation leaf must be distinguishable from a rotation leaf and from a
+  content leaf, which is the same open encoding question §*Open* already carries.
+
+---
+
 ## Custody domains — when someone else owns the hardware
 
 §3 says the two keys must not share a medium. Employment sharpens that into a different rule,
@@ -305,8 +382,7 @@ chain exists, knows what it is worth, and had months of legitimate access.
 
 ## Open
 
-- Whether the recovery key may itself be rotated. It probably must be — a compromised recovery
-  key otherwise permanently threatens an entity — but that needs its own rule, and "signed by the
-  author key" is the obvious candidate since that inverts the trust direction cleanly.
+- ~~Whether the recovery key may itself be rotated.~~ **Decided: yes, author-signed and delayed.**
+  See § *Rotating the recovery key* below.
 - Encoding. A rotation leaf needs to be distinguishable from a content leaf without an
   algorithm-agility field, which the format deliberately lacks.

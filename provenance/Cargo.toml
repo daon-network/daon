@@ -21,4 +21,6 @@ tempfile = "3"
 # keychain on macOS and offers no way to override it.
 keyring-core = "1"
 apple-native-keyring-store = { version = "1", features = ["keychain", "protected"] }
+windows-native-keyring-store = "1"
+zbus-secret-service-keyring-store = "1"
 rand = "0.8"

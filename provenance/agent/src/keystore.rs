@@ -34,7 +34,6 @@
 //! takes two devices on one Apple ID. Until someone has done that against a
 //! signed build, no caller should print "your key is on all your devices."
 
-use std::collections::HashMap;
 use std::sync::OnceLock;
 
 /// Which store the author key landed in.
@@ -101,6 +100,7 @@ pub fn init() -> Backend {
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 fn register() -> Backend {
     use keyring_core::api::CredentialStoreApi;
+    use std::collections::HashMap;
     use std::sync::Arc;
 
     type Store = Arc<dyn CredentialStoreApi + Send + Sync>;
@@ -157,11 +157,31 @@ fn probe(store: &std::sync::Arc<dyn keyring_core::api::CredentialStoreApi + Send
     ok
 }
 
+/// Windows Credential Manager and Linux Secret Service. Neither has a
+/// synchronized variant to opt into.
+///
+/// These must be registered explicitly. Dropping the `keyring` v1 shim removed
+/// the thing that used to install a platform store on these targets, and
+/// because the keychain tests are `#[ignore]`d and CI only ran `cargo check`,
+/// nothing noticed that every credential operation off Apple would fail with
+/// `NoDefaultStore`.
 #[cfg(not(any(target_os = "macos", target_os = "ios")))]
 fn register() -> Backend {
-    // Windows Credential Manager and Linux Secret Service are what keyring
-    // installs by default, and neither offers a synchronized variant.
-    let _ = HashMap::<&str, &str>::new();
+    #[cfg(target_os = "windows")]
+    {
+        if let Ok(store) = windows_native_keyring_store::Store::new() {
+            keyring_core::set_default_store(store);
+        }
+    }
+    #[cfg(all(
+        unix,
+        not(any(target_os = "macos", target_os = "ios", target_os = "android"))
+    ))]
+    {
+        if let Ok(store) = zbus_secret_service_keyring_store::Store::new() {
+            keyring_core::set_default_store(store);
+        }
+    }
     Backend::Platform
 }
 
