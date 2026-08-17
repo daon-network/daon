@@ -228,6 +228,24 @@ function generateContentHash(content) {
   return crypto.createHash('sha256').update(text, 'utf8').digest('hex');
 }
 
+/**
+ * How content was hashed before canonicalisation existed: raw bytes, markup and
+ * CRLF included.
+ *
+ * Needed on the **verify** path only, and permanently. Content is never stored —
+ * `protected_content` holds a hash and no body — so there is no way to tell which
+ * existing registrations were made over HTML or CRLF, and therefore no migration
+ * that could fix them. A creator who registered before the change and submits the
+ * same content today would otherwise be told it was never registered, which is
+ * the one answer this system must not give wrongly.
+ *
+ * Never used for new registrations. It only ever widens what verification
+ * accepts.
+ */
+function generateLegacyContentHash(content) {
+  return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+}
+
 function generateVerificationUrl(contentHash) {
   const baseUrl = process.env.VERIFICATION_BASE_URL || 'https://verify.daon.network';
   return `${baseUrl}/verify/sha256:${contentHash}`;
@@ -745,16 +763,26 @@ app.post('/api/v1/verify-content', [
     // that is registered, which is the worst possible failure here.
     const contentHash = generateContentHash(content);
 
+    // Registrations predating canonicalisation committed to the raw bytes. Since
+    // content is not stored, they cannot be identified or migrated, so both are
+    // accepted here and the canonical one is tried first.
+    const legacyHash = generateLegacyContentHash(content);
+    const candidateHashes =
+      legacyHash === contentHash ? [contentHash] : [contentHash, legacyHash];
+
     let record = null;
     let source = 'memory';
+    let matchedHash = contentHash;
 
     // Try blockchain first if enabled
     if (blockchainEnabled && blockchainClient.connected) {
+      for (const candidate of candidateHashes) {
       try {
-        const blockchainRecord = await blockchainClient.verifyContent(contentHash);
+        const blockchainRecord = await blockchainClient.verifyContent(candidate);
         if (blockchainRecord.verified) {
+          matchedHash = candidate;
           record = {
-            contentHash,
+            contentHash: candidate,
             timestamp: new Date(blockchainRecord.timestamp * 1000).toISOString(),
             license: blockchainRecord.license,
             creator: blockchainRecord.creator,
@@ -766,38 +794,56 @@ app.post('/api/v1/verify-content', [
       } catch (blockchainError) {
         logger.warn('Blockchain verify-content failed, checking memory:', blockchainError.message);
       }
+      if (record) break;
+      }
     }
 
     // Fall back to in-memory cache
     if (!record) {
-      record = protectedContent.get(contentHash);
+      for (const candidate of candidateHashes) {
+        record = protectedContent.get(candidate);
+        if (record) { matchedHash = candidate; break; }
+      }
       if (record) {
         source = 'memory-cache';
       }
     }
 
-    // Fall back to database
+    // Fall back to database. This is the path that matters most for
+    // registrations predating canonicalisation, which is why it tries both.
     if (!record) {
-      try {
-        const dbRecord = await db.content.findByHash(contentHash);
-        if (dbRecord) {
-          record = {
-            contentHash,
-            timestamp: dbRecord.created_at,
-            license: dbRecord.license,
-            metadata: {
-              title: dbRecord.title,
-              type: dbRecord.content_type,
-              description: dbRecord.description,
-            },
-            verificationUrl: dbRecord.verification_url || generateVerificationUrl(contentHash),
-            blockchainTx: dbRecord.blockchain_tx,
-          };
-          source = 'database';
+      for (const candidate of candidateHashes) {
+        try {
+          const dbRecord = await db.content.findByHash(candidate);
+          if (dbRecord) {
+            matchedHash = candidate;
+            record = {
+              contentHash: candidate,
+              timestamp: dbRecord.created_at,
+              license: dbRecord.license,
+              metadata: {
+                title: dbRecord.title,
+                type: dbRecord.content_type,
+                description: dbRecord.description,
+              },
+              verificationUrl:
+                dbRecord.verification_url || generateVerificationUrl(candidate),
+              blockchainTx: dbRecord.blockchain_tx,
+            };
+            source = 'database';
+            break;
+          }
+        } catch (dbError) {
+          logger.warn('DB verify-content lookup failed:', (dbError as any).message);
         }
-      } catch (dbError) {
-        logger.warn('DB verify-content lookup failed:', (dbError as any).message);
       }
+    }
+
+    // A match on the legacy hash is worth knowing about: it says the creator is
+    // holding content that predates canonicalisation, and it is the only signal
+    // that would ever tell us how much of that exists.
+    if (record && matchedHash !== contentHash) {
+      logger.info('verify-content matched a pre-canonicalisation hash');
     }
 
     if (!record) {
