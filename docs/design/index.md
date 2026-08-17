@@ -37,6 +37,7 @@ evidence. Anyone should be able to read what we decided, see the reasoning, and 
 | | |
 | --- | --- |
 | [Document formats]({{ '/design/document-formats/' \| relative_url }}) | Why the same manuscript hashes differently as .docx, .epub and a Google Doc — and what to register |
+| [Publication and versions]({{ '/design/publication-and-versions/' \| relative_url }}) | When a registration happens, how a work already registered gains a history, and which version mechanism wins |
 
 ## Keys
 
