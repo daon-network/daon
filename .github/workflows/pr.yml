@@ -277,10 +277,17 @@ jobs:
         # Steps 1-3 of the verifier must work without signature support, and a
         # build lacking it must fail closed rather than accept any signature.
         run: cargo test -p daon-provenance-verify --no-default-features --features std
-      - name: Build for wasm32
-        # The verifier's value depends on a skeptic being able to run it in a
-        # browser without trusting a binary we shipped.
-        run: cargo build --target wasm32-unknown-unknown --release
+      - name: Build the verifier for wasm32
+        # Scoped to the verifier on purpose. Its value depends on a skeptic being
+        # able to run it in a browser without trusting a binary we shipped, so
+        # that crate must stay wasm-clean.
+        #
+        # Building the whole workspace here instead would fail, and for no useful
+        # reason: agentd is a Unix-socket daemon that will never run in a
+        # browser, and it pulls in getrandom, which refuses to compile for
+        # wasm32-unknown-unknown without a JS shim. The constraint worth
+        # enforcing is on the verifier, not on everything.
+        run: cargo build -p daon-provenance-verify --target wasm32-unknown-unknown --release
 
       - name: Reference encoder self-check
         working-directory: .
