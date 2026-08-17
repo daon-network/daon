@@ -8,7 +8,7 @@
  */
 
 import express from 'express';
-import { toPlainText } from './utils/content-canonical';
+import { toPlainText } from './utils/content-canonical.js';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
