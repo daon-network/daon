@@ -32,6 +32,12 @@ evidence. Anyone should be able to read what we decided, see the reasoning, and 
 | [Wire format]({{ '/design/wire-format/' \| relative_url }}) | **Normative.** Byte layout for leaves: fixed widths, big-endian, no optional fields |
 | [Editor integration]({{ '/design/editor-integration-spec/' \| relative_url }}) | What an editor may send, how often, and which errors it must handle |
 
+## Content
+
+| | |
+| --- | --- |
+| [Document formats]({{ '/design/document-formats/' \| relative_url }}) | Why the same manuscript hashes differently as .docx, .epub and a Google Doc — and what to register |
+
 ## Keys
 
 | | |
