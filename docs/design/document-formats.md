@@ -125,6 +125,66 @@ flowchart TD
     E -->|Yes| F["<b>That is the evidence.</b><br/>Priority, anchored to Bitcoin"]
 ```
 
+### The unit of dispute is a passage, not a file
+
+The gloom above assumes the thing being fought over is a whole document. It usually is not.
+
+Infringement is normally **fragments of a larger work** — three paragraphs lifted into someone
+else's article, a chapter re-flowed into a course pack, a section absorbed into a model's output
+and reproduced. The creator's registered artifact is the novel; the dispute is about eight hundred
+words of it.
+
+**The format already proves this, and it was built to.** `content_commit` is a Merkle tree over
+1 KiB segments, not a flat hash of the file, specifically so a holder can prove one part without
+revealing the rest:
+
+```
+disclose( segment_bytes, index, sibling_hashes )  →  verifies against content_commit
+```
+
+So the claim available to a creator is narrower and much more useful than "my file matches
+theirs":
+
+> **This passage was in my work, and my work was witnessed on this date.**
+
+Note what that does *not* require. It does not require the infringer's file. It does not require
+their bytes to resemble yours, or their format to be yours, or any conversion to have preserved
+anything. It is a statement about the creator's own artifact and when it existed — which is
+exactly the fact that is otherwise hard to establish, and the only one a timestamp can supply.
+
+Byte-identity of the derivative stops being a problem the moment the question is framed this way,
+because the derivative never enters the proof.
+
+### On the evidentiary role, carefully
+
+Establishing that specific content existed at a specific time, with a timestamp that does not
+depend on the creator's own say-so, is a familiar and well-understood evidentiary function. It is
+what a notarised deposit or a dated envelope has always been for, done in a way that does not
+require trusting the depositor, DAON, or a single institution's records.
+
+**Substantial similarity is a separate question and stays with people.** Whether one work copies
+another is decided by reading them, in a forum with standing to decide it, against a standard that
+varies by jurisdiction and by medium. Nothing here computes that, and nothing here should.
+
+The division is the useful part. The hard-to-prove fact — *this existed, then* — becomes cheap and
+checkable. The judgement — *and that is copying* — stays where judgement belongs.
+
+### This stays creator-initiated
+
+`wire-format.md` §6 is normative that **DAON never issues, renders or serves segment-level
+detail**: there is no `?segment=` parameter on any endpoint, deliberately. A creator generates a
+segment proof themselves, from content only they hold.
+
+That constraint was written to stop passage disclosure becoming a surface anyone could point at a
+creator. It is unaffected by anything here — this section describes a creator choosing to prove
+one passage of their own work, which is the case the capability exists for.
+
+Two costs that are real and are not hidden by this framing. A 1 KiB boundary has no relationship
+to a paragraph, so disclosing a passage discloses the segments it spans and may reveal adjacent
+text the holder did not intend. And any tool offering this **must** show the holder the exact
+bytes that will be disclosed first — consent to reveal a passage is not consent to reveal whatever
+shares its segment.
+
 ### What this changes about the guidance
 
 It strengthens the case for making the **text** the registered work rather than a layout format.
@@ -135,6 +195,11 @@ container carries structure the converter will have rewritten.
 It also means the registry's matching layer is not a convenience. It is the only mechanism that
 can connect a circulating derivative to a registration at all, which is why the canonical form
 below matters more than its small role suggests.
+
+And it argues for **registering often rather than once**. A single registration at publication
+proves the finished work existed that day. A chain of revisions proves the passage in dispute
+existed months earlier, in draft, alongside everything around it — which is a far harder thing for
+anyone to have manufactured after the fact.
 
 ### What it does not license
 
@@ -159,13 +224,18 @@ that you are registering *that export*, not the document that produced it.
 **3. Do not re-export to check.** It will not match, and that is expected. To check a
 registration, hash the file you kept.
 
-**4. Make the text the work.** Register the extracted text as its own artifact and treat every
+**4. Register often, not once.** A single registration at publication proves the finished work
+existed that day. A chain of revisions proves the disputed passage existed months earlier, in
+draft, surrounded by the work it grew out of — which is much harder for anyone to have
+manufactured after the fact. This is what the coalescing agent is for; it costs nothing per leaf.
+
+**5. Make the text the work.** Register the extracted text as its own artifact and treat every
 layout format as derived from it. This is the strongest single thing a creator can do: it gives one
 stable identity that survives any number of exports, and it is the form most likely to correspond
 to text extracted from a conversion **somebody else** made. It needs nothing the format does not
 already have.
 
-**5. A Google Doc is not registrable.** Export it, register the export, and keep it.
+**6. A Google Doc is not registrable.** Export it, register the export, and keep it.
 
 ---
 
