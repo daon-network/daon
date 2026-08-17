@@ -4,7 +4,11 @@
  * The contract these protect: the words are hashed, the markup is not, and
  * whitespace the creator wrote survives untouched.
  */
-import { toPlainText } from '../utils/content-canonical.js';
+import {
+  toPlainText,
+  EmptyAfterStrippingError,
+  EMPTY_SHA256,
+} from '../utils/content-canonical.js';
 
 describe('toPlainText', () => {
   describe('leaves plain text alone', () => {
@@ -150,5 +154,69 @@ describe('line endings', () => {
 
   it('still leaves intra-line spacing alone', () => {
     expect(toPlainText('a    b\r\n    indented').text).toBe('a    b\n    indented');
+  });
+});
+
+describe('content that vanishes under stripping', () => {
+  // The bug this closes: an image-only document strips to "" and hashes to
+  // e3b0c442… — the SHA-256 of nothing. Every such work collided, the first
+  // registration made the rest return "already protected", and the one that
+  // succeeded committed to an empty document.
+  it('refuses image-only content instead of hashing nothing', () => {
+    expect(() => toPlainText('<img src="cliffs.jpg" alt="">')).toThrow(
+      EmptyAfterStrippingError
+    );
+  });
+
+  it('refuses a scanned page', () => {
+    expect(() => toPlainText('<figure><img src="page001.tiff"></figure>')).toThrow(
+      EmptyAfterStrippingError
+    );
+  });
+
+  it('refuses markup carrying no text at all', () => {
+    expect(() => toPlainText('<div><span></span><br><hr></div>')).toThrow(
+      EmptyAfterStrippingError
+    );
+  });
+
+  it('refuses a document whose only content is a script', () => {
+    expect(() => toPlainText('<script>const a = 1;</script>')).toThrow(
+      EmptyAfterStrippingError
+    );
+  });
+
+  // Distinctness is the point: three different works must not share a hash.
+  it('would otherwise have collided them', () => {
+    const works = [
+      '<img src="cliffs.jpg">',
+      '<img src="portrait-of-my-mother.jpg">',
+      '<figure><img src="page001.tiff"></figure>',
+    ];
+    for (const w of works) {
+      expect(() => toPlainText(w)).toThrow(EmptyAfterStrippingError);
+    }
+  });
+
+  it('still accepts an illustrated page that has a caption', () => {
+    const { text } = toPlainText('<img src="plate1.png"><p>Plate I</p>');
+    expect(text).toBe('Plate I');
+  });
+
+  // Plain text is never routed through stripping, so whitespace-only input is
+  // returned unchanged rather than refused. It hashes distinctly from empty.
+  it('leaves whitespace-only plain text alone', () => {
+    const { text, stripped } = toPlainText('   ');
+    expect(stripped).toBe(false);
+    expect(text).toBe('   ');
+  });
+});
+
+describe('the empty hash is never registrable', () => {
+  // Belt and braces: toPlainText refuses these inputs, and the hash they would
+  // have produced is refused independently at the point of hashing.
+  it('names the value so it can be checked at the hash site', () => {
+    const { createHash } = require('node:crypto');
+    expect(createHash('sha256').update('', 'utf8').digest('hex')).toBe(EMPTY_SHA256);
   });
 });

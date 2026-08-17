@@ -201,11 +201,14 @@ class Test_Content_Hashing extends \PHPUnit\Framework\TestCase {
         $this->assertSame(71, strlen($hash)); // "sha256:" (7) + 64 hex
     }
 
-    public function test_content_with_only_html_tags(): void {
-        // HTML-only content becomes empty after stripping
-        $hash = $this->client->generate_content_hash('<div><span></span></div>');
-        $hash_empty = $this->client->generate_content_hash('');
-        $this->assertSame($hash_empty, $hash);
+    public function test_content_with_only_html_tags_is_refused(): void {
+        // Inverted deliberately. This previously asserted that markup-only
+        // content hashes the same as the empty string -- which is the bug: every
+        // image-only post, scanned page and empty div shared one hash, so the
+        // first registration made the rest collide and the winner committed to
+        // an empty document.
+        $result = $this->client->generate_content_hash('<div><span></span></div>');
+        $this->assertInstanceOf('WP_Error', $result);
     }
 
     public function test_wordpress_shortcodes_preserved(): void {

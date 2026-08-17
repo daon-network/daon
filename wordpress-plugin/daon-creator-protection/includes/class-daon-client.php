@@ -96,6 +96,19 @@ class DAON_Client {
      */
     public function generate_content_hash($content) {
         $normalized = $this->normalize_content($content);
+
+        // Content that vanishes under tag stripping -- a post that is only an
+        // image, a scanned page -- would otherwise hash to the SHA-256 of the
+        // empty string, which every such post shares. The API refuses these;
+        // the plugin must refuse them identically or it will send a hash the
+        // API would never have produced.
+        if ( $content !== '' && trim( $normalized ) === '' ) {
+            return new WP_Error(
+                'daon_no_text_content',
+                __( 'This content has no text once markup is removed. Images and scanned pages cannot be protected through the text path.', 'daon-creator-protection' )
+            );
+        }
+
         $hash = hash('sha256', $normalized);
         return "sha256:{$hash}";
     }

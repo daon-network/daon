@@ -67,6 +67,35 @@ class Test_Content_Normalization extends \PHPUnit\Framework\TestCase {
         $this->assertSame( $poem, $this->normalize( $poem ) );
     }
 
+    /**
+     * Content that vanishes under stripping must be refused, not hashed.
+     *
+     * An image-only post normalises to the empty string, and hashing that gives
+     * every such post the same SHA-256. They would collide, and the winner would
+     * commit to an empty document.
+     */
+    public function test_image_only_content_is_refused() {
+        $client = new DAON_Client();
+        foreach ( array(
+            '<img src="cliffs.jpg" alt="">',
+            '<figure><img src="page001.tiff"></figure>',
+            '<div><span></span><br></div>',
+        ) as $input ) {
+            $result = $client->generate_content_hash( $input );
+            $this->assertInstanceOf(
+                'WP_Error',
+                $result,
+                "should have refused: {$input}"
+            );
+        }
+    }
+
+    public function test_an_illustrated_page_with_a_caption_still_hashes() {
+        $client = new DAON_Client();
+        $result = $client->generate_content_hash( '<img src="plate1.png"><p>Plate I</p>' );
+        $this->assertSame( 'sha256:' . hash( 'sha256', 'Plate I' ), $result );
+    }
+
     public function test_matches_the_shared_vectors() {
         $path = dirname( __DIR__, 3 ) . '/scripts/content/canonical-vectors.json';
         if ( ! file_exists( $path ) ) {

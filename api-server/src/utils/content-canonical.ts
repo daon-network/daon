@@ -34,6 +34,42 @@
  * those registrations were made against the raw bytes.
  */
 
+/**
+ * Thrown when stripping leaves nothing to hash.
+ *
+ * Not an edge case to tolerate: an image-only document, a scanned page, a
+ * figure with no caption all reduce to the empty string, and hashing that
+ * gives every one of them `e3b0c442…` — the SHA-256 of nothing. They would
+ * collide with each other, the first registration would make the rest return
+ * "already protected", and the one that succeeded would commit to no content
+ * whatsoever.
+ *
+ * Refusing is the only honest answer. Content that vanishes under text
+ * extraction is not text, and the text pipeline cannot make a claim about it.
+ */
+export class EmptyAfterStrippingError extends Error {
+  constructor() {
+    super(
+      'this content contains no text once markup is removed. ' +
+        'Images and scanned pages cannot be registered through the text path — ' +
+        'hashing them here would commit to an empty document.'
+    );
+    this.name = 'EmptyAfterStrippingError';
+  }
+}
+
+/**
+ * SHA-256 of the empty string.
+ *
+ * Never a legitimate registration. Any path producing it has hashed nothing —
+ * and because every such input produces *this* value, they would all collide
+ * into a single meaningless record. Checked as a backstop at the point of
+ * hashing, so a future code path that skips canonicalisation still cannot
+ * register it.
+ */
+export const EMPTY_SHA256 =
+  'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+
 /** Content as submitted, and what was actually hashed. */
 export interface CanonicalContent {
   /** The exact text the hash commits to. */
@@ -125,6 +161,13 @@ export function toPlainText(content: string): CanonicalContent {
   // indentation of a `<pre>` block, which is exactly the content this is
   // supposed to protect.
   text = text.replace(/^(?:[ \t]*\n)+/, '').replace(/(?:\n[ \t]*)+$/, '');
+
+  // Something was submitted and nothing survived. See EmptyAfterStrippingError:
+  // silently hashing the empty string here would collide every image-only
+  // document into one meaningless registration.
+  if (text.trim() === '') {
+    throw new EmptyAfterStrippingError();
+  }
 
   return { text, stripped: true };
 }

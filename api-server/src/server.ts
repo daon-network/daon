@@ -8,7 +8,11 @@
  */
 
 import express from 'express';
-import { toPlainText } from './utils/content-canonical.js';
+import {
+  toPlainText,
+  EmptyAfterStrippingError,
+  EMPTY_SHA256,
+} from './utils/content-canonical.js';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -225,7 +229,35 @@ const handleValidationErrors = (req, res, next) => {
  */
 function generateContentHash(content) {
   const { text } = toPlainText(content);
-  return crypto.createHash('sha256').update(text, 'utf8').digest('hex');
+  const hash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
+
+  // Backstop. toPlainText already refuses content that strips to nothing, but
+  // this is the value every such input collapses to, so it is checked at the
+  // point of hashing as well -- a future path that skips canonicalisation must
+  // not be able to register the hash of no content.
+  if (hash === EMPTY_SHA256) {
+    throw new EmptyAfterStrippingError();
+  }
+  return hash;
+}
+
+/**
+ * Turn an EmptyAfterStrippingError into a 400 that says what to do.
+ *
+ * Content that vanishes under text extraction -- an image-only page, a scan, a
+ * figure without a caption -- is a client mistake about which pipeline to use,
+ * not a server fault.
+ */
+function handleEmptyContent(e, res) {
+  if (e instanceof EmptyAfterStrippingError) {
+    res.status(400).json({
+      success: false,
+      error: 'no_text_content',
+      message: e.message,
+    });
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -545,6 +577,7 @@ app.post("/api/v1/protect", [optionalAuth,
     });
     
   } catch (error) {
+    if (handleEmptyContent(error, res)) return;
     contentProtectionsTotal.labels(req.body.license || 'liberation_v1', 'error').inc();
     logger.error('Content protection failed:', error);
     res.status(500).json({
@@ -623,6 +656,7 @@ app.post('/api/v1/protect/bulk', [
     });
     
   } catch (error) {
+    if (handleEmptyContent(error, res)) return;
     logger.error('Bulk protection failed:', error);
     res.status(500).json({
       success: false,
@@ -876,6 +910,7 @@ app.post('/api/v1/verify-content', [
     });
 
   } catch (error) {
+    if (handleEmptyContent(error, res)) return;
     logger.error('Verify-content failed:', error);
     res.status(500).json({
       success: false,
@@ -1034,6 +1069,7 @@ app.post('/api/v1/broker/protect',
     });
     
   } catch (error) {
+    if (handleEmptyContent(error, res)) return;
     logger.error('Broker protection failed:', error);
     contentProtectionsTotal.labels('unknown', 'error').inc();
     
