@@ -225,7 +225,9 @@ adjudicator, which is the thing the whole design refuses to become.
 **Register the words, not the file the words arrived in.** Write in — or export once to — a
 plain-text format, register that file, and keep it. Every layout format is a derivative of it.
 
-This is the whole of the guidance. Everything below is detail or exception.
+This is the guidance **for work that is words**. Two exceptions follow it, and they are not
+marginal: work where the pictures are part of what was made, and work where the layout is. For
+those, register the file.
 
 It solves each problem in this document at once:
 
@@ -257,6 +259,23 @@ tables are flattened, whether headings keep a trailing newline.
 
 So the text file is **the artifact**, not a view that can be recomputed. Save it, register it,
 keep it, exactly as with any other registration.
+
+### When the pictures are the work
+
+Text extraction drops images entirely, and silently. Register an illustrated book through the text
+path and you have registered its captions; a graphic novel or a scanned manuscript reduces to
+nothing at all, which is now refused rather than hashed — see
+[`publication-and-versions.md`](./publication-and-versions.md).
+
+For work where the images are part of what was made, **register the file.** Its hash commits to
+the bytes rather than to an interpretation of them, so it covers words, figures and embedded media
+together.
+
+The cost is the container instability described above: a `.docx` or `.epub` is a ZIP and re-saving
+changes the bytes. Accept it. **A hash that covers your photographs and breaks when you re-export
+is worth more than one that is stable and covers none of them** — and the rule that makes it
+workable is the same one as everywhere else here: the registration is of *that file*, and you keep
+that file.
 
 ### When formatting is the work
 

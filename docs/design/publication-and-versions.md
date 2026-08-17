@@ -254,21 +254,41 @@ For binary it is the wrong mechanism entirely. Base64 in JSON expands 4/3, so 10
 about 7.5 MB of file — small for photography, hopeless for audio or video. **The fix is not a
 larger number.**
 
-| | Hashed | Limit |
-| --- | --- | --- |
-| **Text** | sent, canonicalised server-side | 10 MB, generous, keep it |
-| **Binary** | **hashed in the browser**, only the hash sent | none needed |
+| | Hashed | Limit | Handed back |
+| --- | --- | --- | --- |
+| **Text** | sent, canonicalised server-side | 10 MB, generous, keep it | the canonical bytes, named for the hash |
+| **A file** | **raw bytes, hashed in the browser**, only the hash sent | none needed | nothing — they uploaded it, they have it |
 
 Text must be hashed server-side because canonicalisation has to stay consistent, and a browser
-implementation would be a *third* one to keep in step with TypeScript and PHP. Binary has no
-canonicalisation — raw bytes — so client-side hashing is trivially correct and shares no
-implementation with anything.
+implementation would be a *third* one to keep in step with TypeScript and PHP. A file has no
+canonicalisation — raw bytes are raw bytes — so client-side hashing is trivially correct and
+shares no implementation with anything.
 
-It also settles the download question for binary: if the browser hashed a file the creator already
-holds, they already have exactly what was hashed. Nothing to hand back.
+The two paths are symmetric in the thing that matters: **the creator ends up holding exactly what
+was hashed.** For text we have to hand it back because we transformed it. For a file we do not,
+because we did not.
 
-**None of this exists yet.** Binary registration is the open Pillar 2 gap, and images have nothing
-to extract in the first place.
+### Registering the file is the answer for illustrated work
+
+Text extraction drops pictures. Register an illustrated book through the text path and you have
+registered its captions; a graphic novel reduces to almost nothing and is now refused outright.
+[`document-formats.md`](./document-formats.md) says *register plain text*, and for work where the
+images are the work, that guidance is wrong.
+
+So: **register the file.** Its hash covers everything in it — words, figures, embedded media —
+because it commits to the bytes rather than to an interpretation of them.
+
+The cost is the one already documented: a `.docx` or `.epub` is a ZIP, and re-saving changes the
+bytes even with no edits. That is acceptable, and it is acceptable for the same reason as
+everywhere else — **the registration is of that file, and the creator keeps that file.** A hash
+that covers your photographs and breaks when you re-export is worth more than one that is stable
+and covers none of them.
+
+What the app owes the creator here is a sentence, not a mechanism: *this registration is for this
+exact file; keep it, and re-exporting will produce a different one.*
+
+**None of this exists yet.** Binary registration is the open Pillar 2 gap, and `/api/v1/protect`
+accepts only a string.
 
 ---
 
