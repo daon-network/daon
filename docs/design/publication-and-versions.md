@@ -79,41 +79,108 @@ get backwards.
 If chapter 1 goes up in January and is lifted in March, the proof that matters is January's.
 Waiting until the work completes in December throws away eleven months of priority for nothing.
 
-So: **every chapter is a leaf; the registration happens once, on completion.** The leaves carry
-the incremental claim, and segment proofs let a creator show chapter 1 was in their January
-version without revealing chapters 2–50. The registration is the whole-work claim, standing on
-eleven months of witnessed history rather than replacing it.
+So where a chain exists: **every chapter is a leaf, and the registration happens once, on
+completion.** The leaves carry the incremental claim, and segment proofs let a creator show
+chapter 1 was in their January version without revealing chapters 2–50. The registration is the
+whole-work claim, standing on eleven months of witnessed history rather than replacing it.
 
-The platform acts as a **broker**: it holds no keys the creator does not have, and its role is to
-grant the registration at completion. This is what the broker system exists for, and it is the
-honest arrangement — the platform is attesting what it observed, on infrastructure it runs.
+### Leaves require an agent, and most writers will not have one
 
-### Where the leaves live
+That last paragraph assumes tooling, which is a large assumption. **Leaves are produced locally by
+software the creator runs.** A writer serialising on a platform with nothing else installed has no
+chain at all — DAON's involvement begins when a root arrives, and until then there is nothing to
+arrive.
 
-Ideally the creator keeps their own chain, in whatever they write with. Until that is common, a
-platform holding it on their behalf is a real service — with the custody caveat from
-[`key-recovery.md`](./key-recovery.md) attached: a chain the platform can sign is a chain the
-platform controls, and leaving the platform should not mean leaving the history behind.
+Three honest tiers:
+
+| The writer's situation | What they get |
+| --- | --- |
+| Platform only, no agent | A registration on completion. A real dated claim, and **no revision history** |
+| Their own tool runs an agent | A leaf per chapter, held locally, plus the registration |
+| The platform runs an agent for them | Leaves — but the platform holds a signing key |
+
+The platform acts as a **broker** for the first tier: it holds no key the creator does not have,
+and its role is to grant the registration at completion. That is the honest arrangement, and it is
+what the broker system exists for.
+
+The third tier is the one to be wary of. `key-recovery.md` § *Custody domains* applies verbatim
+with "platform" substituted for "employer": **a chain someone else can sign is a chain someone
+else controls**, and leaving a platform must not mean leaving the history behind. If it is offered
+at all, the recovery key must never be in the platform's custody.
 
 ---
 
 ## What the registry should record
 
-Two columns, no format change:
+An **appended association record**, not columns on the registration:
 
-| Column | Holds |
+```
+association: (content_hash, entity_id, head, asserted_by, verified, recorded_at)
+```
+
+`entity_id` is better identity than a title. A title is a string someone typed; the entity is a
+genesis leaf hash, ordered and un-rewritable by construction.
+
+### Why appended and not a column
+
+The main use of this is **adoption** — a registration from 2025 gaining a chain in 2026. Adding
+columns to that row means editing a record whose entire value is that it has not been edited since
+2025. That contradicts the append-only rule two sections below, and it would quietly destroy the
+thing registration exists to provide.
+
+So the original row is never touched. Associations accumulate beside it, and the accumulation is
+itself truthful:
+
+```
+2025  registration:  content_hash X, date T          ← never modified
+2026  association:   X → entity E, head H₁, recorded 2026-08
+2027  association:   X → entity E, head H₂, recorded 2027-02
+```
+
+That reads as *"in August they told us the head was H₁; in February, H₂"* — a history of what DAON
+was told, which is a fact DAON is entitled to keep.
+
+### Associations must not be exclusive
+
+**Normative.** Any number of associations may attach to one `content_hash`, from any number of
+accounts, and none displaces another.
+
+This is the requirement that makes impersonation survivable. If a hash accepted only one root,
+whoever asserted first would squat it — and the person best placed to do that is not the creator.
+With many allowed, a false assertion sits next to the true one and loses on evidence.
+
+Consequences, all required:
+
+- **Attributed.** Each association names the account that made it, and magic-link auth means that
+  mailbox is verified. Attribution is the accountability mechanism, not adjudication.
+- **Dated and append-only.** A later assertion never erases an earlier one.
+- **Never ranked by DAON.** Competing assertions are shown; deciding between them is a job for a
+  forum with standing, exactly as with competing chains in
+  [`registry-and-provenance.md`](./registry-and-provenance.md).
+
+A false association is also largely self-refuting: anyone holding the content computes
+`content_commit` and sees the claimed chain does not commit to it. And an attacker who *does* hold
+the content is the ordinary competing-claim case, where earlier witnessed history wins.
+
+### Recorded, or verified
+
+`verified` distinguishes two very different claims, and the certificate must render them
+differently:
+
+| | DAON's claim |
 | --- | --- |
-| `entity_id` | the chain's genesis leaf hash |
-| `head_at_registration` | the head the creator presented when registering |
+| **Recorded** | "this account told us the head was H on this date" |
+| **Verified** | "we checked, and it holds" |
 
-`entity_id` is a better identity than a title. A title is a string someone typed; the entity is
-the genesis leaf's hash, ordered and un-rewritable by construction.
+Recorded is still useful — H is a commitment, so a dated record of it pins the chain state as of
+that date even though DAON could not check it then.
 
-**These are recorded, not asserted.** DAON writes down what the creator presented. Whether that
-chain really covers this content is checkable by anyone holding it, and the certificate must say
-which of the two it is. If the creator also submits a proof — leaf, inclusion proof, witness
-attestation — DAON can run the four-step verifier and record that it checked, which is a stronger
-and still honest claim.
+Verification splits by what is being checked:
+
+- **The chain is real and witnessed** — leaf, inclusion proof and witness attestation are enough.
+  **No content needed.** DAON can run the four-step verifier on submitted proof alone.
+- **The chain is about this registration** — requires the content, because the join is
+  `content → content_commit`.
 
 ### Registrations are append-only
 
@@ -122,6 +189,86 @@ returns *already protected* rather than mutating. **Keep it that way.** Updating
 in place would destroy its original date, which is the only thing that registration was ever for.
 
 A new version is a new row with `previous_version` pointing back — never an edit.
+
+---
+
+## Who keeps the content
+
+Verifying the join needs content. Keeping content is a much larger decision than it appears, so
+the two are separated deliberately.
+
+### Verify, then discard
+
+DAON already **receives** content — `/api/v1/protect` takes it in the body and hashes it. The
+question is only whether to **store** it.
+
+Storing it is the single largest change to the threat model in this system. Today a breach or a
+subpoena yields hashes, which read as nothing. Holding content makes DAON subpoenable and
+breachable for the material itself — and the most common thing a creator registers is an
+unpublished draft they specifically do not want seen. It also moots the segment-disclosure design,
+which exists so a creator can prove one passage without exposing the pages around it.
+
+**So: verify at submission, then discard.** Compute `content_commit`, check it against the genesis
+leaf, record `verified`, drop the content. Verification is a moment rather than a retention
+commitment.
+
+Retention survives as an **opt-in backup**, labelled as what it is. It should never be a silent
+consequence of registering, because it is a **one-way door**: storage can be added later, but
+content already breached or already subpoenaed cannot be un-stored.
+
+### The creator must end up holding exactly what was hashed
+
+Discarding shifts a burden onto the creator, and the two paths bear it very differently.
+
+**The agent should do it invisibly** — and today it cannot. `Store::put_content` writes each 1 KiB
+segment keyed by its hash and returns the Merkle root, but **nothing records the ordered list of
+segment hashes**. Every blob is present and the recipe for reassembling them is not, so the agent
+can prove content it is handed and cannot hand it back. A per-leaf manifest fixes it, and until
+then "the agent keeps your content" is not true.
+
+**The app must hand the bytes back.** At registration it should return the exact canonical text as
+a download, named for its hash so the file is self-identifying in a folder, with plain advice to
+keep it.
+
+This is not a convenience. Since hashing canonicalises — markup stripped, line endings folded —
+**the bytes hashed are not necessarily the bytes the creator pasted**, so even a diligent user who
+saved their own copy may be unable to reproduce the hash.
+[`document-formats.md`](./document-formats.md) already requires this and it is unimplemented:
+
+> The app must not extract the text and register it on the creator's behalf without saying so. The
+> artifact registered has to be one the creator holds and can produce later, **and a file only
+> DAON ever saw is not that.**
+
+A creator who declines the download still has a dated hash. That is a weaker position and a
+visible choice, which is the right trade.
+
+### Binary is a different mechanism, not a bigger limit
+
+`/api/v1/protect` validates `content` as a **string**, capped at 10 MB, matching
+`express.json({ limit: '10mb' })`. For text that ceiling is generous — roughly 1.5–2 million
+words, where *War and Peace* is about 3.2 MB — and it will never bind in practice. Two wrinkles
+make it smaller than it reads: the body limit counts bytes while the validator counts characters,
+so multi-byte text hits it early with a confusing error, and JSON escaping inflates it further.
+
+For binary it is the wrong mechanism entirely. Base64 in JSON expands 4/3, so 10 MB of body is
+about 7.5 MB of file — small for photography, hopeless for audio or video. **The fix is not a
+larger number.**
+
+| | Hashed | Limit |
+| --- | --- | --- |
+| **Text** | sent, canonicalised server-side | 10 MB, generous, keep it |
+| **Binary** | **hashed in the browser**, only the hash sent | none needed |
+
+Text must be hashed server-side because canonicalisation has to stay consistent, and a browser
+implementation would be a *third* one to keep in step with TypeScript and PHP. Binary has no
+canonicalisation — raw bytes — so client-side hashing is trivially correct and shares no
+implementation with anything.
+
+It also settles the download question for binary: if the browser hashed a file the creator already
+holds, they already have exactly what was hashed. Nothing to hand back.
+
+**None of this exists yet.** Binary registration is the open Pillar 2 gap, and images have nothing
+to extract in the first place.
 
 ---
 
@@ -217,10 +364,9 @@ them would make DAON the adjudicator this design refuses to become.
 
 ## Open
 
-- **Whether DAON verifies a submitted proof or merely records what it was told.** Verifying is
-  strictly better and the verifier already exists; it means accepting chain data at registration,
-  which is a creator's affirmative act rather than agent egress. Probably yes, and it needs
-  deciding rather than drifting.
+- **Whether verification of the join should be offered at all**, given it requires the creator to
+  submit content even if DAON discards it immediately. Verifying the *chain* needs no content and
+  should simply be done.
 - **What a broker may hold on a creator's behalf.** A platform that can sign is a platform that
   controls the chain. The custody rules in `key-recovery.md` were written for employers and apply
   unchanged.
