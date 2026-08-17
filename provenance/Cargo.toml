@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["core", "verify", "agent", "witness"]
+members = ["core", "verify", "agent", "witness", "agentd"]
 
 [workspace.package]
 edition = "2021"
@@ -13,6 +13,7 @@ sha2 = { version = "0.10", default-features = false }
 ed25519-dalek = { version = "2", default-features = false }
 daon-provenance-core = { path = "core", default-features = false }
 daon-provenance-witness = { path = "witness", default-features = false }
+daon-provenance-agent = { path = "agent" }
 hex = "0.4"
 tempfile = "3"
 # Registering the protected (data-protection) store ourselves means talking to
@@ -20,4 +21,11 @@ tempfile = "3"
 # keychain on macOS and offers no way to override it.
 keyring-core = "1"
 apple-native-keyring-store = { version = "1", features = ["keychain", "protected"] }
+windows-native-keyring-store = "1"
+# The secret-service crate refuses to compile without a runtime chosen, so one
+# must be named here. async-io rather than tokio because the daemon is sync and
+# thread-per-connection -- pulling in an async runtime it never drives would be
+# dead weight -- and crypto-rust rather than openssl to avoid a system library
+# on every Linux build.
+zbus-secret-service-keyring-store = { version = "1", default-features = false, features = ["rt-async-io-crypto-rust"] }
 rand = "0.8"
