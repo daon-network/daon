@@ -182,13 +182,15 @@ class Test_Content_Hashing extends \PHPUnit\Framework\TestCase {
         $this->assertSame($hash1, $hash2);
     }
 
-    public function test_html_entities_are_not_decoded(): void {
-        // wp_strip_all_tags does not decode entities, so &amp; stays as &amp;
-        // This is important: if we changed this, old hashes would break
+    public function test_html_entities_are_decoded(): void {
+        // Inverted deliberately. A reader of "Tom &amp; Jerry" sees "Tom &
+        // Jerry" -- the entity encodes the text, it is not the text -- so
+        // hashing the encoded form makes the hash depend on how the markup
+        // happened to be written. The API decodes, and the two must agree or
+        // WordPress content verifies as unregistered.
         $a = $this->client->generate_content_hash('Tom &amp; Jerry');
         $b = $this->client->generate_content_hash('Tom & Jerry');
-        // These should differ because &amp; is literal text after tag stripping
-        $this->assertNotSame($a, $b);
+        $this->assertSame($a, $b);
     }
 
     public function test_very_long_content(): void {

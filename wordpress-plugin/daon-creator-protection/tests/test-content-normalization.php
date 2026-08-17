@@ -10,12 +10,13 @@
  * Vectors are shared with api-server: scripts/content/canonical-vectors.json.
  */
 
-class Test_Content_Normalization extends WP_UnitTestCase {
+class Test_Content_Normalization extends \PHPUnit\Framework\TestCase {
 
     private function normalize( $content ) {
         $client = new DAON_Client();
+        // setAccessible is a no-op and deprecated as of PHP 8.5; ReflectionMethod
+        // can invoke a private method directly.
         $method = new ReflectionMethod( 'DAON_Client', 'normalize_content' );
-        $method->setAccessible( true );
         return $method->invoke( $client, $content );
     }
 
@@ -57,6 +58,15 @@ class Test_Content_Normalization extends WP_UnitTestCase {
      * Every shared vector must hash identically here and in the API. The
      * expected values are produced by the TypeScript implementation.
      */
+    /**
+     * wp_strip_all_tags trims unconditionally, which removes the leading
+     * indentation of the first line. The normaliser must not use it.
+     */
+    public function test_leading_indentation_survives() {
+        $poem = "    first line\n        second line";
+        $this->assertSame( $poem, $this->normalize( $poem ) );
+    }
+
     public function test_matches_the_shared_vectors() {
         $path = dirname( __DIR__, 3 ) . '/scripts/content/canonical-vectors.json';
         if ( ! file_exists( $path ) ) {

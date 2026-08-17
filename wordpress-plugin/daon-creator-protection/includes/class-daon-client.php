@@ -126,8 +126,12 @@ class DAON_Client {
             $content
         );
 
-        // wp_strip_all_tags removes script and style contents as well as tags.
-        $content = wp_strip_all_tags($content);
+        // What wp_strip_all_tags does, minus its trim(). That trim is applied
+        // unconditionally and would strip the leading indentation of the first
+        // line -- the exact thing this normaliser exists to preserve -- so the
+        // helper cannot be used here however convenient it looks.
+        $content = preg_replace('@<(script|style)[^>]*?>.*?</\1>@si', '', $content);
+        $content = strip_tags($content);
 
         // Only the five predefined entities, matching the API. ENT_QUOTES so
         // &apos; and &quot; are handled; unknown entities are left as written.

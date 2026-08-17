@@ -56,6 +56,14 @@
     {
       "name": "indentation-with-crlf",
       "input": "a    b\r\n    indented"
+    },
+    {
+      "name": "leading-indentation",
+      "input": "    first line\n        second line"
+    },
+    {
+      "name": "indented-pre-block",
+      "input": "<pre>    indented\n        further</pre>"
     }
   ]
 }
