@@ -22,5 +22,10 @@ tempfile = "3"
 keyring-core = "1"
 apple-native-keyring-store = { version = "1", features = ["keychain", "protected"] }
 windows-native-keyring-store = "1"
-zbus-secret-service-keyring-store = "1"
+# The secret-service crate refuses to compile without a runtime chosen, so one
+# must be named here. async-io rather than tokio because the daemon is sync and
+# thread-per-connection -- pulling in an async runtime it never drives would be
+# dead weight -- and crypto-rust rather than openssl to avoid a system library
+# on every Linux build.
+zbus-secret-service-keyring-store = { version = "1", default-features = false, features = ["rt-async-io-crypto-rust"] }
 rand = "0.8"
