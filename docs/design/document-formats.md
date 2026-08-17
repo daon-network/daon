@@ -12,9 +12,16 @@ mermaid: true
 A creator has one manuscript. It exists as a Google Doc, a `.docx` export and an `.epub`. Three
 files, three hashes, none of which verify against the others.
 
-This looks like a bug and is not one. But the system currently offers no guidance, and without it
-a creator's reasonable expectation — *"it's the same book"* — collides with the format's
-correct-but-unhelpful answer.
+This looks like a bug and is not one. But the system offered no guidance, and without it a
+creator's reasonable expectation — *"it's the same book"* — collides with a correct but unhelpful
+answer.
+
+> **The guidance is: register plain text.** Write in, or export once to, a text format; register
+> that file; keep it. Treat `.docx`, `.epub` and PDF as derivatives of it. See
+> [§ Guidance for creators](#guidance-for-creators) — the rest of this document is why.
+
+This is a choice about *what the work is*, made by the creator. It is **not** normalisation:
+nothing transforms bytes before hashing, and `wire-format.md` §2 stands untouched.
 
 ---
 
@@ -213,29 +220,75 @@ adjudicator, which is the thing the whole design refuses to become.
 
 ## Guidance for creators
 
-**1. Register the artifact you will keep.** The hash proves that file existed. If you cannot
-produce the file later, the proof is weaker — you can still show the hash, but not the thing it
-commits to.
+### The rule: register plain text
 
-**2. Prefer a format you control the bytes of.** Markdown, plain text, or any single-file format
-your editor writes deterministically. `.docx` and `.epub` are fine to register; just understand
-that you are registering *that export*, not the document that produced it.
+**Register the words, not the file the words arrived in.** Write in — or export once to — a
+plain-text format, register that file, and keep it. Every layout format is a derivative of it.
 
-**3. Do not re-export to check.** It will not match, and that is expected. To check a
-registration, hash the file you kept.
+This is the whole of the guidance. Everything below is detail or exception.
 
-**4. Register often, not once.** A single registration at publication proves the finished work
+It solves each problem in this document at once:
+
+| Problem | Why plain text answers it |
+| --- | --- |
+| Re-saving changes the hash | No ZIP container, no `w:rsid`, no embedded timestamps. The same text is the same bytes |
+| Three formats, three hashes | One artifact is authoritative; the rest are exports of it |
+| Someone else's conversion | Extracted text from their `.epub` has a real chance of corresponding to registered text, and almost none of corresponding to a `.docx` container a converter rewrote |
+| Proving a passage | Segment boundaries fall in the text itself, not in markup, so a disclosed segment is words rather than XML |
+
+### This is not normalisation, and the difference matters
+
+These look alike and only one of them is forbidden:
+
+| | What happens | Allowed |
+| --- | --- | --- |
+| **Register a text artifact** | the creator decides the work is the words, saves a `.txt` or `.md`, and DAON hashes those bytes **exactly as given** | **yes — this is the guidance** |
+| **Normalise before hashing** | DAON transforms bytes — Unicode folding, line-ending translation — and hashes the result | **never**, per `wire-format.md` §2 |
+
+The first is a creator choosing what their work is. The second is the system quietly changing what
+it committed to, and it is the thing that would stop verifying after a library upgrade. Nothing in
+this guidance touches the hashed layer.
+
+### Keep the text file; do not regenerate it
+
+Extraction is not reproducible across tools. Pull the text out of a `.docx` with one library today
+and another in two years and the bytes will differ — whitespace between runs, how footnotes and
+tables are flattened, whether headings keep a trailing newline.
+
+So the text file is **the artifact**, not a view that can be recomputed. Save it, register it,
+keep it, exactly as with any other registration.
+
+### When formatting is the work
+
+Sometimes it is, and the guidance does not apply blindly.
+
+Poetry where the line breaks and indentation *are* the poem. Concrete verse. A screenplay whose
+conventions carry meaning. Code where whitespace is syntax. A designed book where typography is
+authorship. Stripping formatting from these discards the thing that was created.
+
+Two honest options, and the choice is the creator's:
+
+- **Register the formatted artifact** and accept that it is one file, that re-exporting will not
+  match, and that a converted copy will not correspond.
+- **Register both** — the text and the formatted file — as two leaves in one chain. The text
+  carries portability and matching; the formatted artifact carries the layout as made. This costs
+  one extra leaf and is usually the better answer when the distinction matters at all.
+
+### The rest
+
+**Register often, not once.** A single registration at publication proves the finished work
 existed that day. A chain of revisions proves the disputed passage existed months earlier, in
-draft, surrounded by the work it grew out of — which is much harder for anyone to have
-manufactured after the fact. This is what the coalescing agent is for; it costs nothing per leaf.
+draft, surrounded by the work it grew out of — much harder for anyone to have manufactured after
+the fact. This is what the coalescing agent is for; it costs nothing per leaf.
 
-**5. Make the text the work.** Register the extracted text as its own artifact and treat every
-layout format as derived from it. This is the strongest single thing a creator can do: it gives one
-stable identity that survives any number of exports, and it is the form most likely to correspond
-to text extracted from a conversion **somebody else** made. It needs nothing the format does not
-already have.
+**Do not re-export to check.** It will not match, and that is expected. To check a registration,
+hash the file you kept.
 
-**6. A Google Doc is not registrable.** Export it, register the export, and keep it.
+**A Google Doc is not registrable.** There is no file. Export the text, register the export, keep
+it.
+
+**Keep what you register.** The hash proves that file existed. Without the file you can still show
+the hash, but not the thing it commits to.
 
 ---
 
@@ -254,6 +307,15 @@ tell whether they are holding the right file before concluding anything.
 **Offer registering a conversion as a revision** rather than as a new work, when the creator has
 an existing chain. This is the one place the app can turn a confusing outcome into the correct
 action.
+
+**Steer toward a text artifact at registration.** When a creator uploads a `.docx` or `.epub`, the
+app should say plainly that they are registering that export rather than the document, and offer
+to register the text alongside it. The moment of registration is the only moment this advice is
+cheap to follow; afterwards it means re-registering.
+
+The app **must not** extract the text and register it on the creator's behalf without saying so.
+The artifact registered has to be one the creator holds and can produce later, and a file only
+DAON ever saw is not that.
 
 **Never claim two artifacts are the same work.** DAON has no standing to decide that. It can show
 that two leaves sit in one chain, which is a fact about the log; it must not infer equivalence
