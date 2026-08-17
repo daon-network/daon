@@ -460,14 +460,12 @@ class DAON_Creator_Protection {
     }
     
     private function get_post_content_for_protection($post) {
-        // Combine title and content for protection
-        $content = $post->post_title . "\n\n" . $post->post_content;
-        
-        // Strip HTML and normalize
-        $content = wp_strip_all_tags($content);
-        $content = trim($content);
-        
-        return $content;
+        // Title and body, raw. Normalisation happens in exactly one place --
+        // DAON_Client::normalize_content, which mirrors the API -- because
+        // stripping here as well meant the content was normalised twice under
+        // two different rule sets, and the second pass collapsed whitespace the
+        // API preserves. The resulting hash matched nothing.
+        return $post->post_title . "\n\n" . $post->post_content;
     }
     
     private function get_post_metadata($post) {

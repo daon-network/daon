@@ -8,6 +8,7 @@
  */
 
 import express from 'express';
+import { toPlainText } from './utils/content-canonical';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -208,8 +209,23 @@ const handleValidationErrors = (req, res, next) => {
 };
 
 // Utility functions
+
+/**
+ * The content hash for a registration.
+ *
+ * Markup is removed first, so the hash commits to the words rather than to the
+ * HTML they arrived in. Without this, the same paragraph submitted through the
+ * WordPress plugin and through the API produces two different hashes, and a
+ * theme or block-editor change silently breaks a registration the creator never
+ * touched. See utils/content-canonical.ts and
+ * docs/design/document-formats.md.
+ *
+ * Plain-text input is unchanged, so hashes registered before this behaviour
+ * existed still match.
+ */
 function generateContentHash(content) {
-  return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+  const { text } = toPlainText(content);
+  return crypto.createHash('sha256').update(text, 'utf8').digest('hex');
 }
 
 function generateVerificationUrl(contentHash) {
@@ -724,8 +740,10 @@ app.post('/api/v1/verify-content', [
   try {
     const { content } = req.body;
 
-    // Compute SHA-256 of the submitted content (same algorithm as /protect)
-    const contentHash = crypto.createHash('sha256').update(content).digest('hex');
+    // Must go through the same function as /protect, not a second inline copy:
+    // a verify path that hashes differently reports "not registered" for content
+    // that is registered, which is the worst possible failure here.
+    const contentHash = generateContentHash(content);
 
     let record = null;
     let source = 'memory';
