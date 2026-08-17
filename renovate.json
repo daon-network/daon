@@ -4,7 +4,7 @@
   "baseBranches": ["main"],
   "dependencyDashboard": true,
   "labels": ["dependencies"],
-  "reviewers": ["@daon-network/maintainers"],
+  "_comment_reviewers": "daon-network is a user account, not an organisation, so it has no teams. The previous value @daon-network/maintainers used team syntax (@owner/team) and could never resolve. Reviewers are left unset rather than guessed at.",
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["every monday at 6am"]
