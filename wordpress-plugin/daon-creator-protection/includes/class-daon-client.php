@@ -101,18 +101,51 @@ class DAON_Client {
     }
     
     /**
-     * Normalize content for consistent hashing
+     * Normalize content for consistent hashing.
+     *
+     * Must match api-server/src/utils/content-canonical.ts exactly. The plugin
+     * hashes locally and sends the hash, so any disagreement between the two
+     * means WordPress content reports as unregistered when it is registered.
+     *
+     * Whitespace is deliberately NOT collapsed. An earlier version squeezed runs
+     * of spaces and tabs to a single space, which silently destroyed the
+     * indentation of poetry and code samples and produced a hash the API could
+     * never reproduce. See docs/design/document-formats.md.
      */
     private function normalize_content($content) {
-        // Remove HTML tags
-        $content = wp_strip_all_tags($content);
-        
-        // Normalize line endings and whitespace
-        $content = str_replace(array("\r\n", "\r"), "\n", $content);
-        $content = preg_replace('/[ \t]+/', ' ', $content);
+        // A line ending is a platform artifact, not an authorial choice, so the
+        // same text from Windows and from a Mac must hash the same. Spacing
+        // *within* a line is authorial and is left alone.
+        $content = preg_replace('/\r\n?/', "\n", $content);
+
+        // Block boundaries become newlines so paragraphs do not run together.
+        $content = preg_replace('/<br\s*\/?' . '>/i', "\n", $content);
+        $content = preg_replace(
+            '/<\/?(p|div|section|article|h[1-6]|li|tr|blockquote|pre|figcaption|header|footer|main|aside|ul|ol|table|hr)\b[^>]*>/i',
+            "\n",
+            $content
+        );
+
+        // What wp_strip_all_tags does, minus its trim(). That trim is applied
+        // unconditionally and would strip the leading indentation of the first
+        // line -- the exact thing this normaliser exists to preserve -- so the
+        // helper cannot be used here however convenient it looks.
+        $content = preg_replace('@<(script|style)[^>]*?>.*?</\1>@si', '', $content);
+        $content = strip_tags($content);
+
+        // Only the five predefined entities, matching the API. ENT_QUOTES so
+        // &apos; and &quot; are handled; unknown entities are left as written.
+        $content = html_entity_decode($content, ENT_QUOTES | ENT_XML1, 'UTF-8');
+
+        // Runs of blank lines left behind by tag removal, and nothing else.
         $content = preg_replace('/\n{3,}/', "\n\n", $content);
-        
-        return trim($content);
+
+        // Whitespace-only lines at each end. Not trim(), which would eat the
+        // leading indentation of a preformatted block.
+        $content = preg_replace('/\A(?:[ \t]*\n)+/', '', $content);
+        $content = preg_replace('/(?:\n[ \t]*)+\z/', '', $content);
+
+        return $content;
     }
     
     /**

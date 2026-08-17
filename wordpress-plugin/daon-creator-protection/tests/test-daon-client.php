@@ -201,11 +201,12 @@ class Test_DAON_Client extends \PHPUnit\Framework\TestCase {
     // ── Content hash generation ──
 
     public function test_generate_hash_normalizes_then_hashes(): void {
-        // This tests the public interface for consistency
         $hash = $this->client->generate_content_hash('<p>Hello   World</p>');
 
-        // Should be the hash of "Hello World" (tags stripped, spaces collapsed)
-        $expected = 'sha256:' . hash('sha256', 'Hello World');
+        // Tags stripped, spacing kept. The run of spaces used to be collapsed,
+        // which destroyed the indentation of poetry and code samples and
+        // produced a hash the API could not reproduce.
+        $expected = 'sha256:' . hash('sha256', 'Hello   World');
         $this->assertSame($expected, $hash);
     }
 

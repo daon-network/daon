@@ -75,24 +75,33 @@ class Test_Content_Hashing extends \PHPUnit\Framework\TestCase {
         $this->assertSame($plain, $dirty);
     }
 
-    // ── Whitespace normalization ──
+    // ── Whitespace is authorial and is preserved ──
+    //
+    // These assertions were inverted deliberately. The normaliser used to
+    // collapse runs of spaces and tabs, which meant a poem and the same poem
+    // with its indentation removed hashed identically -- and produced a hash the
+    // API could not reproduce, since the API preserves them.
+    // See docs/design/document-formats.md.
 
-    public function test_multiple_spaces_collapsed(): void {
+    public function test_multiple_spaces_are_significant(): void {
         $a = $this->client->generate_content_hash('hello world');
         $b = $this->client->generate_content_hash('hello     world');
-        $this->assertSame($a, $b);
+        $this->assertNotSame($a, $b, 'spacing within a line is content');
     }
 
-    public function test_tabs_collapsed_to_space(): void {
+    public function test_tabs_are_significant(): void {
         $a = $this->client->generate_content_hash('hello world');
         $b = $this->client->generate_content_hash("hello\t\tworld");
-        $this->assertSame($a, $b);
+        $this->assertNotSame($a, $b);
     }
 
-    public function test_leading_trailing_whitespace_trimmed(): void {
-        $a = $this->client->generate_content_hash('hello');
-        $b = $this->client->generate_content_hash('   hello   ');
-        $this->assertSame($a, $b);
+    public function test_indentation_survives(): void {
+        $poem = "    first line\n        second line";
+        $this->assertSame(
+            hash('sha256', $poem),
+            substr($this->client->generate_content_hash($poem), 7),
+            'indentation must reach the hash unchanged'
+        );
     }
 
     // ── Line ending normalization ──
@@ -141,11 +150,13 @@ class Test_Content_Hashing extends \PHPUnit\Framework\TestCase {
         );
     }
 
-    public function test_whitespace_only_hashes_to_empty_string_hash(): void {
-        // After trim(), whitespace-only content becomes empty
+    public function test_whitespace_only_content_is_not_emptied(): void {
+        // Only whitespace-only *lines* at the ends are removed, and a bare run
+        // of spaces is not a line. Silently hashing "   " as "" would make every
+        // such submission collide.
         $hash_ws    = $this->client->generate_content_hash('   ');
         $hash_empty = $this->client->generate_content_hash('');
-        $this->assertSame($hash_empty, $hash_ws);
+        $this->assertNotSame($hash_empty, $hash_ws);
     }
 
     public function test_single_character(): void {
@@ -171,13 +182,15 @@ class Test_Content_Hashing extends \PHPUnit\Framework\TestCase {
         $this->assertSame($hash1, $hash2);
     }
 
-    public function test_html_entities_are_not_decoded(): void {
-        // wp_strip_all_tags does not decode entities, so &amp; stays as &amp;
-        // This is important: if we changed this, old hashes would break
+    public function test_html_entities_are_decoded(): void {
+        // Inverted deliberately. A reader of "Tom &amp; Jerry" sees "Tom &
+        // Jerry" -- the entity encodes the text, it is not the text -- so
+        // hashing the encoded form makes the hash depend on how the markup
+        // happened to be written. The API decodes, and the two must agree or
+        // WordPress content verifies as unregistered.
         $a = $this->client->generate_content_hash('Tom &amp; Jerry');
         $b = $this->client->generate_content_hash('Tom & Jerry');
-        // These should differ because &amp; is literal text after tag stripping
-        $this->assertNotSame($a, $b);
+        $this->assertSame($a, $b);
     }
 
     public function test_very_long_content(): void {

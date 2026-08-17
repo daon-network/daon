@@ -1,0 +1,69 @@
+{
+  "_comment": "Shared by api-server (TypeScript) and the WordPress plugin (PHP). Both must produce identical SHA-256 hashes for every case, or WordPress content reports as unregistered when it is registered. See docs/design/document-formats.md.",
+  "cases": [
+    {
+      "name": "simple-markup",
+      "input": "<p>Hello <em>world</em></p>"
+    },
+    {
+      "name": "wordpress-block-comments",
+      "input": "<!-- wp:paragraph --><p class=\"x\">The same words.</p><!-- /wp:paragraph -->"
+    },
+    {
+      "name": "adjacent-paragraphs",
+      "input": "<p>First</p><p>Second</p>"
+    },
+    {
+      "name": "line-breaks",
+      "input": "one<br>two<br/>three"
+    },
+    {
+      "name": "predefined-entities",
+      "input": "<p>Tom &amp; Jerry &lt;3 &quot;quotes&quot;</p>"
+    },
+    {
+      "name": "runs-of-spaces-preserved",
+      "input": "<p>word     word</p>"
+    },
+    {
+      "name": "heading-and-body",
+      "input": "<h1>Title</h1><p>Body text here.</p>"
+    },
+    {
+      "name": "blockquote",
+      "input": "<blockquote><p>Quoted line</p></blockquote>"
+    },
+    {
+      "name": "list-items",
+      "input": "<ul><li>one</li><li>two</li></ul>"
+    },
+    {
+      "name": "plain-text-untouched",
+      "input": "Plain text with no markup at all"
+    },
+    {
+      "name": "numeric-entities",
+      "input": "<p>caf&#233; and &#x2014; dash</p>"
+    },
+    {
+      "name": "crlf-endings",
+      "input": "first line\r\nsecond line"
+    },
+    {
+      "name": "mixed-endings",
+      "input": "a\r\nb\rc\nd"
+    },
+    {
+      "name": "indentation-with-crlf",
+      "input": "a    b\r\n    indented"
+    },
+    {
+      "name": "leading-indentation",
+      "input": "    first line\n        second line"
+    },
+    {
+      "name": "indented-pre-block",
+      "input": "<pre>    indented\n        further</pre>"
+    }
+  ]
+}
