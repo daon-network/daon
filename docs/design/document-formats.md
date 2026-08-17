@@ -57,7 +57,7 @@ of a thing that has no canonical form.
 
 ---
 
-## The reframe: a conversion is a revision
+## Conversions you make: record them as revisions
 
 The instinct is to make the hashes match. They should not match — they are different artifacts,
 and a system that claimed otherwise would be lying about which bytes it saw.
@@ -79,6 +79,71 @@ collision that would have to be manufactured.
 
 This costs nothing and requires no format change. It is what the append-only log is for.
 
+**This only covers conversions you perform.** For everything else, see the next section — which is
+the larger half of the problem.
+
+---
+
+## Conversions you do not control
+
+Most conversions of a creator's work are not made by the creator.
+
+A publisher builds the `.epub`. A distributor re-encodes on ingest. Kindle Direct Publishing
+converts on upload. A reader exports to PDF. An aggregator re-flows the text into HTML. **None of
+these can be a leaf in the creator's chain, because none of these parties hold the author key —
+and they must not.**
+
+So the version that actually circulates is routinely one the creator never signed and cannot sign.
+An honest system has to say what it does about that, and the answer is not comfortable:
+
+> **A byte-exact commitment cannot establish that two different files are the same work.** No hash
+> scheme can. This is inherent to hashing, not a gap in this design, and no amount of
+> normalisation closes it — a normalised hash is still exact, just exact about something else.
+
+That sounds worse than it is, because it answers a question nobody needs answered.
+
+### The claim that survives is priority, not equivalence
+
+Consider the dispute this system exists for. A creator's manuscript is taken, converted, and
+published by someone else who claims it.
+
+The creator does not need to prove the infringing `.epub` hashes to their registration. **They need
+to prove they had the work first**, and that is exactly what a witnessed leaf establishes: this
+text existed, in this form, at a time anchored to Bitcoin, months before the other party's
+publication.
+
+Whether the two documents are the same work is a question of reading them. That is an ordinary
+evidentiary question, decided the way it has always been decided, and it is not one DAON has any
+standing to answer. What DAON supplies is the part that is otherwise hard: an unforgeable date.
+
+```mermaid
+flowchart TD
+    A["Your manuscript<br/>witnessed 2026-01-14"] --> B{"Someone publishes<br/>a converted version"}
+    B --> C["Does their file hash<br/>to your registration?"]
+    C -->|"No — and it never will"| D["Irrelevant.<br/>Nobody claimed it would."]
+    B --> E["Can you show the work<br/>existed before theirs?"]
+    E -->|Yes| F["<b>That is the evidence.</b><br/>Priority, anchored to Bitcoin"]
+```
+
+### What this changes about the guidance
+
+It strengthens the case for making the **text** the registered work rather than a layout format.
+Extracted text from a third party's `.epub` has a real chance of corresponding to a registered
+text artifact. Extracted text from a `.docx` you registered has a worse chance, because the
+container carries structure the converter will have rewritten.
+
+It also means the registry's matching layer is not a convenience. It is the only mechanism that
+can connect a circulating derivative to a registration at all, which is why the canonical form
+below matters more than its small role suggests.
+
+### What it does not license
+
+DAON must not start asserting that a derivative *is* the registered work. It can report that the
+canonical text of one corresponds to the other, with that phrasing and its limits attached. The
+step from "the text corresponds" to "this is the same work, and therefore this person is
+infringing" belongs to people with standing to take it. Automating it would make DAON an
+adjudicator, which is the thing the whole design refuses to become.
+
 ---
 
 ## Guidance for creators
@@ -94,10 +159,11 @@ that you are registering *that export*, not the document that produced it.
 **3. Do not re-export to check.** It will not match, and that is expected. To check a
 registration, hash the file you kept.
 
-**4. If you want format independence, make the text the work.** Register the extracted text as
-its own artifact and treat every layout format as a derivative of it. That gives one stable
-identity that survives any number of exports, and it needs nothing from the format that does not
-already exist.
+**4. Make the text the work.** Register the extracted text as its own artifact and treat every
+layout format as derived from it. This is the strongest single thing a creator can do: it gives one
+stable identity that survives any number of exports, and it is the form most likely to correspond
+to text extracted from a conversion **somebody else** made. It needs nothing the format does not
+already have.
 
 **5. A Google Doc is not registrable.** Export it, register the export, and keep it.
 
@@ -165,9 +231,11 @@ implies it does.
 
 - **Whether a leaf should ever carry a text commitment** alongside `content_commit` — a
   `text_commit` over the canonical form, so format independence is provable rather than
-  conventional. It is a format version bump and it is not obviously worth it, since guidance 4
-  above achieves the same result with no format change. Recorded so it is a decision rather than
-  an omission.
+  conventional. This is worth more than it first appeared: it would let a creator prove that a
+  third party's conversion carries their text, rather than only that their own artifact predates
+  it. It is a format version bump, it inherits every extraction-stability problem below, and it
+  puts a normalised value inside the hashed layer, which §2 of the wire format resists for good
+  reasons. Genuinely undecided.
 - **Extraction stability.** `.docx` text extraction depends on the library. Two implementations
   disagreeing about `w:t` handling would produce different canonical text and therefore different
   match results. If canonical text is ever used for anything a creator relies on, it needs a
