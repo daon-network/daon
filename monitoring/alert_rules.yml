@@ -392,3 +392,47 @@ groups:
 # 6. Documentation:
 #    - Keep runbook links in annotations
 #    - Document expected values and thresholds
+
+  # ── Deployment correctness ────────────────────────────────────────────────
+  #
+  # Every rule above asks whether something is *down*. None of them can see a
+  # container that is up, healthy, fast, and running code from three months ago
+  # -- which is precisely what happened: builds succeeded, deploys reported
+  # green, liveness checks passed, and production served stale code the whole
+  # time.
+  #
+  # These need the api to expose its build commit, which /health now does.
+  - name: deployment
+    rules:
+      - alert: DeployedBuildUnknown
+        expr: daon_build_info{commit="unknown"} == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API is running an image built without a commit stamp"
+          description: >
+            The image was built outside the deploy pipeline, so there is no way
+            to tell what code is running.
+
+      - alert: DeployedBuildStale
+        expr: time() - daon_build_timestamp_seconds > 2592000
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "API build is over 30 days old"
+          description: >
+            Not necessarily wrong -- a quiet month is fine -- but worth
+            confirming deliberately rather than discovering after three months.
+
+      - alert: APIRestartedUnexpectedly
+        expr: time() - process_start_time_seconds < 300
+        for: 0m
+        labels:
+          severity: info
+        annotations:
+          summary: "API process started within the last 5 minutes"
+          description: >
+            Expected during a deploy. Outside one it means a crash loop or an
+            OOM kill, neither of which any liveness rule would report.
