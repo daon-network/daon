@@ -8,5 +8,6 @@
 pub mod api;
 pub mod http;
 pub mod server;
+pub mod witness_loop;
 
 pub use api::{Agent, Reply};

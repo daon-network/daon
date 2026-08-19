@@ -31,7 +31,7 @@ impl Signer for TestSigner {
 fn agent() -> (TempDir, Agent) {
     let dir = TempDir::new().unwrap();
     let store = Store::open(dir.path()).unwrap();
-    let witness = WitnessLog::open(dir.path()).unwrap();
+    let witness = std::sync::Arc::new(WitnessLog::open(dir.path()).unwrap());
     (
         dir,
         Agent::new(store, witness, Box::new(TestSigner), Limits::default()),

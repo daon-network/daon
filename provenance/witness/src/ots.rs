@@ -386,6 +386,25 @@ impl<'a> Cursor<'a> {
     }
 }
 
+/// Parse a bare timestamp tree, without the `.ots` framing.
+///
+/// A calendar answers a submission with a **fragment**: the operations leading
+/// from your digest into its aggregation tree, and nothing else. No magic, no
+/// version, no digest — those belong to a detached proof file, and the calendar
+/// assumes you still have the digest you just sent it.
+///
+/// So this parses the part a calendar sends, and the caller adds the framing to
+/// produce a file anything can read. Storing the fragment as-is would leave a
+/// blob only this codebase knows how to interpret.
+pub fn parse_fragment(bytes: &[u8]) -> Result<Timestamp, Error> {
+    let mut c = Cursor::new(bytes);
+    let ts = c.timestamp()?;
+    if !c.is_empty() {
+        return Err(Error::TrailingBytes);
+    }
+    Ok(ts)
+}
+
 // ── encoding ──────────────────────────────────────────────────────────────
 
 fn put_varint(out: &mut Vec<u8>, mut v: u64) {

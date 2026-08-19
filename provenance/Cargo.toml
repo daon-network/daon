@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["core", "verify", "agent", "witness", "agentd"]
+members = ["core", "verify", "agent", "witness", "net", "agentd"]
 
 [workspace.package]
 edition = "2021"
@@ -14,6 +14,7 @@ ed25519-dalek = { version = "2", default-features = false }
 daon-provenance-core = { path = "core", default-features = false }
 daon-provenance-witness = { path = "witness", default-features = false }
 daon-provenance-agent = { path = "agent" }
+daon-provenance-net = { path = "net" }
 hex = "0.4"
 tempfile = "3"
 # Registering the protected (data-protection) store ourselves means talking to

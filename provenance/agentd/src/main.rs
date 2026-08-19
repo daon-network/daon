@@ -30,6 +30,7 @@ use daon_provenance_agent::keystore;
 use daon_provenance_agent::policy::Limits;
 use daon_provenance_agent::witness::WitnessLog;
 use daon_provenance_agent::Store;
+use daon_provenance_witness::batch::BatchPolicy;
 
 use daon_provenance_agentd::{api::Agent, server};
 
@@ -47,12 +48,19 @@ struct Args {
     store: PathBuf,
     socket: PathBuf,
     identity: String,
+    /// Whether to reach OpenTimestamps at all.
+    ///
+    /// On by default, because an agent that does not witness produces leaves
+    /// that prove nothing about time. The flag exists for tests and for running
+    /// offline deliberately -- never as a default anyone drifts into.
+    witness: bool,
 }
 
 fn parse_args() -> Result<Args, String> {
     let mut store = None;
     let mut socket = None;
     let mut identity = "default".to_string();
+    let mut witness = true;
 
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -60,6 +68,7 @@ fn parse_args() -> Result<Args, String> {
             "--store" => store = Some(PathBuf::from(need(&mut args, "--store")?)),
             "--socket" => socket = Some(PathBuf::from(need(&mut args, "--socket")?)),
             "--identity" => identity = need(&mut args, "--identity")?,
+            "--no-witness" => witness = false,
             "-h" | "--help" => {
                 println!(
                     "daon-provenance-agentd --store PATH [--socket PATH] [--identity NAME]\n\
@@ -67,6 +76,7 @@ fn parse_args() -> Result<Args, String> {
                        --store     where leaves, blobs and witness state live (required)\n\
                        --socket    socket path (default: <store>/agent.sock)\n\
                        --identity  which keychain identity to sign with (default: default)\n\
+                       --no-witness  do not reach OpenTimestamps; heads queue and never anchor\n\
                      \n\
                      There is deliberately no --port. See the module docs."
                 );
@@ -82,6 +92,7 @@ fn parse_args() -> Result<Args, String> {
         store,
         socket,
         identity,
+        witness,
     })
 }
 
@@ -93,7 +104,9 @@ fn run() -> Result<(), String> {
     let args = parse_args()?;
 
     let store = Store::open(&args.store).map_err(|e| format!("opening store: {e}"))?;
-    let witness = WitnessLog::open(&args.store).map_err(|e| format!("witness state: {e}"))?;
+    let witness = std::sync::Arc::new(
+        WitnessLog::open(&args.store).map_err(|e| format!("witness state: {e}"))?,
+    );
 
     // Load, or create on first run. Creating returns the recovery secret exactly
     // once, and this is the only moment it can be shown to anyone.
@@ -118,10 +131,34 @@ fn run() -> Result<(), String> {
 
     let agent = Arc::new(Agent::new(
         store,
-        witness,
+        Arc::clone(&witness),
         Box::new(signer),
         Limits::default(),
     ));
+
+    // Start witnessing. Without this the agent queues heads and anchors nothing,
+    // which is a chain that proves sequence and not time -- and time is the
+    // whole claim. It runs on its own thread because the socket loop blocks.
+    if args.witness {
+        let http = Arc::new(daon_provenance_net::UreqHttp::new());
+        let calendars: Vec<String> = daon_provenance_net::calendar::PUBLIC_CALENDARS
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+        eprintln!("witnessing via {} calendars", calendars.len());
+        let w = Arc::clone(&witness);
+        std::thread::spawn(move || {
+            daon_provenance_agentd::witness_loop::run_forever(
+                w,
+                http,
+                calendars,
+                BatchPolicy::default(),
+                now_ms,
+            )
+        });
+    } else {
+        eprintln!("witnessing disabled (--no-witness): heads will queue and never anchor");
+    }
 
     let listener = server::bind(&args.socket)?;
     eprintln!("listening on {}", args.socket.display());

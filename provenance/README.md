@@ -28,34 +28,18 @@ core ──── verify        the format, and the four steps that check it
 | [`verify`](verify/) | The four-step verifier. `no_std`-capable, builds for `wasm32` | core |
 | [`witness`](witness/) | `.ots` parsing, head batching, turning a proof into a Bitcoin anchor | core |
 | [`agent`](agent/) | On-disk store, keychain signer, coalescing policy, witness state | core, witness |
-| [`agentd`](agentd/) | The daemon: a Unix socket serving the editor API | all of the above |
-
-### What the chain cannot do
-
-Stated before the API, because it is the boundary everything else is arranged around:
-
-| | |
-| --- | --- |
-| The chain proves | you wrote this, by this date, and control the keys that signed it |
-| The chain **cannot** | detect a competing fork, or resolve one |
-
-A thief works from a copy, so their rotation and your counter-rotation share a parent and **fork**
-rather than sequence. And no timestamp calendar indexes, so there is no query for what else shares
-a chain's prefix — the other branch is not hidden, there is nowhere to look.
-
-Detecting competing claims needs somewhere they are collected, which is the registry. See
-[`publication-and-versions.md`](../docs/design/publication-and-versions.md). A creator who never
-touches DAON keeps the first row and gets nothing from the second, and that is the trade rather
-than a gap.
+| [`net`](net/) | **The only crate that opens a socket.** Calendar client, block source | core, witness |
+| [`agentd`](agentd/) | The daemon: the editor socket, and the witness loop | all of the above |
 
 ### What each one refuses to do
 
 The boundaries are deliberate and worth knowing before you go looking for a function that is not
 there.
 
-- **Nothing opens a socket except `agentd`,** and it opens exactly one: a Unix domain socket, mode
-  `0600`. There is no TCP option. Submitting to a calendar and fetching Bitcoin headers are the
-  caller's job, behind traits this workspace does not implement.
+- **Only `net` reaches the network, and only `agentd` listens.** The daemon opens one Unix domain
+  socket, mode `0600`, with no TCP option. Everything outbound is in `net`, which exists so the
+  agent's egress is enumerable: a reviewer confirms what can leave the machine by reading one
+  crate. A calendar learns a 32-byte digest and nothing else — not what, not whose, not how large.
 - **Nothing reads a clock for evidence.** Witness time comes from a Bitcoin block header. Local
   time appears in a leaf as `local_time_ms`, explicitly untrusted and signed `i64` so it can hold
   nonsense without panicking.
@@ -203,14 +187,20 @@ Honest status, because the crate docs describe intent and this describes reality
 | Wire format, Merkle log, inclusion proofs | **Works.** Cross-checked against a Python reference on 18 vectors in CI |
 | The four-step verifier | **Works.** Builds for `wasm32` |
 | Store, keychain signer, coalescing policy | **Works** |
-| `.ots` parsing, batching, anchor establishment | **Works**, offline |
+| `.ots` parsing, batching, anchor establishment | **Works** |
+| Calendar submission and upgrade | **Works.** `net` is the only crate that opens a socket |
+| A Bitcoin header source | **Works.** Esplora-compatible, and one implementation among several a caller might prefer |
+| The witness loop | **Works.** Runs on a timer from daemon startup; `--no-witness` opts out |
 | The daemon and its four routes | **Works** |
-| **Submitting to a calendar** | **Missing.** Nothing reaches OpenTimestamps, so **no head is witnessed yet** |
-| **A Bitcoin header source** | **Missing.** `BlockSource` has no implementation here |
 | Rotation, recovery rotation and transfer | **Works.** Effective at their own `seq` — there is deliberately no delay |
-| **Reading content back out of the store** | **Missing.** Segments are stored by hash with no manifest recording their order |
+| Storing content | **Off by default.** Segments were write-only, and a fixed 1 KiB boundary makes a revision pass cost a full copy of the document. `open_keeping_content` opts in |
 | **Binary and image registration** | **Missing.** Text only |
 
-The first two are the ones that matter most. Until a batch root reaches a calendar and a header
-source can resolve it, the chain proves *sequence* but not *time* — and time is the entire claim.
-Everything else here is machinery around that.
+A chain can now be written, batched, submitted, upgraded and verified end to end.
+
+The creator keeps their own file, which `wire-format.md` §6 already assumed — it has a creator
+generating segment proofs "from content only they hold". A chain costs 282 bytes per revision, so a
+thousand revisions is a few hundred kilobytes.
+
+What remains is binary and image registration, which makes the system narrower rather than
+unfinished.

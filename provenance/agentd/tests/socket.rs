@@ -34,7 +34,7 @@ fn running() -> (TempDir, std::path::PathBuf) {
     let sock = dir.path().join("agent.sock");
 
     let store = Store::open(dir.path()).unwrap();
-    let witness = WitnessLog::open(dir.path()).unwrap();
+    let witness = std::sync::Arc::new(WitnessLog::open(dir.path()).unwrap());
     let agent = Arc::new(Agent::new(
         store,
         witness,
