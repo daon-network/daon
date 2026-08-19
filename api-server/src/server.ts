@@ -318,6 +318,20 @@ app.get('/health', async (req, res) => {
     instance: process.env.INSTANCE_ID || 'unknown',
     timestamp: new Date().toISOString(),
     version: '0.1.0',
+    // Build identity, injected at image build time.
+    //
+    // `version` is the package version and cannot distinguish May's build from
+    // today's -- which is exactly how a container ran three-month-old code for
+    // three months while every deploy reported success and every liveness check
+    // passed. A stale container is perfectly healthy; it is just wrong, and
+    // nothing that only asks "is it up" can see that.
+    //
+    // "unknown" means the image was built without the build arg, which is
+    // itself worth noticing.
+    build: {
+      commit: process.env.GIT_COMMIT || 'unknown',
+      builtAt: process.env.BUILD_TIME || 'unknown',
+    },
     blockchain: blockchainEnabled ? {
       enabled: true,
       connected: blockchainStatus?.connected || false,
@@ -352,6 +366,20 @@ app.get('/api/v1', (req, res) => {
   res.json({
     name: 'DAON API',
     version: '0.1.0',
+    // Build identity, injected at image build time.
+    //
+    // `version` is the package version and cannot distinguish May's build from
+    // today's -- which is exactly how a container ran three-month-old code for
+    // three months while every deploy reported success and every liveness check
+    // passed. A stale container is perfectly healthy; it is just wrong, and
+    // nothing that only asks "is it up" can see that.
+    //
+    // "unknown" means the image was built without the build arg, which is
+    // itself worth noticing.
+    build: {
+      commit: process.env.GIT_COMMIT || 'unknown',
+      builtAt: process.env.BUILD_TIME || 'unknown',
+    },
     description: 'Creator protection API for blockchain-verified content ownership',
     endpoints: {
       'POST /api/v1/protect': 'Protect content with Liberation License',

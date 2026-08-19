@@ -26,6 +26,14 @@ RUN mkdir -p logs && \
 USER nodejs
 
 # Expose port
+# Build identity, surfaced by /health so a stale deployment is detectable at all.
+# Without it every build looks identical from outside and a container serving
+# months-old code passes every liveness check there is.
+ARG GIT_COMMIT=unknown
+ARG BUILD_TIME=unknown
+ENV GIT_COMMIT=$GIT_COMMIT
+ENV BUILD_TIME=$BUILD_TIME
+
 EXPOSE 3000
 
 # Health check
