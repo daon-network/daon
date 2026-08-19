@@ -295,11 +295,27 @@ jobs:
             # And confirm the *served* build is this commit, not merely that the
             # container was replaced. This is the check that would have caught
             # three months of no-op deploys on day one.
-            sleep 5
-            served=$(curl -fsS https://api.daon.network/health | \
-                     python3 -c "import sys,json; print(json.load(sys.stdin).get('build',{}).get('commit','missing'))")
+            # Poll rather than sleep-then-check. The containers were replaced
+            # seconds ago, so the first request usually lands while the API is
+            # still starting: curl returns nothing, python gets an empty string,
+            # and the deploy fails on a JSONDecodeError that says nothing about
+            # the actual state. That is a broken check, not a failed deploy.
+            served=""
+            for attempt in $(seq 1 30); do
+              body=$(curl -fsS --max-time 10 https://api.daon.network/health 2>/dev/null || true)
+              if [ -n "$body" ]; then
+                served=$(printf '%s' "$body" | python3 -c \
+                  "import sys,json
+try: print(json.load(sys.stdin).get('build',{}).get('commit','missing'))
+except Exception: print('unparseable')" 2>/dev/null || echo "unparseable")
+                [ "$served" = "${{ github.sha }}" ] && break
+              fi
+              echo "  waiting for the API to serve this build (${attempt}/30, last: ${served:-no response})"
+              sleep 5
+            done
+
             if [ "$served" != "${{ github.sha }}" ]; then
-              echo "::error::/health reports build $served but this deploy is ${{ github.sha }}"
+              echo "::error::/health reports build ${served:-no response} but this deploy is ${{ github.sha }}"
               exit 1
             fi
             echo "  /health reports ${served:0:8} -- the deployed build is this commit"
