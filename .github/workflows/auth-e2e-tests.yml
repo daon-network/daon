@@ -26,6 +26,12 @@ jobs:
     # commit is the kind of drift that produces a failure nobody can reproduce.
     container:
       image: mcr.microsoft.com/playwright:v1.57.0-noble
+      # Docker gives a container 64 MB of /dev/shm by default, which a browser
+      # exhausts almost immediately -- firefox died on launch with "Target page,
+      # context or browser has been closed" for all 14 of its tests while
+      # chromium's 28 passed. --ipc=host is what Playwright's own documentation
+      # recommends for exactly this.
+      options: --ipc=host
     # Raised from 15: the browser install alone consumed most of that budget,
     # so a slow network cancelled the run before a single test executed.
     timeout-minutes: 25
