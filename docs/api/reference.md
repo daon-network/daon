@@ -518,7 +518,6 @@ curl -X POST https://sandbox-api.daon.network/v1/protect \
 - **Rate Limit Increases:** [Contact Sales](mailto:sales@daon.network)
 
 ### **Developer Resources**
-- **Discord #developers:** [Join Community](https://discord.gg/daon)
 - **Stack Overflow:** Tag questions with `daon-api`
 - **Status Page:** [status.daon.network](https://status.daon.network)
 

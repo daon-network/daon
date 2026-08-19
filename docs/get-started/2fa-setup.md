@@ -397,7 +397,6 @@ All apps provide the same level of security for code generation.
 If you're having trouble setting up 2FA or have questions not covered in this guide:
 
 - **Email Support:** support@daon.network
-- **Discord Community:** [DAON Discord](https://discord.gg/daon) - #help channel
 - **Documentation:** [docs.daon.network](https://docs.daon.network)
 
 **For urgent account access issues:**

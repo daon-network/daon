@@ -252,12 +252,10 @@ Simple, fast, and effective protection in four steps.
 ## Community
 
 ### **Get Support**
-- [Discord Community](https://discord.gg/daon) - Chat with creators and developers
 - [GitHub Issues](https://github.com/daon-network/issues) - Report bugs and request features
 - [Email Support](mailto:support@daon.network) - Direct help for complex issues
 
 ### **Stay Updated**  
-- [Twitter @daon_network](https://twitter.com/daon_network) - Latest news and updates
 - [Status Page](https://status.daon.network) - System status and maintenance
 - [Blog](/blog/) - Deep dives and creator stories
 

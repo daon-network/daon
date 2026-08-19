@@ -400,29 +400,22 @@ end
 - **Error handling** - Graceful failure, never breaks existing functionality  
 - **Documentation** - Every example is fully documented
 - **Testing** - Dry-run modes for safe testing
-- **Support** - Discord community + GitHub issues
+- **Support** - GitHub issues
 
 ---
 
 ## Production Examples
 
-### **Live Sites Using DAON** (When Available)
+DAON is early-stage and has no public production deployments to point at yet.
 
-1. **CreatorBlog.example** - Next.js blog with 10,000+ protected posts
-2. **FanficArchive.example** - Rails platform protecting 100,000+ works
-3. **AcademicPress.example** - Django preprint server with DAON integration
-4. **WriterPortfolio.example** - WordPress site with automatic protection
+This section previously listed four `.example` sites with post counts and three
+testimonials from a "Platform Developer", a "Content Creator" and a "Startup
+Founder". None of them were real. They have been removed rather than rewritten,
+because an invented endorsement is worse than an empty section.
 
-### **Integration Success Stories**
-
-> *"Added DAON protection to our writing platform in 30 minutes. Our creators love seeing the protection badges on their work."*  
-> — **Platform Developer**
-
-> *"The WordPress plugin was literally one click install. Now all my blog posts are automatically protected from AI scraping."*  
-> — **Content Creator**
-
-> *"DAON integration took 3 lines of code. Now we can offer our users real protection against exploitation."*  
-> — **Startup Founder**
+If you deploy DAON somewhere public and are willing to be named, open an issue --
+a real integration listed here would be worth more than the four invented ones
+were.
 
 ---
 
@@ -434,7 +427,7 @@ end
 4. **Test with dry-run mode** first
 5. **Deploy and protect creators!**
 
-**Questions?** Join our Discord: https://discord.gg/daon  
+**Questions?** Open a GitHub issue: https://github.com/daon-network/daon/issues  
 **Issues?** GitHub: https://github.com/daon-network/integration-examples
 
 ---

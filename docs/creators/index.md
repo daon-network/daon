@@ -47,14 +47,14 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
     <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg></div>
     <h3 class="md-feature__title">Visual Artists</h3>
     <p class="md-feature__description">DeviantArt, Instagram, portfolio sites</p>
-    <p><strong>Best Tool:</strong> Bulk Protection Tool</p>
+    <p><strong>Status:</strong> Not supported yet</p>
     <ul class="md-feature__list">
-      <li>Protect image files and artwork</li>
-      <li>Generate cryptographic fingerprints</li>
-      <li>Proof of creation date</li>
-      <li>Legal standing against theft</li>
+      <li><strong>Image files cannot be registered today</strong></li>
+      <li>DAON currently accepts text only</li>
+      <li>Written work about your art can be registered</li>
+      <li>Image support is planned, not built</li>
     </ul>
-    <a href="/creators/bulk-protection/" class="md-feature__link">Bulk Protection →</a>
+    <a href="https://github.com/daon-network/daon/issues" class="md-feature__link">Follow progress →</a>
   </div>
 
   <div class="md-feature">
@@ -228,7 +228,6 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 - [Frequently Asked Questions](/creators/faq/)
 
 ### **Community Support**
-- [Discord Community](https://discord.gg/daon) - Chat with other creators
 - [Creator Stories](/community/stories/) - Success stories and tips
 - [Best Practices](/creators/best-practices/) - Optimization guides
 
@@ -281,7 +280,7 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
     <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg></div>
     <h3 class="md-feature__title">Join Community</h3>
     <p class="md-feature__description">Chat with other creators</p>
-    <a href="https://discord.gg/daon" class="md-feature__link">Join Community →</a>
+    <a href="https://github.com/daon-network/daon/issues" class="md-feature__link">GitHub Issues →</a>
   </div>
 </div>
 
