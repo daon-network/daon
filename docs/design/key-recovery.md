@@ -244,8 +244,28 @@ it. An auditor comparing witness times is doing arithmetic on values it already 
 
 ### The delay is five days, measured by witness time
 
-**Normative.** A recovery-rotation takes effect at the first witnessed head whose Bitcoin block
-time is at least **432,000,000 ms (5 days)** after the rotation leaf's own witness time.
+**Normative.** **Any leaf that replaces the `recovery_key`** takes effect at the first witnessed
+head whose Bitcoin block time is at least **432,000,000 ms (5 days)** after that leaf's own witness
+time. That covers a recovery rotation and a transfer alike.
+
+A rotation, which replaces only the `author_key`, is **immediate**.
+
+### Why the rule is about the recovery key, not about which event it is
+
+An earlier draft delayed the recovery rotation and left the transfer immediate. That protects
+nothing, because a transfer replaces **both** keys and is authorised by the outgoing author key
+alone. A thief holding a stolen author key would simply transfer the entity to themselves: the
+creator's recovery key is gone in the same instant, and the window they were supposed to notice in
+never opens. The transfer is the *more* dangerous operation, not the exempt one.
+
+So the delay attaches to the dangerous change rather than to a label. Whatever else a leaf does, if
+it replaces the recovery key it does not govern for five days, and during that window the previous
+recovery key is still the one that authorises a rotation.
+
+A legitimate sale is unaffected in substance — the chain transfers, the leaf is witnessed, and the
+new owner's recovery key governs five days later. What the delay costs is instant finality on a
+handover, which is a small price for closing the path that hands an entity to whoever stole one
+key.
 
 **Measured by witness time, not by a head count.** `N witnessed heads` was the other candidate and
 it is the wrong unit: head rate varies enormously between creators, so ten heads is three days for
@@ -282,7 +302,7 @@ the parent leaf:
 | --- | --- | --- | --- |
 | changed | unchanged | **rotation** | the previous `recovery_key` |
 | unchanged | changed | **recovery rotation** | the previous `author_key`, effective after five days |
-| changed | changed | **transfer** | the previous `author_key` |
+| changed | changed | **transfer** | the previous `author_key`, effective after five days |
 
 Neither key changing is not a key event; such a leaf is malformed and must be rejected.
 
