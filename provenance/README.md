@@ -155,6 +155,23 @@ Two things integrators get wrong:
   coalesced, which is normal. Treating it as an error is a misreading of the contract.
 - **A fresh head is `"witness_state": "pending"`.** That is the correct state for minutes to
   hours after writing, not a failure.
+- **A leaf must commit to at least one observation.** Two `commit` calls with no `observe`
+  between them makes the second one `no_observations`. That is the contract, not a bug.
+
+### A new daemon looks idle for an hour, and should
+
+The witness loop wakes every 60 seconds, but waking is not submitting. [`BatchPolicy`]
+(witness/src/batch.rs) submits when **512 heads** are queued or the oldest has waited **one
+hour**. The ten-minute `min_interval_ms` is a *floor* that suppresses bursts — it never triggers
+a submission, which is easy to misread as the interval.
+
+So a freshly started daemon with a couple of heads correctly does nothing for an hour, and that
+is indistinguishable from a broken loop by watching it. To see it work without waiting, drive
+`tick` directly — which is what `agentd/tests/live_witness.rs` does, against real calendars:
+
+```sh
+cargo test -p daon-provenance-agentd --test live_witness -- --ignored --nocapture
+```
 
 ---
 
@@ -202,7 +219,7 @@ Honest status, because the crate docs describe intent and this describes reality
 | `.ots` parsing, batching, anchor establishment | **Works** |
 | Calendar submission and upgrade | **Works.** `net` is the only crate that opens a socket |
 | A Bitcoin header source | **Works.** Esplora-compatible, and one implementation among several a caller might prefer |
-| The witness loop | **Works.** Runs on a timer from daemon startup; `--no-witness` opts out |
+| The witness loop | **Verified.** Queue → seal → submit → record, against real calendars, in `agentd/tests/live_witness.rs`. Runs from daemon startup; `--no-witness` opts out |
 | The daemon and its four routes | **Works** |
 | Rotation, recovery rotation and transfer | **Works.** Effective at their own `seq` — there is deliberately no delay |
 | Calendar client, against a real calendar | **Verified.** `net/tests/live_calendar.rs`, `#[ignore]`d — run it with `-- --ignored` |
