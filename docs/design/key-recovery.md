@@ -154,8 +154,11 @@ retains nothing that can extend or reclaim the entity.
 
 ### What a former owner can still do
 
-Nothing, on that chain. They may hold old key material, but leaves after the transfer must be
-signed by the new `author_key`, and the chain is witnessed.
+**Not extend it.** Leaves after the transfer must be signed by the new `author_key`, and the chain
+is witnessed.
+
+They can, however, still prove they signed the leaves they signed — see § *A superseded key still
+proves who wrote the past*. That is correct rather than a leak: they did write them.
 
 They could start a **competing chain** forked from an earlier head — as could anyone holding the
 content. It resolves the way every competing claim does: on evidence. The transfer is in the
@@ -324,6 +327,54 @@ Step 4 gains a condition: verify the signature against the leaf's `author_key`, 
 That is a branch rather than a chain walk, and it is still the fourth step rather than a fifth.
 But it is a change to the minimum verifier, and pretending otherwise would be the kind of quiet
 erosion §*What it costs the verifier* exists to prevent.
+
+---
+
+## A superseded key still proves who wrote the past
+
+A rotation hands over the **future** of a chain. It does not, and cannot, transfer the fact that a
+particular key signed leaves 0–400.
+
+That fact stays demonstrable, by whoever still holds the key: **sign a fresh challenge with it.**
+Nothing in the format changes, no field is needed, and the chain is not touched. Controlling a key
+that signed witnessed history is evidence about that history, whether or not the key still governs
+the chain.
+
+### Why this is the answer to a stolen chain
+
+Consider the conflict directly. A thief holds the recovery key, rotates the author key to their
+own, and continues the chain. What each party has afterwards:
+
+| | The thief | The creator |
+| --- | --- | --- |
+| Can extend the chain | **yes**, from the rotation onward | no |
+| Can alter leaves 0–400 | no — needs a SHA-256 preimage | no |
+| Can prove control of the key that signed 0–400 | **no** | **yes** |
+| Fourteen months of witnessed drafting | inherited, not made | **made, and provably** |
+
+So the thief owns the continuation and the creator can still prove they wrote everything that
+matters. Put beside a dated dispute record and a chain that visibly changes hands at seq 401, that
+is a strong position — and it is available immediately, with no cooperation from anyone.
+
+**A challenge must be bound to the occasion.** A nonce, an expiry, and the claim it is answering,
+so a signature captured once cannot be replayed as an answer to a different question later.
+
+### It cuts both ways, and that is correct
+
+After a legitimate sale, the seller still holds their old key and can still prove they signed the
+pre-transfer leaves. That is not a leak; it is true, and § *Transfer is the easy case* already says
+so: a publisher who acquires a work *"gets the continuation and not a claim on the authorship of
+what came before."*
+
+Proving control of a superseded key is what makes that sentence operational rather than merely
+stated.
+
+### Where it stops
+
+If the thief took **both** keys, both parties can prove control of both, and key control decides
+nothing. The dispute falls back to ordinary evidence — drafts, correspondence, who has the working
+files — exactly as it would have without any of this. Cryptography narrows the question; it does
+not always answer it.
 
 ---
 
