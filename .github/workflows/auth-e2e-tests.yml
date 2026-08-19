@@ -17,7 +17,9 @@ jobs:
   e2e-tests:
     name: E2E Authentication Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Raised from 15: the browser install alone consumed most of that budget,
+    # so a slow network cancelled the run before a single test executed.
+    timeout-minutes: 25
     
     services:
       postgres:
@@ -80,10 +82,35 @@ jobs:
         working-directory: ./daon-frontend
         run: npm ci
 
-      - name: Install Playwright browsers
+      # Browsers are ~400 MB and unchanged between runs. Keyed on the resolved
+      # Playwright version, so an upgrade fetches fresh ones and nothing else
+      # does.
+      - name: Resolve Playwright version
+        id: pw
         if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: daon-frontend
+        run: echo "v=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        if: steps.check_frontend.outputs.exists == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.v }}
+
+      - name: Install Playwright browsers
+        if: steps.check_frontend.outputs.exists == 'true' && steps.pw-cache.outputs.cache-hit != 'true'
         working-directory: ./daon-frontend
-        run: npx playwright install --with-deps chromium webkit firefox
+        # No --with-deps. It shells out to apt-get, which waits on the dpkg lock
+        # that unattended-upgrades holds on GitHub runners -- the same hang that
+        # wedged the Rust job for an hour. The runner image already carries what
+        # these browsers need, and a missing library fails loudly at launch
+        # rather than silently eating the job's entire time budget.
+        #
+        # This step took 85s on a good run and over seven minutes on the one
+        # that hit the 15-minute ceiling and cancelled, skipping every test.
+        run: npx playwright install chromium webkit firefox
 
       - name: Setup database schema
         if: steps.check_frontend.outputs.exists == 'true'

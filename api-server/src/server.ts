@@ -431,6 +431,14 @@ app.get('/api/v1', (req, res) => {
       'GET /api/v1/verify/:hash': 'Verify content protection status by hash',
       'POST /api/v1/verify-content': 'Verify by submitting content — returns who registered it',
       'GET /api/v1/stats': 'Get protection statistics',
+      'POST /api/v1/content/:hash/association':
+        'Assert that a provenance chain covers registered content. Optionally carries a proof',
+      'GET /api/v1/content/:hash/associations':
+        'Every chain asserted for this content. More than one is normal; DAON does not rank them',
+      'POST /api/v1/associations/:id/attest':
+        'Owner of record confirms a pending association',
+      'POST /api/v1/associations/:id/dispute':
+        'Owner of record denies a pending association. Recorded, dated, never made current',
       'POST /api/v1/auth/magic-link': 'Send magic link for passwordless auth',
       'GET /api/v1/auth/verify': 'Verify magic link and get tokens',
       'POST /api/v1/auth/refresh': 'Refresh access token',
