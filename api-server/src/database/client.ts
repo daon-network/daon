@@ -310,6 +310,40 @@ export const db = {
     },
   },
 
+  // Chain associations
+  //
+  // Append-only and non-exclusive by design: many accounts may assert an
+  // association for one content hash and none displaces another. There is no
+  // update and no delete here on purpose.
+  associations: {
+    async append(data: {
+      content_hash: string;
+      entity_id: string;
+      head: string;
+      asserted_by: number | null;
+    }) {
+      const result = await db.query(
+        `INSERT INTO content_associations
+           (content_hash, entity_id, head, asserted_by)
+         VALUES ($1, $2, $3, $4)
+         RETURNING *`,
+        [data.content_hash, data.entity_id, data.head, data.asserted_by]
+      );
+      return result.rows[0];
+    },
+
+    /** Every association for a hash, oldest first. Order is chronological, not ranked. */
+    async forContent(contentHash: string) {
+      const result = await db.query(
+        `SELECT * FROM content_associations
+          WHERE content_hash = $1
+          ORDER BY recorded_at ASC`,
+        [contentHash]
+      );
+      return result.rows;
+    },
+  },
+
   // Duplicate detection operations
   duplicates: {
     async logDetection(data: {

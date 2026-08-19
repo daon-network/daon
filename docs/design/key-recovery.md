@@ -327,6 +327,72 @@ erosion §*What it costs the verifier* exists to prevent.
 
 ---
 
+## Alerting: the window is worthless if nobody is told
+
+The five-day delay exists so a creator can notice a hostile change and answer it. **Noticing is
+not automatic**, and a window nobody is told about is just five days of nothing happening.
+
+### What can and cannot see a key event
+
+| Surface | Sees | Blind to |
+| --- | --- | --- |
+| **The agent, locally** | key events in the chain it holds | a copy someone else is extending |
+| **DAON, on association** | a key change asserted against registered content | chains that never touch a registration |
+| — | — | **a chain nobody ever surfaces** |
+
+That last row is the honest limit and it is smaller than it looks: **a chain nobody shows you is
+not being used against you.** A thief who never surfaces the stolen chain has stolen the ability to
+sign and gained nothing by it. The moment they try to *use* it — asserting it against a
+registration, producing a certificate, claiming the work — it becomes visible, and that is exactly
+when an alert can fire.
+
+So the earlier note that detection is *"inherent to a system with no central registry to alert"* is
+half right. It holds for chains DAON never sees. It does not hold once a chain is asserted against
+a registration, and that is the case that matters.
+
+### What DAON should send
+
+When an association naming a **new head or a new entity** arrives for a `content_hash` that already
+has associations, DAON emails every account that previously associated that hash.
+
+The existing `sendNewDeviceNotification` is the right shape: an unsolicited security notice to a
+mailbox already verified by magic link.
+
+**It must fire on every key event, not only suspicious ones.** DAON does not get to decide which
+rotations are legitimate — that is the adjudication this design refuses everywhere else. It reports
+that a key change was asserted, names who asserted it and when, and lets the creator decide. A
+creator who rotated their own key gets a message confirming it, which is the correct outcome:
+security notifications are worth having precisely because you can recognise your own actions among
+them.
+
+**It must state the deadline.** The actionable part is not that something happened; it is that
+there are five days to answer:
+
+> A key change was asserted for content you registered, on 17 August at 14:02, by `x@y.z`.
+>
+> **If this was not you, you have until 22 August to counter-rotate** with your recovery key. After
+> that the new recovery key governs and this cannot be answered.
+
+### What the agent should do
+
+Enumerate the key events in a chain and surface them, without judging any of them. A rotation
+appearing in a store the creator did not expect — after a restore, on a shared machine, in a synced
+directory — is worth seeing even when it is benign.
+
+`Store::key_events` provides that enumeration. What a client does with it is a product decision;
+that it must be *available* is not.
+
+### What this does not do
+
+- **It cannot alert on a chain DAON has never been told about.** Registering and associating is
+  what creates the relationship; there is no background surveillance and there should not be.
+- **It cannot reach a creator who has lost the mailbox.** Email is the access path, with everything
+  § *Custody domains* says about that.
+- **It does not prevent anything.** A hostile rotation still succeeds. The alert converts
+  *undetected* into *detected*, which is the whole of what the five days are for.
+
+---
+
 ## Custody domains — when someone else owns the hardware
 
 §3 says the two keys must not share a medium. Employment sharpens that into a different rule,
@@ -453,8 +519,9 @@ chain exists, knows what it is worth, and had months of legitimate access.
 - **A creator who loses both keys has lost the chain.** There is no third mechanism, deliberately.
   Anything that could restore access without either key would be a backdoor, and a backdoor with
   DAON holding it would make DAON the authority the whole design refuses to be.
-- **Detection assumes someone is looking.** An abandoned chain can be rotated without anyone
-  noticing. This is inherent to a system with no central registry to alert.
+- **Detection assumes someone is looking**, and § *Alerting* is what makes looking possible. An
+  abandoned chain that never touches a registration can still be rotated unnoticed — but a chain
+  nobody surfaces is a chain nobody is using against its creator.
 
 ## Open
 

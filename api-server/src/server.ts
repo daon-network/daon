@@ -26,6 +26,7 @@ import { DatabaseClient, db } from './database/client.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
 import { verifyToken } from './auth/auth.js';
+import { sendKeyEventNotification } from './utils/email.js';
 import healthRoutes from './routes/health.js';
 import { BrokerService } from './broker/broker-service.js';
 import { createBrokerAuthMiddleware } from './broker/broker-auth-middleware.js';
@@ -200,6 +201,21 @@ const optionalAuth = (req: any, _res: any, next: any) => {
   next();
 };
 
+// Association requires an account, because an assertion nobody can be held to
+// is not worth recording. Attribution is the accountability mechanism -- DAON
+// never ranks competing assertions, so knowing who made one is all it has.
+const requireAuth = (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const decoded = authHeader?.startsWith('Bearer ')
+    ? verifyToken(authHeader.substring(7))
+    : null;
+  if (!decoded) {
+    return res.status(401).json({ success: false, error: 'authentication required' });
+  }
+  req.userId = decoded.userId;
+  next();
+};
+
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -227,6 +243,15 @@ const handleValidationErrors = (req, res, next) => {
  * Plain-text input is unchanged, so hashes registered before this behaviour
  * existed still match.
  */
+/**
+ * How long a creator has to answer a hostile key change.
+ *
+ * Five days, matching docs/design/key-recovery.md. Any leaf replacing the
+ * recovery key takes effect only after this, so this is the window in which a
+ * counter-rotation is still possible.
+ */
+const RECOVERY_DELAY_MS = 5 * 24 * 60 * 60 * 1000;
+
 function generateContentHash(content) {
   const { text } = toPlainText(content);
   const hash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
@@ -782,6 +807,118 @@ app.get('/api/v1/verify/:hash', [
 // Verify-by-content endpoint
 // Inverts the verification flow: submit content → get back who registered it (if anyone)
 // This closes the "token transplanting" gap where a hash link can appear on unrelated content.
+
+/**
+ * Associate a provenance chain with a registered content hash.
+ *
+ * Appended, never updated, and deliberately **not exclusive**: any number of
+ * accounts may assert an association for the same hash and none displaces
+ * another. If a hash accepted only one, whoever asserted first would squat it,
+ * and the person best placed to do that is not the creator.
+ *
+ * DAON records what it is told. It does not verify that the chain covers this
+ * content -- that needs the content, which is not stored -- and it does not
+ * decide between competing assertions. See docs/design/publication-and-versions.md.
+ */
+app.post('/api/v1/content/:hash/association', [
+  requireAuth,
+  body('entity_id').isLength({ min: 64, max: 71 }).withMessage('entity_id required'),
+  body('head').isLength({ min: 64, max: 71 }).withMessage('head required'),
+  handleValidationErrors,
+], async (req: any, res) => {
+  try {
+    const contentHash = String(req.params.hash).replace(/^sha256:/, '');
+    const entityId = String(req.body.entity_id).replace(/^sha256:/, '');
+    const head = String(req.body.head).replace(/^sha256:/, '');
+
+    if (!/^[0-9a-f]{64}$/.test(contentHash + entityId + head)) {
+      return res.status(400).json({ success: false, error: 'expected 64 hex characters' });
+    }
+
+    // Who else has spoken for this hash. Fetched *before* inserting, so the
+    // notification goes to prior claimants rather than to the person who just
+    // asserted.
+    const priors = await db.associations.forContent(contentHash);
+
+    const record = await db.associations.append({
+      content_hash: contentHash,
+      entity_id: entityId,
+      head,
+      asserted_by: req.userId,
+    });
+
+    // Every key change is notified, not only suspicious ones -- deciding which
+    // are legitimate is the adjudication this design refuses. A creator who
+    // rotated their own key gets a confirmation, which is how the ones they did
+    // not make stand out.
+    //
+    // Failing to send must not fail the request: the association is recorded and
+    // an unsent email does not unrecord it.
+    const alreadySeen = new Set<number>();
+    for (const prior of priors) {
+      if (!prior.asserted_by || prior.asserted_by === req.userId) continue;
+      if (alreadySeen.has(prior.asserted_by)) continue;
+      alreadySeen.add(prior.asserted_by);
+      try {
+        const owner = await db.users.findById(prior.asserted_by);
+        if (!owner?.email) continue;
+        const asserter = await db.users.findById(req.userId);
+        await sendKeyEventNotification(owner.email, {
+          contentHash,
+          entityId,
+          assertedBy: asserter?.email ?? 'another account',
+          assertedAt: new Date(),
+          // The window in which a hostile change can still be answered.
+          answerBy: new Date(Date.now() + RECOVERY_DELAY_MS),
+        });
+      } catch (mailError) {
+        logger.error('key-event notification failed:', (mailError as any).message);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      association: {
+        content_hash: contentHash,
+        entity_id: entityId,
+        head,
+        verified: false,
+        recorded_at: record.recorded_at,
+      },
+      // Said plainly, because the distinction is the whole point.
+      note: 'Recorded as asserted. DAON has not verified that this chain covers this content.',
+      notified: alreadySeen.size,
+    });
+  } catch (error) {
+    logger.error('association failed:', (error as any).message);
+    res.status(500).json({ success: false, error: 'could not record association' });
+  }
+});
+
+/** Every association for a content hash, oldest first. None outranks another. */
+app.get('/api/v1/content/:hash/associations', async (req, res) => {
+  try {
+    const contentHash = String(req.params.hash).replace(/^sha256:/, '');
+    const rows = await db.associations.forContent(contentHash);
+    res.json({
+      success: true,
+      count: rows.length,
+      associations: rows.map((r: any) => ({
+        entity_id: r.entity_id,
+        head: r.head,
+        verified: r.verified,
+        recorded_at: r.recorded_at,
+      })),
+      note: rows.length > 1
+        ? 'More than one chain is asserted for this content. DAON does not rank them.'
+        : undefined,
+    });
+  } catch (error) {
+    logger.error('association lookup failed:', (error as any).message);
+    res.status(500).json({ success: false, error: 'could not read associations' });
+  }
+});
+
 app.post('/api/v1/verify-content', [
   body('content')
     .isString()

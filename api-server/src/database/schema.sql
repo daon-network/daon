@@ -208,6 +208,24 @@ CREATE INDEX idx_content_user ON protected_content(user_id);
 CREATE INDEX idx_content_created ON protected_content(created_at DESC);
 
 -- Duplicate detection log (for tracking duplicate attempts)
+-- Associations between a registered content hash and a provenance chain.
+--
+-- Append-only and deliberately NOT unique on content_hash: any number of
+-- accounts may assert an association and none displaces another. A unique
+-- constraint would let whoever asserted first squat the hash, and the person
+-- best placed to do that is not the creator.
+CREATE TABLE IF NOT EXISTS content_associations (
+    id SERIAL PRIMARY KEY,
+    content_hash VARCHAR(64) NOT NULL,
+    entity_id VARCHAR(64) NOT NULL,
+    head VARCHAR(64) NOT NULL,
+    asserted_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    verified BOOLEAN NOT NULL DEFAULT FALSE,
+    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_assoc_content ON content_associations(content_hash);
+CREATE INDEX IF NOT EXISTS idx_assoc_entity  ON content_associations(entity_id);
+
 CREATE TABLE IF NOT EXISTS duplicate_detections (
     id SERIAL PRIMARY KEY,
     content_hash VARCHAR(64) NOT NULL,
