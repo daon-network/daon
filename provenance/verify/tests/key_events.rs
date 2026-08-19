@@ -1,4 +1,9 @@
 //! Step 4 against key events: which key signs, and what happens without the parent.
+//!
+//! Gated on `signatures`, because that is the only feature under which step 4
+//! exists at all. Steps 1-3 must keep working without it, so a build that skips
+//! signature checking skips these too rather than failing to compile.
+#![cfg(feature = "signatures")]
 
 use daon_provenance_core::*;
 use daon_provenance_verify::*;
