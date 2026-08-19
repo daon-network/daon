@@ -324,16 +324,18 @@ export const db = {
       author_key?: string | null;
       recovery_key?: string | null;
       status?: string;
+      expires_at?: Date | null;
     }) {
       const result = await db.query(
         `INSERT INTO content_associations
-           (content_hash, entity_id, head, asserted_by, author_key, recovery_key, status)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+           (content_hash, entity_id, head, asserted_by, author_key, recovery_key,
+            status, expires_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING *`,
         [
           data.content_hash, data.entity_id, data.head, data.asserted_by,
           data.author_key ?? null, data.recovery_key ?? null,
-          data.status ?? 'current',
+          data.status ?? 'current', data.expires_at ?? null,
         ]
       );
       return result.rows[0];
@@ -364,10 +366,14 @@ export const db = {
      * disputed assertion stays on the record, dated and attributed.
      */
     async resolve(id: number, status: 'attested' | 'disputed', userId: number) {
+      // An expired request is not answerable. Enforced in the WHERE clause so a
+      // slow reply cannot win a race against the deadline it already missed.
       const result = await db.query(
         `UPDATE content_associations
             SET status = $2, resolved_by = $3, resolved_at = CURRENT_TIMESTAMP
-          WHERE id = $1 AND status = 'pending'
+          WHERE id = $1
+            AND status = 'pending'
+            AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
           RETURNING *`,
         [id, status, userId]
       );

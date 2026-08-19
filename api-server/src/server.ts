@@ -244,13 +244,18 @@ const handleValidationErrors = (req, res, next) => {
  * existed still match.
  */
 /**
- * How long a creator has to answer a hostile key change.
+ * How long an owner of record has to answer an asserted key change.
  *
- * Five days, matching docs/design/key-recovery.md. Any leaf replacing the
- * recovery key takes effect only after this, so this is the window in which a
- * counter-rotation is still possible.
+ * Not a chain rule -- the chain has none, and an earlier design that delayed
+ * key events was removed because theft forks a chain rather than extending it,
+ * and nothing in the format can detect a fork. This is purely how long DAON
+ * holds a request open before refusing it.
+ *
+ * Silence refuses. It is the only reading that cannot be exploited by waiting:
+ * if silence accepted, an attacker's best move would be to assert against
+ * somebody on holiday and say nothing.
  */
-const RECOVERY_DELAY_MS = 5 * 24 * 60 * 60 * 1000;
+const ATTESTATION_WINDOW_MS = 5 * 24 * 60 * 60 * 1000;
 
 function generateContentHash(content) {
   const { text } = toPlainText(content);
@@ -875,6 +880,7 @@ app.post('/api/v1/content/:hash/association', [
       author_key: authorKey,
       recovery_key: recoveryKey,
       status: needsAttestation ? 'pending' : 'current',
+      expires_at: needsAttestation ? new Date(Date.now() + ATTESTATION_WINDOW_MS) : null,
     });
 
     // Notify the owner of record, and only them. An unsent email must not fail
@@ -891,7 +897,7 @@ app.post('/api/v1/content/:hash/association', [
             entityId,
             assertedBy: asserter?.email ?? 'another account',
             assertedAt: new Date(),
-            answerBy: new Date(Date.now() + RECOVERY_DELAY_MS),
+            answerBy: new Date(Date.now() + ATTESTATION_WINDOW_MS),
           });
           notified = true;
         }
@@ -913,7 +919,7 @@ app.post('/api/v1/content/:hash/association', [
       },
       note:
         record.status === 'pending'
-          ? 'Recorded, and not current: this asserts different chain keys, so it waits for the owner of record. Silence will not accept it.'
+          ? 'Recorded, and not current: this asserts different chain keys, so it waits for the owner of record. It expires in five days, refused.'
           : 'Recorded as asserted. DAON has not verified that this chain covers this content.',
       // Stated even when it is nobody, because "no owner of record" is a fact a
       // caller should know rather than infer from silence.
@@ -946,6 +952,15 @@ app.post('/api/v1/associations/:id/:action(attest|dispute)', [
     if (!assoc) return res.status(404).json({ success: false, error: 'no such association' });
     if (assoc.status !== 'pending') {
       return res.status(409).json({ success: false, error: `association is ${assoc.status}` });
+    }
+    if (assoc.expires_at && new Date(assoc.expires_at) <= new Date()) {
+      // Expired means refused. Answering late does not revive it -- a deadline
+      // that can be missed and then met is not a deadline.
+      return res.status(409).json({
+        success: false,
+        error: 'this request expired and was refused',
+        expired_at: assoc.expires_at,
+      });
     }
 
     const registration = await db.content.findByHash(assoc.content_hash);

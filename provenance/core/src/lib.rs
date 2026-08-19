@@ -380,8 +380,8 @@ pub enum KeyEvent {
     /// Authorised by the **previous** `recovery_key`.
     Rotation,
     /// The recovery key has been replaced. Authorised by the **previous**
-    /// `author_key`, and takes effect only after the delay in
-    /// `key-recovery.md`.
+    /// `author_key`, and effective at its own `seq` — there is no delay. See
+    /// `key-recovery.md` § *There is no chain-level delay, and why*.
     RecoveryRotation,
     /// The entity changed hands. Both keys are replaced, authorised by the
     /// **previous** `author_key`.

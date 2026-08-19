@@ -225,8 +225,10 @@ unchanged — 218 bytes, same offsets — precisely so that it can. `head` is a 
 chain would become unverifiable to it. Such a verifier hashes the body, walks the proof and
 confirms inclusion exactly as before; it simply does not interpret what changed.
 
-See [`key-recovery.md`](./key-recovery.md) for authorisation, and for the five-day delay that
-governs when a recovery rotation takes effect.
+See [`key-recovery.md`](./key-recovery.md) for authorisation. **There is no delay**: a key event
+governs from its own `seq`. An earlier draft delayed leaves replacing the `recovery_key`, which
+assumed a single chain — theft forks the chain instead, and the format cannot detect a fork because
+timestamp calendars do not index.
 
 **Not a delta.** The data model describes `content_commit` as hashing the delta from the parent,
 and that is the wrong layer for it. In a disclosure, an adjudicator holds the content and must

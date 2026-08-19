@@ -191,7 +191,22 @@ the chain contains.
 What it buys is that a stolen chain cannot quietly become DAON's answer for a work whose owner is
 sitting right there with an email address.
 
-#### Pending, not refused
+#### Attestation is the only thing that can decide this
+
+DAON can check a rotation cryptographically, given the leaf, its signature, the parent and a
+witness. That proves the change was **authorised by the key on file** — and a stolen key *is* the
+key on file. A thief's rotation verifies perfectly.
+
+So verification answers *"was this authorised by the recorded key?"* and never *"is this person the
+owner?"* Only the second question decides whose record this is, and only a human with the account
+can answer it. **There is no other way**, which is why the attestation is not a fallback for when
+verification is unavailable — it is the mechanism, and verification is a separate, weaker check
+that runs alongside.
+
+The one exception is not an exception: when the asserter **is** the owner of record, asserting is
+attesting. Nothing else substitutes.
+
+#### Pending, then expired
 
 The assertion is written immediately with `status = 'pending'`, because the date it was made is
 evidence and discarding it would destroy that. It simply is not current until attested.
@@ -208,12 +223,15 @@ Three outcomes, all appended, none erasing anything:
 | --- | --- |
 | Attests | the association becomes current |
 | Disputes | recorded as disputed, dated and attributed; never becomes current |
-| Nothing | stays pending indefinitely — silence is not consent |
+| Nothing, for five days | **expires** — refused, and the record is unchanged |
 
-**Silence must not become consent on a timer.** The five-day window in `key-recovery.md` governs
-when a *chain* key change takes effect, which is a fact about the chain and nothing to do with us.
-Expiring a pending association into acceptance would make an unread email into an ownership
-decision.
+**Silence refuses.** It is the only reading that cannot be exploited by waiting: if silence
+accepted, an attacker's best move would be to assert against someone on holiday and say nothing.
+An expired request stays on the record, dated, because that it was made is a fact — it simply never
+became DAON's answer.
+
+Five days is the same number the chain-level delay used before that rule was removed, and it is
+doing a different job here: not "time to counter-rotate" but "time to read an email".
 
 #### When there is no owner of record
 

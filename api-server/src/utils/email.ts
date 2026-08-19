@@ -532,7 +532,7 @@ export async function sendKeyEventNotification(
     entityId: string;
     assertedBy: string;
     assertedAt: Date;
-    /** When the right to counter-rotate expires. */
+    /** When the request expires and is refused. */
     answerBy: Date;
   }
 ): Promise<void> {
@@ -562,10 +562,10 @@ export async function sendKeyEventNotification(
       send a notice for every key change, so that the ones you did not make stand out.</p>
 
       <div style="background:#FEF3F2;border:2px solid #B42318;padding:16px;border-radius:4px;margin:20px 0">
-        <p style="margin:0 0 8px"><strong>If this was not you</strong></p>
-        <p style="margin:0">You have until <strong>${fmt(details.answerBy)}</strong> to answer it
-        with your recovery key. After that the new recovery key governs and this change cannot be
-        undone — only superseded by someone who holds that key.</p>
+        <p style="margin:0 0 8px"><strong>This will not be recorded as yours unless you say so</strong></p>
+        <p style="margin:0">If you do nothing, the request expires on
+        <strong>${fmt(details.answerBy)}</strong> and is refused — DAON's record stays as it is.
+        Silence refuses, so an unread message cannot cost you anything.</p>
       </div>
 
       <p style="color:#6A7282;font-size:14px">DAON records what it is told and does not decide
@@ -588,17 +588,17 @@ export async function sendKeyEventNotification(
     'If this was you, nothing needs doing. We send a notice for every key change',
     'so that the ones you did not make stand out.',
     '',
-    'IF THIS WAS NOT YOU:',
-    `You have until ${fmt(details.answerBy)} to answer it with your recovery key.`,
-    'After that the new recovery key governs and this cannot be undone, only',
-    'superseded by whoever holds that key.',
+    'THIS WILL NOT BE RECORDED AS YOURS UNLESS YOU SAY SO:',
+    `If you do nothing, the request expires on ${fmt(details.answerBy)} and is`,
+    "refused. DAON's record stays as it is. Silence refuses, so an unread",
+    'message cannot cost you anything.',
     '',
     'DAON records what it is told and does not decide between competing claims.',
   ].join('\n');
 
   await sendEmail(
     email,
-    `Key change on your registered work — answer by ${fmt(details.answerBy)}`,
+    `Key change on your registered work — confirm by ${fmt(details.answerBy)}`,
     html,
     text
   );

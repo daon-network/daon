@@ -48,10 +48,17 @@ CREATE TABLE IF NOT EXISTS content_associations (
     -- disputed  the owner of record denied it; never becomes current
     --
     -- Pending rather than refused: the date an assertion was made is evidence,
-    -- and discarding it to avoid recording a claim would destroy that. Silence
-    -- never becomes consent on a timer -- an unread email must not decide
-    -- ownership.
+    -- and discarding it to avoid recording a claim would destroy that.
     status VARCHAR(16) NOT NULL DEFAULT 'current',
+
+    -- When a pending assertion stops being answerable. Silence refuses.
+    --
+    -- It is the only reading of silence that cannot be exploited by waiting: if
+    -- silence accepted, an attacker's best move would be to assert against
+    -- somebody on holiday and say nothing. An expired row stays on the record,
+    -- dated, because that the assertion was made is a fact -- it simply never
+    -- became DAON's answer.
+    expires_at TIMESTAMP,
 
     -- Who resolved a pending association, and when.
     resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,

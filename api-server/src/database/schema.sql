@@ -226,8 +226,9 @@ CREATE TABLE IF NOT EXISTS content_associations (
     author_key VARCHAR(64),
     recovery_key VARCHAR(64),
     -- current | pending | attested | disputed. A key change is pending until
-    -- the owner of record attests; silence never becomes consent.
+    -- the owner of record attests; silence refuses, at expires_at.
     status VARCHAR(16) NOT NULL DEFAULT 'current',
+    expires_at TIMESTAMP,
     resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     resolved_at TIMESTAMP,
     recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

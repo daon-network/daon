@@ -245,48 +245,43 @@ removed.
 question, answered by walking the chain. The delay rule lives in the audit layer with the rest of
 it. An auditor comparing witness times is doing arithmetic on values it already holds.
 
-### The delay is five days, measured by witness time
+### There is no chain-level delay, and why
 
-**Normative.** **Any leaf that replaces the `recovery_key`** takes effect at the first witnessed
-head whose Bitcoin block time is at least **432,000,000 ms (5 days)** after that leaf's own witness
-time. That covers a recovery rotation and a transfer alike.
+An earlier version of this document delayed any leaf replacing the `recovery_key` by five days, so
+a creator could notice a hostile change and counter-rotate. **That reasoning was wrong and the rule
+is removed.**
 
-A rotation, which replaces only the `author_key`, is **immediate**.
+It assumed one chain. Theft produces two.
 
-### Why the rule is about the recovery key, not about which event it is
+A thief works from a *copy*. They append their recovery rotation at seq 401 with `parent_head`
+pointing at head(0…400). The creator, not having seen it, appends their counter-rotation at seq
+401 with the **same** parent. That is a fork, not a sequence: the creator's leaf never sits after
+the thief's, so it cannot supersede it. Both get witnessed. Both are anchored to Bitcoin. The rule
+that a pending rotation dies when its signing key is rotated out holds *within* a chain and does
+nothing across two.
 
-An earlier draft delayed the recovery rotation and left the transfer immediate. That protects
-nothing, because a transfer replaces **both** keys and is authorised by the outgoing author key
-alone. A thief holding a stolen author key would simply transfer the entity to themselves: the
-creator's recovery key is gone in the same instant, and the window they were supposed to notice in
-never opens. The transfer is the *more* dangerous operation, not the exempt one.
+**And nothing in the format can detect the fork.** OpenTimestamps calendars timestamp and upgrade;
+they do not index. There is no query of the form *"what else has been timestamped that shares this
+chain's prefix"*, so an agent cannot see the other branch — it is not hidden, there is simply
+nowhere to look.
 
-So the delay attaches to the dangerous change rather than to a label. Whatever else a leaf does, if
-it replaces the recovery key it does not govern for five days, and during that window the previous
-recovery key is still the one that authorises a rotation.
+So the delay helped only where both parties extend the *same* store, which is a shared machine or a
+synced directory, not the case it was written for. It cost the verifier an audit rule and bought
+nothing against theft.
 
-A legitimate sale is unaffected in substance — the chain transfers, the leaf is witnessed, and the
-new owner's recovery key governs five days later. What the delay costs is instant finality on a
-handover, which is a small price for closing the path that hands an entity to whoever stole one
-key.
+### What the chain does and does not give you
 
-**Measured by witness time, not by a head count.** `N witnessed heads` was the other candidate and
-it is the wrong unit: head rate varies enormously between creators, so ten heads is three days for
-someone writing daily and a year for someone writing occasionally. The threat model cares about
-elapsed time, so elapsed time is what the rule uses — and Bitcoin block time is a clock neither
-party controls.
+Worth stating flatly, because the delay was papering over the boundary:
 
-This has a useful consequence. **An unwitnessed recovery-rotation never takes effect**, because
-there is no witness time to count from. The rule forces the anchoring it depends on.
+| | |
+| --- | --- |
+| The chain proves | you wrote this, by this date, and you control the keys that signed it |
+| The chain cannot | detect a competing fork, or resolve one |
 
-**Five days rather than two or three.** The window is worth nothing if the creator is not around
-to use it, and the case it defends against is a thief choosing their moment. Someone acting on a
-Friday evening is inside a 72-hour window that expires on Sunday night, before the creator is back
-at a desk; five days covers a long weekend with room.
-
-The cost is real and points the other way: a creator whose recovery phrase was exposed wants it
-replaced *now*, and every hour of delay is an hour the exposed key can still sign a rotation. Five
-days is the balance struck, and it is a parameter rather than a constant of nature.
+Detection needs somewhere claims are collected and compared. That is the registry — see
+[`publication-and-versions.md`](./publication-and-versions.md) § *A key change needs the owner of
+record to say yes*. A creator who never touches DAON keeps everything in the first row and gets
+nothing in the second, and that is the honest trade rather than a gap to paper over.
 
 ### Encoding: a sentinel, not a new field
 
@@ -421,8 +416,12 @@ there are five days to answer:
 
 > A key change was asserted for content you registered, on 17 August at 14:02, by `x@y.z`.
 >
-> **If this was not you, you have until 22 August to counter-rotate** with your recovery key. After
-> that the new recovery key governs and this cannot be answered.
+> **This will not be recorded as yours unless you say yes.** If you do nothing, the request expires
+> on 22 August and DAON's record is unchanged.
+
+Note which way silence falls. A request that ages out is refused, not accepted — an unread email
+must never become an ownership decision, and expiry is the only reading of silence that cannot be
+exploited by waiting.
 
 ### What the agent should do
 

@@ -82,11 +82,17 @@ impl Store {
     /// For a recovery secret that has been exposed — typed into a machine during
     /// a recovery, photographed, left somewhere it should not have been.
     ///
-    /// **This does not take effect immediately.** It governs only after a
-    /// witnessed head five days later, so a creator whose author key was stolen
-    /// can notice and rotate the thief out with the still-valid recovery key.
-    /// The delay is a verifier rule, not something this function enforces —
-    /// writing the leaf is not the same as it being in force.
+    /// **This takes effect at its own `seq`, like every other leaf.** An earlier
+    /// design delayed it so a creator could counter-rotate, and that reasoning
+    /// assumed one chain: theft works from a *copy*, so the counter-rotation
+    /// forks rather than supersedes, and no calendar indexes timestamps well
+    /// enough for either party to notice. The delay bought nothing against the
+    /// case it was written for and cost the verifier a rule.
+    ///
+    /// Detecting a competing chain needs somewhere claims are collected. See
+    /// `publication-and-versions.md` — the registry holds a key change pending
+    /// until the owner of record attests, and refuses it after five days of
+    /// silence.
     pub fn rotate_recovery_key(
         &self,
         entity: &Hash,

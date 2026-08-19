@@ -24,11 +24,13 @@ describe('association policy', () => {
     }
   });
 
-  // Five days, matching key-recovery.md. The deadline is the actionable part of
-  // the notification, so drift here would send creators a wrong date.
+  // Five days. Not a chain rule -- the chain has none -- but how long DAON holds
+  // a request open before refusing it. The date is the actionable part of the
+  // notification, so drift here would send creators a wrong one.
   it('states a five-day answer window', () => {
-    const RECOVERY_DELAY_MS = 5 * 24 * 60 * 60 * 1000;
-    expect(RECOVERY_DELAY_MS).toBe(432_000_000);
+    const ATTESTATION_WINDOW_MS = 5 * 24 * 60 * 60 * 1000;
+    expect(ATTESTATION_WINDOW_MS).toBe(432_000_000);
+    const RECOVERY_DELAY_MS = ATTESTATION_WINDOW_MS;
     const asserted = new Date('2026-08-17T14:02:00Z');
     const answerBy = new Date(asserted.getTime() + RECOVERY_DELAY_MS);
     expect(answerBy.toISOString()).toBe('2026-08-22T14:02:00.000Z');
@@ -131,5 +133,38 @@ describe('the owner-of-record gate', () => {
     const resolutions = ['attested', 'disputed'];
     expect(resolutions).not.toContain('expired');
     expect(resolutions).not.toContain('auto-accepted');
+  });
+});
+
+describe('silence refuses', () => {
+  const WINDOW = 5 * 24 * 60 * 60 * 1000;
+  const answerable = (expiresAt: Date | null, now: Date) =>
+    expiresAt === null || expiresAt > now;
+
+  it('an unanswered request is refused, never accepted', () => {
+    const asserted = new Date('2026-08-17T00:00:00Z');
+    const expires = new Date(asserted.getTime() + WINDOW);
+    // On day six nothing has happened, and what has not happened is acceptance.
+    expect(answerable(expires, new Date('2026-08-23T00:00:00Z'))).toBe(false);
+  });
+
+  // The reason silence must refuse: if it accepted, the winning move would be
+  // to assert against somebody on holiday and say nothing.
+  it('cannot be won by waiting', () => {
+    const expires = new Date('2026-08-22T00:00:00Z');
+    const outcomeIfIgnored = answerable(expires, new Date('2026-09-01T00:00:00Z'))
+      ? 'accepted'
+      : 'refused';
+    expect(outcomeIfIgnored).toBe('refused');
+  });
+
+  it('a late answer does not revive an expired request', () => {
+    const expires = new Date('2026-08-22T00:00:00Z');
+    expect(answerable(expires, new Date('2026-08-21T23:59:59Z'))).toBe(true);
+    expect(answerable(expires, new Date('2026-08-22T00:00:01Z'))).toBe(false);
+  });
+
+  it('leaves non-expiring associations answerable', () => {
+    expect(answerable(null, new Date('2099-01-01T00:00:00Z'))).toBe(true);
   });
 });
