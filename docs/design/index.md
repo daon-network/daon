@@ -25,6 +25,12 @@ evidence. Anyone should be able to read what we decided, see the reasoning, and 
 | [Data model]({{ '/design/provenance-data-model/' \| relative_url }}) | Leaves, heads and witnesses — what the ledger is and what each part proves |
 | [Registry and provenance]({{ '/design/registry-and-provenance/' \| relative_url }}) | Two systems with two anchors, and why nothing should keep them in sync |
 
+## The agent
+
+| | |
+| --- | --- |
+| [Running the agent]({{ '/design/agent/' \| relative_url }}) | Build it, run it, talk to it — and what it deliberately refuses to do |
+
 ## Format
 
 | | |
