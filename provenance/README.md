@@ -189,7 +189,7 @@ Honest status, because the crate docs describe intent and this describes reality
 | The daemon and its four routes | **Works** |
 | **Submitting to a calendar** | **Missing.** Nothing reaches OpenTimestamps, so **no head is witnessed yet** |
 | **A Bitcoin header source** | **Missing.** `BlockSource` has no implementation here |
-| **Rotation and transfer leaves** | **Missing.** Designed, decided, unbuilt |
+| Rotation, recovery rotation and transfer | **Works.** The five-day delay on a recovery rotation is specified but not yet enforced by a verifier |
 | **Reading content back out of the store** | **Missing.** Segments are stored by hash with no manifest recording their order |
 | **Binary and image registration** | **Missing.** Text only |
 

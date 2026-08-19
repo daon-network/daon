@@ -37,7 +37,9 @@
 #![deny(missing_docs)]
 
 extern crate alloc;
-use daon_provenance_core::{hash_tagged, tag, verify_inclusion, Hash, ProofStep, RevisionLeaf};
+use daon_provenance_core::{
+    hash_tagged, tag, verify_inclusion, AuthorisingKey, Hash, ProofStep, RevisionLeaf,
+};
 
 /// An established statement that a head existed by a given time.
 ///
@@ -58,6 +60,9 @@ pub struct WitnessAttestation {
 /// more useful than "invalid".
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Failure {
+    /// A key-event leaf in which neither key changed. It commits to no content
+    /// and announces no change, so there is nothing it could mean.
+    MalformedKeyEvent,
     /// Step 2: the inclusion proof does not fold to the witnessed head.
     NotInWitnessedHead,
     /// Step 3: the attestation covers a different head than the proof reaches.
@@ -98,6 +103,14 @@ pub struct Claim<'a> {
     pub attestation: WitnessAttestation,
     /// Ed25519 signature over the leaf id. `None` skips step 4.
     pub signature: Option<&'a [u8; 64]>,
+    /// The leaf this one follows. Needed only to check a **key event's**
+    /// signature.
+    ///
+    /// A key event is signed by whichever key it is not replacing, and for a
+    /// transfer that key lives only in the parent. Leave it `None` for content
+    /// revisions, where the signing key is the leaf's own `author_key`; leaving
+    /// it `None` for a key event simply means the signature goes unchecked.
+    pub parent: Option<&'a RevisionLeaf>,
 }
 
 /// Run the four steps.
@@ -124,13 +137,43 @@ pub fn verify(claim: &Claim<'_>) -> Result<Verified, Failure> {
     // minimum verifier does not get to require one.
     let existed_by_ms = claim.attestation.witness_time_ms;
 
-    // Step 4 — optional.
-    let author_signature_checked = match claim.signature {
-        None => false,
-        Some(sig) => {
-            check_signature(&claim.leaf.author_key, &leaf_id, sig)?;
+    // Step 4 — optional, and for key events it needs the parent leaf.
+    //
+    // A key event is signed by whichever key is *not* changing, so the signing
+    // key is decided by comparing this leaf's keys against its parent's. From
+    // the leaf alone a verifier can see that it *is* a key event and cannot
+    // tell which kind -- and for a transfer both keys change, so the signing
+    // key is not in this leaf at all. It is the parent's.
+    //
+    // Without the parent, the signature is reported unchecked rather than
+    // guessed at. A verifier that cannot check something must say so; accepting
+    // a signature from "either committed key" would be a weaker claim wearing
+    // the same name.
+    //
+    // Note what this still does not do: it never asks whether the key change
+    // was *legitimate*. That remains an audit question answered by walking the
+    // chain, deliberately not a fifth step.
+    let signing_key: Option<&Hash> = if claim.leaf.is_key_event() {
+        match claim.parent {
+            None => None,
+            Some(parent) => match claim.leaf.key_event(parent) {
+                None => return Err(Failure::MalformedKeyEvent),
+                Some(event) => Some(match event.authorised_by() {
+                    AuthorisingKey::Author => &parent.author_key,
+                    AuthorisingKey::Recovery => &parent.recovery_key,
+                }),
+            },
+        }
+    } else {
+        Some(&claim.leaf.author_key)
+    };
+
+    let author_signature_checked = match (claim.signature, signing_key) {
+        (Some(sig), Some(key)) => {
+            check_signature(key, &leaf_id, sig)?;
             true
         }
+        _ => false,
     };
 
     Ok(Verified {
