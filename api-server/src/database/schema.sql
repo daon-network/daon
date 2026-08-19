@@ -229,6 +229,8 @@ CREATE TABLE IF NOT EXISTS content_associations (
     -- the owner of record attests; silence refuses, at expires_at.
     status VARCHAR(16) NOT NULL DEFAULT 'current',
     expires_at TIMESTAMP,
+    -- Single-use secret for answering from the notification email.
+    resolution_token VARCHAR(64),
     resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     resolved_at TIMESTAMP,
     recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

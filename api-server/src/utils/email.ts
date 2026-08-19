@@ -534,6 +534,9 @@ export async function sendKeyEventNotification(
     assertedAt: Date;
     /** When the request expires and is refused. */
     answerBy: Date;
+    /** Where the owner answers. A deadline with no way to meet it is an
+     *  announcement rather than a notification. */
+    resolveUrl?: string;
   }
 ): Promise<void> {
   const fmt = (d: Date) =>
@@ -563,9 +566,12 @@ export async function sendKeyEventNotification(
 
       <div style="background:#FEF3F2;border:2px solid #B42318;padding:16px;border-radius:4px;margin:20px 0">
         <p style="margin:0 0 8px"><strong>This will not be recorded as yours unless you say so</strong></p>
-        <p style="margin:0">If you do nothing, the request expires on
+        <p style="margin:0 0 16px">If you do nothing, the request expires on
         <strong>${fmt(details.answerBy)}</strong> and is refused — DAON's record stays as it is.
         Silence refuses, so an unread message cannot cost you anything.</p>
+        ${details.resolveUrl ? `<p style="margin:0"><a href="${details.resolveUrl}"
+          style="display:inline-block;background:#155DFC;color:#fff;text-decoration:none;
+                 padding:12px 20px;border-radius:6px">Answer this</a></p>` : ''}
       </div>
 
       <p style="color:#6A7282;font-size:14px">DAON records what it is told and does not decide
@@ -592,6 +598,7 @@ export async function sendKeyEventNotification(
     `If you do nothing, the request expires on ${fmt(details.answerBy)} and is`,
     "refused. DAON's record stays as it is. Silence refuses, so an unread",
     'message cannot cost you anything.',
+    ...(details.resolveUrl ? ['', 'To answer it:', details.resolveUrl] : []),
     '',
     'DAON records what it is told and does not decide between competing claims.',
   ].join('\n');

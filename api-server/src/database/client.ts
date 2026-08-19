@@ -325,17 +325,19 @@ export const db = {
       recovery_key?: string | null;
       status?: string;
       expires_at?: Date | null;
+      resolution_token?: string | null;
     }) {
       const result = await db.query(
         `INSERT INTO content_associations
            (content_hash, entity_id, head, asserted_by, author_key, recovery_key,
-            status, expires_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            status, expires_at, resolution_token)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING *`,
         [
           data.content_hash, data.entity_id, data.head, data.asserted_by,
           data.author_key ?? null, data.recovery_key ?? null,
           data.status ?? 'current', data.expires_at ?? null,
+          data.resolution_token ?? null,
         ]
       );
       return result.rows[0];
@@ -358,6 +360,17 @@ export const db = {
       return result.rows[0] ?? null;
     },
 
+    /** Find a pending association by its single-use token. */
+    async findByToken(token: string) {
+      const result = await db.query(
+        `SELECT * FROM content_associations
+          WHERE resolution_token = $1 AND status = 'pending'
+            AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)`,
+        [token]
+      );
+      return result.rows[0] ?? null;
+    },
+
     /**
      * Resolve a pending association.
      *
@@ -368,9 +381,12 @@ export const db = {
     async resolve(id: number, status: 'attested' | 'disputed', userId: number) {
       // An expired request is not answerable. Enforced in the WHERE clause so a
       // slow reply cannot win a race against the deadline it already missed.
+      // The token is cleared on resolution, which is what makes it single use:
+      // a forwarded or archived email cannot answer twice.
       const result = await db.query(
         `UPDATE content_associations
-            SET status = $2, resolved_by = $3, resolved_at = CURRENT_TIMESTAMP
+            SET status = $2, resolved_by = $3, resolved_at = CURRENT_TIMESTAMP,
+                resolution_token = NULL
           WHERE id = $1
             AND status = 'pending'
             AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)

@@ -60,6 +60,15 @@ CREATE TABLE IF NOT EXISTS content_associations (
     -- became DAON's answer.
     expires_at TIMESTAMP,
 
+    -- A single-use secret letting the owner of record answer from the email
+    -- itself. Without it the notification names a deadline and offers no way to
+    -- meet it, which is a circuit that does not close.
+    --
+    -- Same trust model as the magic link this account already signs in with:
+    -- possession of the mailbox is the credential. Single use and expiring with
+    -- the request, so a forwarded or archived message cannot answer later.
+    resolution_token VARCHAR(64),
+
     -- Who resolved a pending association, and when.
     resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     resolved_at TIMESTAMP,

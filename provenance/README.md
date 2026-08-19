@@ -193,6 +193,7 @@ Honest status, because the crate docs describe intent and this describes reality
 | The witness loop | **Works.** Runs on a timer from daemon startup; `--no-witness` opts out |
 | The daemon and its four routes | **Works** |
 | Rotation, recovery rotation and transfer | **Works.** Effective at their own `seq` — there is deliberately no delay |
+| Calendar client, against a real calendar | **Verified.** `net/tests/live_calendar.rs`, `#[ignore]`d — run it with `-- --ignored` |
 | Storing content | **Off by default.** Segments were write-only, and a fixed 1 KiB boundary makes a revision pass cost a full copy of the document. `open_keeping_content` opts in |
 | **Binary and image registration** | **Missing.** Text only |
 
