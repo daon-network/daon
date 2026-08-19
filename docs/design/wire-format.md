@@ -199,6 +199,35 @@ content_commit = merkle_root([ SHA256(0x03 || seg) for seg in segments(content) 
 Content under 1 KiB is a single segment, so `content_commit = SHA256(0x03 ‖ content)` and small
 documents behave exactly like a flat content hash.
 
+### The all-zero sentinel: this leaf is a key event
+
+**Normative.** `content_commit` of **32 zero bytes** means the leaf records a key change rather
+than a content revision. No content is committed and none should be looked for.
+
+The value is unreachable by any content. Empty content commits to
+`084fed08b978af4d7d196a7446a86b58009e636b611db16211b65a9aadff29c5`; producing all-zero another way
+requires a SHA-256 preimage. Genesis already uses the same device, with `parent_head` set to 32
+zero bytes.
+
+Which key event it is follows from the leaf's key fields against its parent, and needs no encoding:
+
+| `author_key` (offset 146) | `recovery_key` (offset 178) | Event | Signature verifies against |
+| --- | --- | --- | --- |
+| changed | unchanged | rotation | the **previous** `recovery_key` |
+| unchanged | changed | recovery rotation | the **previous** `author_key` |
+| changed | changed | transfer | the **previous** `author_key` |
+
+A key-event leaf in which neither key changed is malformed.
+
+**A verifier that does not implement key events must still parse these leaves.** The layout is
+unchanged — 218 bytes, same offsets — precisely so that it can. `head` is a Merkle root over every
+`leaf_id`, so a verifier that refused to parse one leaf could not compute the head, and the entire
+chain would become unverifiable to it. Such a verifier hashes the body, walks the proof and
+confirms inclusion exactly as before; it simply does not interpret what changed.
+
+See [`key-recovery.md`](./key-recovery.md) for authorisation, and for the five-day delay that
+governs when a recovery rotation takes effect.
+
 **Not a delta.** The data model describes `content_commit` as hashing the delta from the parent,
 and that is the wrong layer for it. In a disclosure, an adjudicator holds the content and must
 confirm it produces the committed hash — in whatever language they have, years later. Hashing a

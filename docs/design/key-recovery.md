@@ -242,12 +242,68 @@ removed.
 question, answered by walking the chain. The delay rule lives in the audit layer with the rest of
 it. An auditor comparing witness times is doing arithmetic on values it already holds.
 
-### Still to settle in implementation
+### The delay is five days, measured by witness time
 
-- **What N is.** It must exceed the time a creator plausibly takes to notice, without leaving a
-  compromised recovery key live for months. Days rather than hours or years.
-- **Encoding.** A recovery-rotation leaf must be distinguishable from a rotation leaf and from a
-  content leaf, which is the same open encoding question §*Open* already carries.
+**Normative.** A recovery-rotation takes effect at the first witnessed head whose Bitcoin block
+time is at least **432,000,000 ms (5 days)** after the rotation leaf's own witness time.
+
+**Measured by witness time, not by a head count.** `N witnessed heads` was the other candidate and
+it is the wrong unit: head rate varies enormously between creators, so ten heads is three days for
+someone writing daily and a year for someone writing occasionally. The threat model cares about
+elapsed time, so elapsed time is what the rule uses — and Bitcoin block time is a clock neither
+party controls.
+
+This has a useful consequence. **An unwitnessed recovery-rotation never takes effect**, because
+there is no witness time to count from. The rule forces the anchoring it depends on.
+
+**Five days rather than two or three.** The window is worth nothing if the creator is not around
+to use it, and the case it defends against is a thief choosing their moment. Someone acting on a
+Friday evening is inside a 72-hour window that expires on Sunday night, before the creator is back
+at a desk; five days covers a long weekend with room.
+
+The cost is real and points the other way: a creator whose recovery phrase was exposed wants it
+replaced *now*, and every hour of delay is an hour the exposed key can still sign a rotation. Five
+days is the balance struck, and it is a parameter rather than a constant of nature.
+
+### Encoding: a sentinel, not a new field
+
+**Normative.** A leaf whose `content_commit` is **32 zero bytes** is a **key event**, not a content
+revision. See [`wire-format.md`](./wire-format.md) §6.
+
+The value is unreachable otherwise. Empty content commits to
+`084fed08b978af4d7d196a7446a86b58009e636b611db16211b65a9aadff29c5`, and producing all-zero any
+other way needs a SHA-256 preimage. The format already uses the same trick for genesis, whose
+`parent_head` is 32 zero bytes.
+
+**Which key event it is needs no encoding at all.** It follows from which keys changed relative to
+the parent leaf:
+
+| `author_key` | `recovery_key` | Event | Signed by |
+| --- | --- | --- | --- |
+| changed | unchanged | **rotation** | the previous `recovery_key` |
+| unchanged | changed | **recovery rotation** | the previous `author_key`, effective after five days |
+| changed | changed | **transfer** | the previous `author_key` |
+
+Neither key changing is not a key event; such a leaf is malformed and must be rejected.
+
+#### Why a sentinel rather than a version byte
+
+A flag in the format version was the obvious alternative and it breaks something important.
+
+A verifier that does not understand key events must still be able to **parse** the leaf. `head` is
+a Merkle root over every `leaf_id`, so a verifier that chokes on one leaf cannot compute the head,
+and the whole chain becomes unverifiable to it. A fixed layout means an older verifier still
+hashes the body, still walks the proof, still confirms inclusion — it simply does not interpret
+the event. **History stays verifiable**, which is the property that cannot be traded.
+
+#### What it costs the verifier, stated plainly
+
+Step 4 gains a condition: verify the signature against the leaf's `author_key`, **unless**
+`content_commit` is the sentinel, in which case verify against its `recovery_key`.
+
+That is a branch rather than a chain walk, and it is still the fourth step rather than a fifth.
+But it is a change to the minimum verifier, and pretending otherwise would be the kind of quiet
+erosion §*What it costs the verifier* exists to prevent.
 
 ---
 
