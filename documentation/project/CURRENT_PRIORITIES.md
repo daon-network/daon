@@ -8,11 +8,15 @@
 **Action**: Update imports and dependencies for platform integration
 **Why Critical**: Your AO3 replacement needs this SDK to integrate DAON
 
-### 2. **Browser Extension MVP** 🛡️
-**Status**: Not started
-**Need**: Extension to protect existing AO3 works while platform is built
-**Action**: Build Chrome extension that registers AO3 works with DAON
-**Why Critical**: Protects 45M existing works during transition period
+### 2. **Web Registration for Existing Works** 🛡️
+**Status**: Live at app.daon.network
+**Need**: A path for works already published elsewhere
+**Action**: Paste-to-register, no install
+**Why Critical**: Protects existing works during the transition period
+
+> A browser extension was considered and **rejected on security grounds** -- see
+> `documentation/architecture/DECISIONS_LOG.md`. It would hold a signing key in
+> unprotected browser storage and could be silently updated for every user at once.
 
 ### 3. **AI Scraping Evidence Documentation** ⚖️
 **Status**: Have screenshot proof, need legal framework
@@ -31,7 +35,7 @@
 ### WHAT'S BROKEN:
 ❌ **Go SDK imports** - Dependencies need fixing for platform integration
 ❌ **AO3 integration** - Tools built but not tested end-to-end
-❌ **Browser extension** - Designed but not coded
+🚫 **Browser extension** - Rejected on security grounds (DECISIONS_LOG)
 
 ### YOUR PROJECT STATUS:
 - **AO3 replacement** built with Next.js + Go
@@ -58,7 +62,7 @@
 ### Next Session Must Achieve:
 1. **Go SDK working** with clean imports and dependencies
 2. **Platform integration** tested end-to-end
-3. **Browser extension** minimum viable product deployed
+3. **Web registration** live for works published elsewhere
 4. **Legal documentation** ready with AI scraping evidence
 5. **OTW presentation** materials prepared
 

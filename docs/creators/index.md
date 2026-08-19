@@ -33,14 +33,14 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
     <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-book-open"/></svg></div>
     <h3 class="md-feature__title">Fanfiction Authors</h3>
     <p class="md-feature__description">AO3, FanFiction.Net, Wattpad</p>
-    <p><strong>Best Tool:</strong> Browser Extension</p>
+    <p><strong>Best Tool:</strong> Register on the web</p>
     <ul class="md-feature__list">
-      <li>Protect existing works in bulk</li>
-      <li>Works on AO3, FFN, and most platforms</li>
-      <li>No need to re-upload anything</li>
+      <li>Works published anywhere</li>
+      <li>AO3, FFN, Wattpad, your own site</li>
+      <li>Nothing to install</li>
       <li>Cryptographic ownership proof</li>
     </ul>
-    <a href="/examples/browser-extension/" class="md-feature__link">Browser Extension →</a>
+    <a href="/creators/getting-started/" class="md-feature__link">Get Started →</a>
   </div>
 
   <div class="md-feature">
@@ -137,9 +137,9 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
 - **Works With:** Any WordPress site
 
 ### **Archive of Our Own (45M+ fanfics)**
-- **Browser Extension** - One-click protection
-- **Setup Time:** 1 minute install
-- **Protects:** Individual or bulk works
+- **Web Protection Tool** - Paste a work to register it
+- **Setup Time:** 30 seconds per work
+- **Protects:** Works you have already published anywhere
 - **Works With:** AO3, FFN, most fanfic sites
 
 ### **Any Website or Platform**
@@ -223,7 +223,6 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 
 ### **Documentation & Guides**
 - [WordPress Plugin Guide](/examples/wordpress/)
-- [Browser Extension Guide](/examples/browser-extension/)
 - [Bulk Protection Tutorial](/creators/bulk-protection/)
 - [Embedding Your Verification Token](/creators/embedding-tokens/) — AO3, WordPress, images, PDF, plain text
 - [Frequently Asked Questions](/creators/faq/)
@@ -251,9 +250,6 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 
 > **"Simple web tool let me protect my poetry collection in minutes. Peace of mind that my work is legally protected."**  
 > — Indie Poet, 150+ poems
-
-> **"Browser extension made protecting my entire AO3 library effortless. One click per fic, done."**  
-> — Fanfic Writer, 23 completed stories
 
 ---
 

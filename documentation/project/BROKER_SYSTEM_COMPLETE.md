@@ -228,7 +228,6 @@ curl -X POST http://localhost:3000/api/v1/broker/webhooks \
 
 ### Phase 4: Integration (48h)
 - [ ] WordPress plugin updates
-- [ ] Browser extension integration
 - [ ] SDK updates (Node.js, Python, Ruby, PHP)
 - [ ] AO3 integration
 - [ ] Documentation & tutorials

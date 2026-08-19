@@ -100,7 +100,6 @@ npm install @daon/sdk
 
 ### **🌐 Multi-Platform Support**
 - **WordPress** plugin for blogs
-- **Browser extension** for web content  
 - **AO3 integration** for fanfiction
 - **Bulk tools** for large content libraries
 

@@ -95,7 +95,7 @@ docker run -d --name daon-validator \
 **Who uses them:** Individual creators protecting their content
 
 **What they do:**
-- Browser extension for AO3 protection
+- Web registration for AO3 works (no extension -- see DECISIONS_LOG)
 - WordPress plugin for blog protection
 - Bulk protection scripts
 - License generator tools
@@ -156,7 +156,7 @@ docker run -d --name daon-validator \
 ### Example 1: Creator Protects Content
 
 ```
-Creator (Browser Extension)
+Creator (Web tool)
     │
     │ POST /api/v1/protect
     ▼

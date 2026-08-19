@@ -99,7 +99,6 @@ Week 4: Documentation & Community
 ```bash
 Week 1-2: AO3 Integration Prototype
 ├── Build AO3 metadata embedding prototype
-├── Create browser extension for creator registration
 ├── Test fanfiction content registration workflow
 └── Gather feedback from OTW/creator community
 

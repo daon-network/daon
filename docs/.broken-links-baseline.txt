@@ -65,7 +65,6 @@
 /creators/faq/
 /creators/legal/
 /events/legal-webinars/
-/examples/browser-extension/
 /examples/wordpress/
 /get-started/security
 /get-started/trusted-devices

@@ -200,7 +200,7 @@ Global: Internet Archive, Wikimedia (digital preservation)
 ### **Phase 1: Foundation (Months 1-3)**
 ✅ DAON blockchain operational  
 ✅ ContentRegistry with AI licensing  
-✅ Basic platform integrations (browser extension)  
+✅ Basic platform integrations (WordPress plugin, SDKs)  
 ✅ Creator community onboarding  
 
 ### **Phase 2: Legal Power (Months 4-6)**

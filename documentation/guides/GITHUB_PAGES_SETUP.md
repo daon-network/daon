@@ -304,7 +304,6 @@ After GitHub Pages is live:
 4. **Creator Onboarding**
    - Send docs link to beta testers
    - Update WordPress plugin to link docs
-   - Add docs link to browser extension
 
 ---
 

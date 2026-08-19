@@ -17,7 +17,38 @@
 - Works on any device/browser including mobile
 - No Chrome/Firefox store approval needed
 
-**Status:** APPROVED
+**Status:** APPROVED — and the code is now **deleted** (August 2026).
+
+#### Why this is structural, not an implementation problem
+
+The decision stood for months while `browser-extension/` sat in the repository and the
+public docs still told creators to install it. Removing it surfaced why no amount of
+careful coding would have rescued it:
+
+- **Silent auto-update.** The provenance agent grants keychain access *per code
+  signature*, specifically so the code holding a signing key cannot change underneath the
+  person who trusted it. A web store can push a new version to every user at once. The
+  code you audited is not the code that runs tomorrow, and no extension can opt out.
+- **No hardware-backed storage.** `chrome.storage.local` is a plaintext file. There is no
+  Secure Enclave path, no keychain ACL, no non-extractable key — the opposite of
+  `provenance/agent/src/keystore.rs`.
+- **Store custody.** Publishing requires an account Google or Mozilla controls and can
+  suspend or transfer. That is the custody problem `docs/design/key-recovery.md` warns
+  about, applied to the signing path itself.
+- **The DOM is not a witness.** A content script reads a page the *site* sent. Attesting
+  "this person wrote this" from scraped page text attests to what a server returned.
+
+The deleted prototype also demonstrated the cost of leaving such code lying around:
+`generateMnemonic()` drew 12 words from a **12-word list** using `Math.random()` — about
+43 bits against BIP-39's 132, from a PRNG whose state is recoverable from a few outputs —
+and the wallet address was generated *independently of the mnemonic*, so the recovery
+phrase the UI told users to write down derived nothing.
+
+**If a browser surface is ever wanted**, the only defensible shape is dumb UI in front of
+the local agent over native messaging, holding no key and making no authorship claim. That
+is a different product and needs designing as one, not reviving this.
+
+Recoverable at `git show f4b4456 -- browser-extension/` if that day comes.
 
 ---
 

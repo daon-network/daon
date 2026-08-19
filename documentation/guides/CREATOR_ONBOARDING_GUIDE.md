@@ -16,13 +16,18 @@
 
 **[Download WordPress Plugin →](../wordpress-plugin/)**
 
-### Path 2: **I Use AO3** (Browser Extension - 5 minutes)  
-1. Install DAON Browser Extension from Chrome Web Store
-2. Visit your AO3 works
-3. Click "Protect with DAON" when the shield appears
-4. All your works now have blockchain protection
+### Path 2: **I Use AO3** (Web tool - 5 minutes)  
+1. Sign in at app.daon.network
+2. Paste a work you have published
+3. Choose your licence terms
+4. The work now has blockchain protection
 
-**[Get Browser Extension →](../browser-extension/)**
+**[Register a work →](https://app.daon.network)**
+
+> **There is no DAON browser extension.** One was considered and rejected: it
+> would have to keep your signing key in ordinary browser storage, and the web
+> store can update it silently for everyone at once. If you are offered a "DAON
+> extension", it is not from us.
 
 ### Path 3: **I Have Lots of Existing Work** (10 minutes)
 1. Download the bulk protection tool
@@ -73,7 +78,7 @@ We have SDKs for almost everything. Check if your platform has DAON integration,
 - ✅ Gives you legal tools to fight violations
 
 #### Step 2: Protect As You Create
-- Install browser extension or platform plugin
+- Install the platform plugin for where you publish
 - Protection happens automatically as you publish
 - Green shield means you're protected
 - Orange warning means vulnerability
@@ -105,7 +110,7 @@ python simple-bulk-protector.py my_exported_works/
 ```
 
 #### Step 3: Set Up Future Protection
-Install browser extension or platform plugin so new works get protected automatically.
+Install the platform plugin for where you publish, so new works get protected automatically.
 
 ---
 
@@ -121,10 +126,10 @@ Install browser extension or platform plugin so new works get protected automati
 **Time:** 2 minutes setup, automatic forever
 
 ### **AO3 Fanfiction Writers**  
-1. **Browser Extension:** Install from Chrome Web Store
-2. **Visit Works:** Extension detects AO3 automatically
-3. **Protect:** Click shield icon on any work page
-4. **Bulk Protect:** Use for protecting many works at once
+1. **Web tool:** Sign in at app.daon.network
+2. **Paste:** One published work at a time
+3. **Protect:** Choose licence terms and register
+4. **Bulk Protect:** Use the bulk tool for many works at once
 
 **Protects:** Fanfiction, original fiction, poetry
 **Time:** 30 seconds per work, or bulk protect hundreds
@@ -206,7 +211,7 @@ The blockchain record provides cryptographic proof you created the content first
 
 ### **1 Minute Quick Start:**
 - **WordPress Users:** [Install Plugin](../wordpress-plugin/)
-- **AO3 Users:** [Get Browser Extension](../browser-extension/)  
+- **AO3 Users:** [Register a work](https://app.daon.network)  
 - **Everyone Else:** [Download Bulk Tool](../creator-tools/)
 
 ### **Need Help?**
