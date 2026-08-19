@@ -208,6 +208,36 @@ CREATE INDEX idx_content_user ON protected_content(user_id);
 CREATE INDEX idx_content_created ON protected_content(created_at DESC);
 
 -- Duplicate detection log (for tracking duplicate attempts)
+-- Associations between a registered content hash and a provenance chain.
+--
+-- Append-only and deliberately NOT unique on content_hash: any number of
+-- accounts may assert an association and none displaces another. A unique
+-- constraint would let whoever asserted first squat the hash, and the person
+-- best placed to do that is not the creator.
+CREATE TABLE IF NOT EXISTS content_associations (
+    id SERIAL PRIMARY KEY,
+    content_hash VARCHAR(64) NOT NULL,
+    entity_id VARCHAR(64) NOT NULL,
+    head VARCHAR(64) NOT NULL,
+    asserted_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    verified BOOLEAN NOT NULL DEFAULT FALSE,
+    -- The chain's keys at this head, so a later association carrying different
+    -- ones is distinguishable from a chain that simply grew.
+    author_key VARCHAR(64),
+    recovery_key VARCHAR(64),
+    -- current | pending | attested | disputed. A key change is pending until
+    -- the owner of record attests; silence refuses, at expires_at.
+    status VARCHAR(16) NOT NULL DEFAULT 'current',
+    expires_at TIMESTAMP,
+    resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    resolved_at TIMESTAMP,
+    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT assoc_status_known
+        CHECK (status IN ('current', 'pending', 'attested', 'disputed'))
+);
+CREATE INDEX IF NOT EXISTS idx_assoc_content ON content_associations(content_hash);
+CREATE INDEX IF NOT EXISTS idx_assoc_entity  ON content_associations(entity_id);
+
 CREATE TABLE IF NOT EXISTS duplicate_detections (
     id SERIAL PRIMARY KEY,
     content_hash VARCHAR(64) NOT NULL,

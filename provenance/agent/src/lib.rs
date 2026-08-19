@@ -25,6 +25,7 @@
 
 #[cfg(feature = "keychain")]
 pub mod keychain;
+pub mod keyevent;
 #[cfg(feature = "keychain")]
 pub mod keystore;
 pub mod policy;
@@ -74,6 +75,17 @@ pub enum Error {
     },
     /// A leaf must commit to at least one observation.
     NoObservations,
+    /// A key event was signed by the wrong key.
+    ///
+    /// Each key may replace the other and neither may replace itself, so a
+    /// rotation must be signed by the recovery key and a recovery rotation or
+    /// transfer by the author key. Checked before anything is written: a leaf
+    /// signed by the wrong key would be unverifiable, and discovering that later
+    /// means discovering it when the proof was needed.
+    WrongAuthorisingKey,
+    /// A key event that replaces a key with itself. It would commit to no
+    /// content and announce no change, which `wire-format.md` calls malformed.
+    KeyUnchanged,
     /// Witness state on disk is not the shape this code writes.
     ///
     /// Carries what was being read rather than an offset, because the useful
@@ -94,6 +106,10 @@ impl std::fmt::Display for Error {
             Error::EmptyEntity => write!(f, "entity has no leaves"),
             Error::NoSuchLeaf(s) => write!(f, "no leaf at seq {s}"),
             Error::Malformed(what) => write!(f, "malformed {what}"),
+            Error::WrongAuthorisingKey => {
+                write!(f, "this key does not authorise that key event")
+            }
+            Error::KeyUnchanged => write!(f, "a key event must actually change a key"),
             Error::CorruptLeaf { seq, len } => {
                 write!(f, "leaf {seq} is {len} bytes, expected 218")
             }
@@ -157,7 +173,7 @@ impl Store {
         self.root.join("entities").join(hex32(entity))
     }
 
-    fn leaf_path(&self, entity: &Hash, seq: u64, ext: &str) -> PathBuf {
+    pub(crate) fn leaf_path(&self, entity: &Hash, seq: u64, ext: &str) -> PathBuf {
         self.entity_dir(entity)
             .join("leaves")
             .join(format!("{seq:020}.{ext}"))
@@ -166,7 +182,7 @@ impl Store {
     /// Write bytes to a path atomically: a partial write must never be mistaken
     /// for a complete one, since a truncated leaf would fail verification in a
     /// way that looks like tampering.
-    fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), Error> {
+    pub(crate) fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), Error> {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
         }

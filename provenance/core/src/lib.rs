@@ -359,3 +359,80 @@ pub fn verify_inclusion(leaf: &Hash, proof: &[ProofStep], root: &Hash) -> bool {
     }
     acc == *root
 }
+
+// ── Key events ────────────────────────────────────────────────────────────
+
+/// `content_commit` value marking a leaf as a key change rather than a content
+/// revision.
+///
+/// Unreachable by any content: empty content commits to
+/// `084fed08b978af4d…`, and producing all-zero another way needs a SHA-256
+/// preimage. Genesis uses the same device for `parent_head`.
+pub const KEY_EVENT_SENTINEL: Hash = [0u8; 32];
+
+/// What a key-event leaf records.
+///
+/// Not encoded anywhere — read from which key fields changed against the parent
+/// leaf. See `wire-format.md` §6 and `key-recovery.md`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum KeyEvent {
+    /// The author key was lost or compromised and has been replaced.
+    /// Authorised by the **previous** `recovery_key`.
+    Rotation,
+    /// The recovery key has been replaced. Authorised by the **previous**
+    /// `author_key`, and effective at its own `seq` — there is no delay. See
+    /// `key-recovery.md` § *There is no chain-level delay, and why*.
+    RecoveryRotation,
+    /// The entity changed hands. Both keys are replaced, authorised by the
+    /// **previous** `author_key`.
+    Transfer,
+}
+
+impl KeyEvent {
+    /// Which key authorises this event.
+    ///
+    /// The inverse of the rule that each key may replace the other and neither
+    /// may replace itself: whichever key is *not* changing is the one that
+    /// signs.
+    pub fn authorised_by(self) -> AuthorisingKey {
+        match self {
+            KeyEvent::Rotation => AuthorisingKey::Recovery,
+            KeyEvent::RecoveryRotation | KeyEvent::Transfer => AuthorisingKey::Author,
+        }
+    }
+}
+
+/// Which of the parent leaf's keys a key event's signature verifies against.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AuthorisingKey {
+    /// The parent leaf's `author_key`.
+    Author,
+    /// The parent leaf's `recovery_key`.
+    Recovery,
+}
+
+impl RevisionLeaf {
+    /// Whether this leaf records a key change rather than a content revision.
+    pub fn is_key_event(&self) -> bool {
+        self.content_commit == KEY_EVENT_SENTINEL
+    }
+
+    /// Classify a key-event leaf against the leaf it follows.
+    ///
+    /// Returns `None` if this is not a key-event leaf, or if it is one in which
+    /// neither key changed — which `wire-format.md` calls malformed, since such
+    /// a leaf commits to no content and announces no change.
+    pub fn key_event(&self, parent: &RevisionLeaf) -> Option<KeyEvent> {
+        if !self.is_key_event() {
+            return None;
+        }
+        let author_changed = self.author_key != parent.author_key;
+        let recovery_changed = self.recovery_key != parent.recovery_key;
+        Some(match (author_changed, recovery_changed) {
+            (true, false) => KeyEvent::Rotation,
+            (false, true) => KeyEvent::RecoveryRotation,
+            (true, true) => KeyEvent::Transfer,
+            (false, false) => return None,
+        })
+    }
+}

@@ -257,12 +257,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: System libraries
-        # The Linux credential store talks to Secret Service over D-Bus, and
-        # `agentd` depends on the agent's keychain feature, so this is needed
-        # before the first build rather than partway down the job.
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq libdbus-1-dev pkg-config
-
       - name: Format
         run: cargo fmt --all --check
       - name: Clippy

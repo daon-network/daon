@@ -154,8 +154,11 @@ retains nothing that can extend or reclaim the entity.
 
 ### What a former owner can still do
 
-Nothing, on that chain. They may hold old key material, but leaves after the transfer must be
-signed by the new `author_key`, and the chain is witnessed.
+**Not extend it.** Leaves after the transfer must be signed by the new `author_key`, and the chain
+is witnessed.
+
+They can, however, still prove they signed the leaves they signed — see § *A superseded key still
+proves who wrote the past*. That is correct rather than a leak: they did write them.
 
 They could start a **competing chain** forked from an earlier head — as could anyone holding the
 content. It resolves the way every competing claim does: on evidence. The transfer is in the
@@ -242,12 +245,201 @@ removed.
 question, answered by walking the chain. The delay rule lives in the audit layer with the rest of
 it. An auditor comparing witness times is doing arithmetic on values it already holds.
 
-### Still to settle in implementation
+### There is no chain-level delay, and why
 
-- **What N is.** It must exceed the time a creator plausibly takes to notice, without leaving a
-  compromised recovery key live for months. Days rather than hours or years.
-- **Encoding.** A recovery-rotation leaf must be distinguishable from a rotation leaf and from a
-  content leaf, which is the same open encoding question §*Open* already carries.
+An earlier version of this document delayed any leaf replacing the `recovery_key` by five days, so
+a creator could notice a hostile change and counter-rotate. **That reasoning was wrong and the rule
+is removed.**
+
+It assumed one chain. Theft produces two.
+
+A thief works from a *copy*. They append their recovery rotation at seq 401 with `parent_head`
+pointing at head(0…400). The creator, not having seen it, appends their counter-rotation at seq
+401 with the **same** parent. That is a fork, not a sequence: the creator's leaf never sits after
+the thief's, so it cannot supersede it. Both get witnessed. Both are anchored to Bitcoin. The rule
+that a pending rotation dies when its signing key is rotated out holds *within* a chain and does
+nothing across two.
+
+**And nothing in the format can detect the fork.** OpenTimestamps calendars timestamp and upgrade;
+they do not index. There is no query of the form *"what else has been timestamped that shares this
+chain's prefix"*, so an agent cannot see the other branch — it is not hidden, there is simply
+nowhere to look.
+
+So the delay helped only where both parties extend the *same* store, which is a shared machine or a
+synced directory, not the case it was written for. It cost the verifier an audit rule and bought
+nothing against theft.
+
+### What the chain does and does not give you
+
+Worth stating flatly, because the delay was papering over the boundary:
+
+| | |
+| --- | --- |
+| The chain proves | you wrote this, by this date, and you control the keys that signed it |
+| The chain cannot | detect a competing fork, or resolve one |
+
+Detection needs somewhere claims are collected and compared. That is the registry — see
+[`publication-and-versions.md`](./publication-and-versions.md) § *A key change needs the owner of
+record to say yes*. A creator who never touches DAON keeps everything in the first row and gets
+nothing in the second, and that is the honest trade rather than a gap to paper over.
+
+### Encoding: a sentinel, not a new field
+
+**Normative.** A leaf whose `content_commit` is **32 zero bytes** is a **key event**, not a content
+revision. See [`wire-format.md`](./wire-format.md) §6.
+
+The value is unreachable otherwise. Empty content commits to
+`084fed08b978af4d7d196a7446a86b58009e636b611db16211b65a9aadff29c5`, and producing all-zero any
+other way needs a SHA-256 preimage. The format already uses the same trick for genesis, whose
+`parent_head` is 32 zero bytes.
+
+**Which key event it is needs no encoding at all.** It follows from which keys changed relative to
+the parent leaf:
+
+| `author_key` | `recovery_key` | Event | Signed by |
+| --- | --- | --- | --- |
+| changed | unchanged | **rotation** | the previous `recovery_key` |
+| unchanged | changed | **recovery rotation** | the previous `author_key`, effective after five days |
+| changed | changed | **transfer** | the previous `author_key`, effective after five days |
+
+Neither key changing is not a key event; such a leaf is malformed and must be rejected.
+
+#### Why a sentinel rather than a version byte
+
+A flag in the format version was the obvious alternative and it breaks something important.
+
+A verifier that does not understand key events must still be able to **parse** the leaf. `head` is
+a Merkle root over every `leaf_id`, so a verifier that chokes on one leaf cannot compute the head,
+and the whole chain becomes unverifiable to it. A fixed layout means an older verifier still
+hashes the body, still walks the proof, still confirms inclusion — it simply does not interpret
+the event. **History stays verifiable**, which is the property that cannot be traded.
+
+#### What it costs the verifier, stated plainly
+
+Step 4 gains a condition: verify the signature against the leaf's `author_key`, **unless**
+`content_commit` is the sentinel, in which case verify against its `recovery_key`.
+
+That is a branch rather than a chain walk, and it is still the fourth step rather than a fifth.
+But it is a change to the minimum verifier, and pretending otherwise would be the kind of quiet
+erosion §*What it costs the verifier* exists to prevent.
+
+---
+
+## A superseded key still proves who wrote the past
+
+A rotation hands over the **future** of a chain. It does not, and cannot, transfer the fact that a
+particular key signed leaves 0–400.
+
+That fact stays demonstrable, by whoever still holds the key: **sign a fresh challenge with it.**
+Nothing in the format changes, no field is needed, and the chain is not touched. Controlling a key
+that signed witnessed history is evidence about that history, whether or not the key still governs
+the chain.
+
+### Why this is the answer to a stolen chain
+
+Consider the conflict directly. A thief holds the recovery key, rotates the author key to their
+own, and continues the chain. What each party has afterwards:
+
+| | The thief | The creator |
+| --- | --- | --- |
+| Can extend the chain | **yes**, from the rotation onward | no |
+| Can alter leaves 0–400 | no — needs a SHA-256 preimage | no |
+| Can prove control of the key that signed 0–400 | **no** | **yes** |
+| Fourteen months of witnessed drafting | inherited, not made | **made, and provably** |
+
+So the thief owns the continuation and the creator can still prove they wrote everything that
+matters. Put beside a dated dispute record and a chain that visibly changes hands at seq 401, that
+is a strong position — and it is available immediately, with no cooperation from anyone.
+
+**A challenge must be bound to the occasion.** A nonce, an expiry, and the claim it is answering,
+so a signature captured once cannot be replayed as an answer to a different question later.
+
+### It cuts both ways, and that is correct
+
+After a legitimate sale, the seller still holds their old key and can still prove they signed the
+pre-transfer leaves. That is not a leak; it is true, and § *Transfer is the easy case* already says
+so: a publisher who acquires a work *"gets the continuation and not a claim on the authorship of
+what came before."*
+
+Proving control of a superseded key is what makes that sentence operational rather than merely
+stated.
+
+### Where it stops
+
+If the thief took **both** keys, both parties can prove control of both, and key control decides
+nothing. The dispute falls back to ordinary evidence — drafts, correspondence, who has the working
+files — exactly as it would have without any of this. Cryptography narrows the question; it does
+not always answer it.
+
+---
+
+## Alerting: the window is worthless if nobody is told
+
+The five-day delay exists so a creator can notice a hostile change and answer it. **Noticing is
+not automatic**, and a window nobody is told about is just five days of nothing happening.
+
+### What can and cannot see a key event
+
+| Surface | Sees | Blind to |
+| --- | --- | --- |
+| **The agent, locally** | key events in the chain it holds | a copy someone else is extending |
+| **DAON, on association** | a key change asserted against registered content | chains that never touch a registration |
+| — | — | **a chain nobody ever surfaces** |
+
+That last row is the honest limit and it is smaller than it looks: **a chain nobody shows you is
+not being used against you.** A thief who never surfaces the stolen chain has stolen the ability to
+sign and gained nothing by it. The moment they try to *use* it — asserting it against a
+registration, producing a certificate, claiming the work — it becomes visible, and that is exactly
+when an alert can fire.
+
+So the earlier note that detection is *"inherent to a system with no central registry to alert"* is
+half right. It holds for chains DAON never sees. It does not hold once a chain is asserted against
+a registration, and that is the case that matters.
+
+### What DAON should send
+
+When an association naming a **new head or a new entity** arrives for a `content_hash` that already
+has associations, DAON emails every account that previously associated that hash.
+
+The existing `sendNewDeviceNotification` is the right shape: an unsolicited security notice to a
+mailbox already verified by magic link.
+
+**It must fire on every key event, not only suspicious ones.** DAON does not get to decide which
+rotations are legitimate — that is the adjudication this design refuses everywhere else. It reports
+that a key change was asserted, names who asserted it and when, and lets the creator decide. A
+creator who rotated their own key gets a message confirming it, which is the correct outcome:
+security notifications are worth having precisely because you can recognise your own actions among
+them.
+
+**It must state the deadline.** The actionable part is not that something happened; it is that
+there are five days to answer:
+
+> A key change was asserted for content you registered, on 17 August at 14:02, by `x@y.z`.
+>
+> **This will not be recorded as yours unless you say yes.** If you do nothing, the request expires
+> on 22 August and DAON's record is unchanged.
+
+Note which way silence falls. A request that ages out is refused, not accepted — an unread email
+must never become an ownership decision, and expiry is the only reading of silence that cannot be
+exploited by waiting.
+
+### What the agent should do
+
+Enumerate the key events in a chain and surface them, without judging any of them. A rotation
+appearing in a store the creator did not expect — after a restore, on a shared machine, in a synced
+directory — is worth seeing even when it is benign.
+
+`Store::key_events` provides that enumeration. What a client does with it is a product decision;
+that it must be *available* is not.
+
+### What this does not do
+
+- **It cannot alert on a chain DAON has never been told about.** Registering and associating is
+  what creates the relationship; there is no background surveillance and there should not be.
+- **It cannot reach a creator who has lost the mailbox.** Email is the access path, with everything
+  § *Custody domains* says about that.
+- **It does not prevent anything.** A hostile rotation still succeeds. The alert converts
+  *undetected* into *detected*, which is the whole of what the five days are for.
 
 ---
 
@@ -377,8 +569,9 @@ chain exists, knows what it is worth, and had months of legitimate access.
 - **A creator who loses both keys has lost the chain.** There is no third mechanism, deliberately.
   Anything that could restore access without either key would be a backdoor, and a backdoor with
   DAON holding it would make DAON the authority the whole design refuses to be.
-- **Detection assumes someone is looking.** An abandoned chain can be rotated without anyone
-  noticing. This is inherent to a system with no central registry to alert.
+- **Detection assumes someone is looking**, and § *Alerting* is what makes looking possible. An
+  abandoned chain that never touches a registration can still be rotated unnoticed — but a chain
+  nobody surfaces is a chain nobody is using against its creator.
 
 ## Open
 

@@ -52,6 +52,7 @@ fn a_good_claim_verifies() {
             witness_time_ms: 1_754_000_900_000,
         },
         signature: None,
+        parent: None,
     })
     .expect("should verify");
 
@@ -76,6 +77,7 @@ fn step2_a_leaf_not_under_the_head_is_refused() {
             witness_time_ms: 1_754_000_900_000,
         },
         signature: None,
+        parent: None,
     })
     .unwrap_err();
     assert_eq!(err, Failure::NotInWitnessedHead);
@@ -97,6 +99,7 @@ fn step2_a_tampered_leaf_is_refused() {
             witness_time_ms: 1_754_000_900_000,
         },
         signature: None,
+        parent: None,
     })
     .unwrap_err();
     assert_eq!(
@@ -119,6 +122,7 @@ fn step3_an_attestation_about_another_head_is_refused() {
             witness_time_ms: 1_754_000_900_000,
         },
         signature: None,
+        parent: None,
     })
     .unwrap_err();
     assert_eq!(err, Failure::AttestationHeadMismatch);
@@ -185,6 +189,7 @@ mod signatures {
                 witness_time_ms: 1_754_000_900_000,
             },
             signature: Some(&sig),
+            parent: None,
         })
         .unwrap_err();
         // author_key here is 0x11 repeated, which is not a valid Ed25519 point,
@@ -209,6 +214,7 @@ mod signatures {
                 witness_time_ms: 42,
             },
             signature: None,
+            parent: None,
         })
         .unwrap();
         assert!(!out.author_signature_checked);
@@ -233,6 +239,7 @@ fn a_verifier_without_signature_support_fails_closed() {
             witness_time_ms: 1,
         },
         signature: Some(&sig),
+        parent: None,
     })
     .unwrap_err();
     assert_eq!(err, Failure::SignaturesUnsupported);

@@ -310,6 +310,88 @@ export const db = {
     },
   },
 
+  // Chain associations
+  //
+  // Append-only and non-exclusive by design: many accounts may assert an
+  // association for one content hash and none displaces another. There is no
+  // update and no delete here on purpose.
+  associations: {
+    async append(data: {
+      content_hash: string;
+      entity_id: string;
+      head: string;
+      asserted_by: number | null;
+      author_key?: string | null;
+      recovery_key?: string | null;
+      status?: string;
+      expires_at?: Date | null;
+    }) {
+      const result = await db.query(
+        `INSERT INTO content_associations
+           (content_hash, entity_id, head, asserted_by, author_key, recovery_key,
+            status, expires_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         RETURNING *`,
+        [
+          data.content_hash, data.entity_id, data.head, data.asserted_by,
+          data.author_key ?? null, data.recovery_key ?? null,
+          data.status ?? 'current', data.expires_at ?? null,
+        ]
+      );
+      return result.rows[0];
+    },
+
+    /**
+     * The association DAON currently answers with, if any.
+     *
+     * Pending and disputed rows are excluded deliberately: they are recorded
+     * facts about what was asserted, not answers.
+     */
+    async currentFor(contentHash: string) {
+      const result = await db.query(
+        `SELECT * FROM content_associations
+          WHERE content_hash = $1 AND status IN ('current', 'attested')
+          ORDER BY recorded_at DESC
+          LIMIT 1`,
+        [contentHash]
+      );
+      return result.rows[0] ?? null;
+    },
+
+    /**
+     * Resolve a pending association.
+     *
+     * Only the owner of record may call this, which the route enforces. Both
+     * outcomes are appended to the row rather than deleting anything -- a
+     * disputed assertion stays on the record, dated and attributed.
+     */
+    async resolve(id: number, status: 'attested' | 'disputed', userId: number) {
+      // An expired request is not answerable. Enforced in the WHERE clause so a
+      // slow reply cannot win a race against the deadline it already missed.
+      const result = await db.query(
+        `UPDATE content_associations
+            SET status = $2, resolved_by = $3, resolved_at = CURRENT_TIMESTAMP
+          WHERE id = $1
+            AND status = 'pending'
+            AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+          RETURNING *`,
+        [id, status, userId]
+      );
+      return result.rows[0] ?? null;
+    },
+
+    /** Every association for a hash, oldest first. Order is chronological, not ranked. */
+    async forContent(contentHash: string) {
+      const result = await db.query(
+        `SELECT * FROM content_associations
+          WHERE content_hash = $1
+          ORDER BY recorded_at ASC`,
+        [contentHash]
+      );
+      return result.rows;
+    },
+  },
+
   // Duplicate detection operations
   duplicates: {
     async logDetection(data: {

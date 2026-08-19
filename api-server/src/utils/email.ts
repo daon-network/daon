@@ -508,3 +508,98 @@ export async function verifyEmailConfig(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Tell a creator that a key change was asserted against content they registered.
+ *
+ * Sent on **every** key event, not only suspicious ones. DAON does not get to
+ * decide which rotations are legitimate — that is the adjudication this design
+ * refuses everywhere else. A creator who rotated their own key receives a
+ * message confirming it, which is the correct outcome: security notifications
+ * are worth having precisely because you can recognise your own actions among
+ * them.
+ *
+ * The deadline is the actionable part. A five-day window nobody is told about
+ * is five days of nothing happening, so the date the right to answer expires is
+ * stated in the subject line and again in the body.
+ *
+ * See docs/design/key-recovery.md § Alerting.
+ */
+export async function sendKeyEventNotification(
+  email: string,
+  details: {
+    contentHash: string;
+    entityId: string;
+    assertedBy: string;
+    assertedAt: Date;
+    /** When the request expires and is refused. */
+    answerBy: Date;
+  }
+): Promise<void> {
+  const fmt = (d: Date) =>
+    d.toLocaleString('en-GB', {
+      day: 'numeric', month: 'long', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
+    }) + ' UTC';
+
+  const short = (h: string) => `${h.slice(0, 12)}…`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><title>Key change on your registered work - DAON</title></head>
+    <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6;color:#101828;max-width:600px;margin:0 auto;padding:20px">
+      <h2 style="color:#101828">A key change was asserted for your registered work</h2>
+
+      <div style="background:#F9FAFB;border-left:4px solid #155DFC;padding:16px;border-radius:4px;margin:20px 0">
+        <p style="margin:0 0 8px"><strong>Content</strong> ${short(details.contentHash)}</p>
+        <p style="margin:0 0 8px"><strong>Chain</strong> ${short(details.entityId)}</p>
+        <p style="margin:0 0 8px"><strong>Asserted by</strong> ${details.assertedBy}</p>
+        <p style="margin:0"><strong>When</strong> ${fmt(details.assertedAt)}</p>
+      </div>
+
+      <p><strong>If this was you, nothing needs doing.</strong> You are receiving this because we
+      send a notice for every key change, so that the ones you did not make stand out.</p>
+
+      <div style="background:#FEF3F2;border:2px solid #B42318;padding:16px;border-radius:4px;margin:20px 0">
+        <p style="margin:0 0 8px"><strong>This will not be recorded as yours unless you say so</strong></p>
+        <p style="margin:0">If you do nothing, the request expires on
+        <strong>${fmt(details.answerBy)}</strong> and is refused — DAON's record stays as it is.
+        Silence refuses, so an unread message cannot cost you anything.</p>
+      </div>
+
+      <p style="color:#6A7282;font-size:14px">DAON records what it is told and does not decide
+      between competing claims. This notice reports an assertion; it is not a judgement about who
+      owns anything.</p>
+    </body>
+    </html>
+  `;
+
+  // A plain-text alternative, because a security notice must survive a client
+  // that will not render HTML.
+  const text = [
+    'A key change was asserted for your registered work.',
+    '',
+    `Content:      ${short(details.contentHash)}`,
+    `Chain:        ${short(details.entityId)}`,
+    `Asserted by:  ${details.assertedBy}`,
+    `When:         ${fmt(details.assertedAt)}`,
+    '',
+    'If this was you, nothing needs doing. We send a notice for every key change',
+    'so that the ones you did not make stand out.',
+    '',
+    'THIS WILL NOT BE RECORDED AS YOURS UNLESS YOU SAY SO:',
+    `If you do nothing, the request expires on ${fmt(details.answerBy)} and is`,
+    "refused. DAON's record stays as it is. Silence refuses, so an unread",
+    'message cannot cost you anything.',
+    '',
+    'DAON records what it is told and does not decide between competing claims.',
+  ].join('\n');
+
+  await sendEmail(
+    email,
+    `Key change on your registered work — confirm by ${fmt(details.answerBy)}`,
+    html,
+    text
+  );
+}

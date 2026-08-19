@@ -162,6 +162,84 @@ A false association is also largely self-refuting: anyone holding the content co
 `content_commit` and sees the claimed chain does not commit to it. And an attacker who *does* hold
 the content is the ordinary competing-claim case, where earlier witnessed history wins.
 
+### A key change needs the owner of record to say yes
+
+**Normative.** An association whose chain carries **different keys** from the last association for
+that content is recorded as **pending**, and does not become DAON's current answer until the
+**owner of record** attests to it.
+
+An association that merely advances the head — same keys, more leaves — needs no attestation. That
+is a chain being extended, which is what chains do.
+
+#### Why this gate and not the other one
+
+Requiring the *previous asserter's* consent would be a mistake, and a tempting one. It hands
+whoever asserted first a veto over everyone after, which is the squatting problem inverted: a false
+assertion on Monday would stop the real creator recording their own on Tuesday.
+
+The **owner of record** is a different gate entirely, and it is one DAON is entitled to apply,
+because it is the only thing here DAON is actually authoritative for. Recording an assertion is
+permissionless; changing what DAON says about ownership is not.
+
+#### What it does and does not do
+
+It does not stop the rotation. The chain rotated on someone's machine, signed by a key DAON does
+not hold, and is witnessed against Bitcoin whatever happens here. **DAON's record lagging the chain
+is the correct outcome**, not a bug: the record says what DAON was told and accepted, never what
+the chain contains.
+
+What it buys is that a stolen chain cannot quietly become DAON's answer for a work whose owner is
+sitting right there with an email address.
+
+#### Attestation is the only thing that can decide this
+
+DAON can check a rotation cryptographically, given the leaf, its signature, the parent and a
+witness. That proves the change was **authorised by the key on file** — and a stolen key *is* the
+key on file. A thief's rotation verifies perfectly.
+
+So verification answers *"was this authorised by the recorded key?"* and never *"is this person the
+owner?"* Only the second question decides whose record this is, and only a human with the account
+can answer it. **There is no other way**, which is why the attestation is not a fallback for when
+verification is unavailable — it is the mechanism, and verification is a separate, weaker check
+that runs alongside.
+
+The one exception is not an exception: when the asserter **is** the owner of record, asserting is
+attesting. Nothing else substitutes.
+
+#### Pending, then expired
+
+The assertion is written immediately with `status = 'pending'`, because the date it was made is
+evidence and discarding it would destroy that. It simply is not current until attested.
+
+```
+2026-08-17  association asserted   head H₂, keys differ   → pending
+2026-08-17  notice emailed to the owner of record
+2026-08-22  attested  → current      (or)  disputed → recorded, still not current
+```
+
+Three outcomes, all appended, none erasing anything:
+
+| Owner does | Result |
+| --- | --- |
+| Attests | the association becomes current |
+| Disputes | recorded as disputed, dated and attributed; never becomes current |
+| Nothing, for five days | **expires** — refused, and the record is unchanged |
+
+**Silence refuses.** It is the only reading that cannot be exploited by waiting: if silence
+accepted, an attacker's best move would be to assert against someone on holiday and say nothing.
+An expired request stays on the record, dated, because that it was made is a fact — it simply never
+became DAON's answer.
+
+Five days is the same number the chain-level delay used before that rule was removed, and it is
+doing a different job here: not "time to counter-rotate" but "time to read an email".
+
+#### When there is no owner of record
+
+Some content has none — the reindexed records whose `user_id` was lost, and anything registered
+anonymously. There is nobody to ask, so the association is recorded and marked as never attested.
+That is weaker, and it is honest: an unattested claim about content nobody has claimed is exactly
+as strong as it sounds.
+
 ### Recorded, or verified
 
 `verified` distinguishes two very different claims, and the certificate must render them

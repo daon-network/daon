@@ -222,6 +222,7 @@ fn a_local_leaf_becomes_a_verifiable_claim() {
             witness_time_ms: anchor.time_ms,
         },
         signature: None,
+        parent: None,
     })
     .expect("verifies");
 

@@ -26,6 +26,7 @@ import { DatabaseClient, db } from './database/client.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
 import { verifyToken } from './auth/auth.js';
+import { sendKeyEventNotification } from './utils/email.js';
 import healthRoutes from './routes/health.js';
 import { BrokerService } from './broker/broker-service.js';
 import { createBrokerAuthMiddleware } from './broker/broker-auth-middleware.js';
@@ -200,6 +201,21 @@ const optionalAuth = (req: any, _res: any, next: any) => {
   next();
 };
 
+// Association requires an account, because an assertion nobody can be held to
+// is not worth recording. Attribution is the accountability mechanism -- DAON
+// never ranks competing assertions, so knowing who made one is all it has.
+const requireAuth = (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const decoded = authHeader?.startsWith('Bearer ')
+    ? verifyToken(authHeader.substring(7))
+    : null;
+  if (!decoded) {
+    return res.status(401).json({ success: false, error: 'authentication required' });
+  }
+  req.userId = decoded.userId;
+  next();
+};
+
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -227,6 +243,20 @@ const handleValidationErrors = (req, res, next) => {
  * Plain-text input is unchanged, so hashes registered before this behaviour
  * existed still match.
  */
+/**
+ * How long an owner of record has to answer an asserted key change.
+ *
+ * Not a chain rule -- the chain has none, and an earlier design that delayed
+ * key events was removed because theft forks a chain rather than extending it,
+ * and nothing in the format can detect a fork. This is purely how long DAON
+ * holds a request open before refusing it.
+ *
+ * Silence refuses. It is the only reading that cannot be exploited by waiting:
+ * if silence accepted, an attacker's best move would be to assert against
+ * somebody on holiday and say nothing.
+ */
+const ATTESTATION_WINDOW_MS = 5 * 24 * 60 * 60 * 1000;
+
 function generateContentHash(content) {
   const { text } = toPlainText(content);
   const hash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
@@ -782,6 +812,206 @@ app.get('/api/v1/verify/:hash', [
 // Verify-by-content endpoint
 // Inverts the verification flow: submit content → get back who registered it (if anyone)
 // This closes the "token transplanting" gap where a hash link can appear on unrelated content.
+
+/**
+ * Associate a provenance chain with a registered content hash.
+ *
+ * Appended, never updated, and deliberately **not exclusive**: any number of
+ * accounts may assert an association for the same hash and none displaces
+ * another. If a hash accepted only one, whoever asserted first would squat it,
+ * and the person best placed to do that is not the creator.
+ *
+ * DAON records what it is told. It does not verify that the chain covers this
+ * content -- that needs the content, which is not stored -- and it does not
+ * decide between competing assertions. See docs/design/publication-and-versions.md.
+ */
+app.post('/api/v1/content/:hash/association', [
+  requireAuth,
+  body('entity_id').isLength({ min: 64, max: 71 }).withMessage('entity_id required'),
+  body('head').isLength({ min: 64, max: 71 }).withMessage('head required'),
+  body('author_key').optional().isLength({ min: 64, max: 71 }),
+  body('recovery_key').optional().isLength({ min: 64, max: 71 }),
+  handleValidationErrors,
+], async (req: any, res) => {
+  try {
+    const bare = (v: any) => (v == null ? null : String(v).replace(/^sha256:/, ''));
+    const contentHash = bare(req.params.hash)!;
+    const entityId = bare(req.body.entity_id)!;
+    const head = bare(req.body.head)!;
+    const authorKey = bare(req.body.author_key);
+    const recoveryKey = bare(req.body.recovery_key);
+
+    const hex64 = (v: string | null) => v === null || /^[0-9a-f]{64}$/.test(v);
+    if (![contentHash, entityId, head].every((v) => hex64(v)) || !hex64(authorKey) || !hex64(recoveryKey)) {
+      return res.status(400).json({ success: false, error: 'expected 64 hex characters' });
+    }
+
+    // Who DAON says owns this. The gate is the owner of record -- not the
+    // previous asserter, which would hand whoever asserted first a veto over
+    // everyone after.
+    const registration = await db.content.findByHash(contentHash);
+    const ownerOfRecord: number | null = registration?.user_id ?? null;
+    const asserterIsOwner = ownerOfRecord !== null && ownerOfRecord === req.userId;
+
+    // Does this assertion change the chain's keys, or merely advance its head?
+    const current = await db.associations.currentFor(contentHash);
+    const keysKnown = current?.author_key != null || current?.recovery_key != null;
+    const keysDiffer =
+      keysKnown &&
+      (current.author_key !== authorKey || current.recovery_key !== recoveryKey);
+
+    // Three ways to be current, one way to be pending.
+    //
+    // The owner asserting needs no attestation -- asserting *is* attesting, and
+    // emailing someone to confirm what they just did is friction with no safety
+    // in it. A chain that merely grew needs none either. Only somebody else
+    // changing the keys on a work with an owner waits.
+    //
+    // Note what verification would not buy here: a thief holding the stolen key
+    // produces a rotation that verifies perfectly, because the stolen key *is*
+    // the recorded key. Soundness is not ownership.
+    const needsAttestation = keysDiffer && !asserterIsOwner && ownerOfRecord !== null;
+
+    const record = await db.associations.append({
+      content_hash: contentHash,
+      entity_id: entityId,
+      head,
+      asserted_by: req.userId,
+      author_key: authorKey,
+      recovery_key: recoveryKey,
+      status: needsAttestation ? 'pending' : 'current',
+      expires_at: needsAttestation ? new Date(Date.now() + ATTESTATION_WINDOW_MS) : null,
+    });
+
+    // Notify the owner of record, and only them. An unsent email must not fail
+    // the request: the association is recorded and not sending does not
+    // unrecord it.
+    let notified = false;
+    if (needsAttestation) {
+      try {
+        const owner = await db.users.findById(ownerOfRecord!);
+        const asserter = await db.users.findById(req.userId);
+        if (owner?.email) {
+          await sendKeyEventNotification(owner.email, {
+            contentHash,
+            entityId,
+            assertedBy: asserter?.email ?? 'another account',
+            assertedAt: new Date(),
+            answerBy: new Date(Date.now() + ATTESTATION_WINDOW_MS),
+          });
+          notified = true;
+        }
+      } catch (mailError) {
+        logger.error('key-event notification failed:', (mailError as any).message);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      association: {
+        id: record.id,
+        content_hash: contentHash,
+        entity_id: entityId,
+        head,
+        status: record.status,
+        verified: false,
+        recorded_at: record.recorded_at,
+      },
+      note:
+        record.status === 'pending'
+          ? 'Recorded, and not current: this asserts different chain keys, so it waits for the owner of record. It expires in five days, refused.'
+          : 'Recorded as asserted. DAON has not verified that this chain covers this content.',
+      // Stated even when it is nobody, because "no owner of record" is a fact a
+      // caller should know rather than infer from silence.
+      owner_of_record: ownerOfRecord !== null,
+      notified,
+    });
+  } catch (error) {
+    logger.error('association failed:', (error as any).message);
+    res.status(500).json({ success: false, error: 'could not record association' });
+  }
+});
+
+/**
+ * Attest or dispute a pending association. Owner of record only.
+ *
+ * Both outcomes are recorded. A disputed assertion is not deleted -- it stays on
+ * the record, dated and attributed, because that it was made is a fact.
+ */
+app.post('/api/v1/associations/:id/:action(attest|dispute)', [
+  requireAuth,
+], async (req: any, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ success: false, error: 'bad association id' });
+    }
+
+    const rows = await db.query('SELECT * FROM content_associations WHERE id = $1', [id]);
+    const assoc = rows.rows[0];
+    if (!assoc) return res.status(404).json({ success: false, error: 'no such association' });
+    if (assoc.status !== 'pending') {
+      return res.status(409).json({ success: false, error: `association is ${assoc.status}` });
+    }
+    if (assoc.expires_at && new Date(assoc.expires_at) <= new Date()) {
+      // Expired means refused. Answering late does not revive it -- a deadline
+      // that can be missed and then met is not a deadline.
+      return res.status(409).json({
+        success: false,
+        error: 'this request expired and was refused',
+        expired_at: assoc.expires_at,
+      });
+    }
+
+    const registration = await db.content.findByHash(assoc.content_hash);
+    if (!registration?.user_id || registration.user_id !== req.userId) {
+      // 403 rather than 404: the association exists and the caller is simply
+      // not the person entitled to resolve it.
+      return res.status(403).json({ success: false, error: 'only the owner of record may resolve this' });
+    }
+
+    const status = req.params.action === 'attest' ? 'attested' : 'disputed';
+    const updated = await db.associations.resolve(id, status, req.userId);
+    if (!updated) return res.status(409).json({ success: false, error: 'already resolved' });
+
+    res.json({
+      success: true,
+      association: { id, status: updated.status, resolved_at: updated.resolved_at },
+      note:
+        status === 'attested'
+          ? 'Attested. This is now the association DAON answers with.'
+          : 'Disputed. Recorded and dated; it will not become current.',
+    });
+  } catch (error) {
+    logger.error('association resolve failed:', (error as any).message);
+    res.status(500).json({ success: false, error: 'could not resolve association' });
+  }
+});
+
+/** Every association for a content hash, oldest first. None outranks another. */
+app.get('/api/v1/content/:hash/associations', async (req, res) => {
+  try {
+    const contentHash = String(req.params.hash).replace(/^sha256:/, '');
+    const rows = await db.associations.forContent(contentHash);
+    res.json({
+      success: true,
+      count: rows.length,
+      associations: rows.map((r: any) => ({
+        entity_id: r.entity_id,
+        head: r.head,
+        verified: r.verified,
+        recorded_at: r.recorded_at,
+      })),
+      note: rows.length > 1
+        ? 'More than one chain is asserted for this content. DAON does not rank them.'
+        : undefined,
+    });
+  } catch (error) {
+    logger.error('association lookup failed:', (error as any).message);
+    res.status(500).json({ success: false, error: 'could not read associations' });
+  }
+});
+
 app.post('/api/v1/verify-content', [
   body('content')
     .isString()
