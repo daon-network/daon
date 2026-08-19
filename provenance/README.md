@@ -30,6 +30,24 @@ core ──── verify        the format, and the four steps that check it
 | [`agent`](agent/) | On-disk store, keychain signer, coalescing policy, witness state | core, witness |
 | [`agentd`](agentd/) | The daemon: a Unix socket serving the editor API | all of the above |
 
+### What the chain cannot do
+
+Stated before the API, because it is the boundary everything else is arranged around:
+
+| | |
+| --- | --- |
+| The chain proves | you wrote this, by this date, and control the keys that signed it |
+| The chain **cannot** | detect a competing fork, or resolve one |
+
+A thief works from a copy, so their rotation and your counter-rotation share a parent and **fork**
+rather than sequence. And no timestamp calendar indexes, so there is no query for what else shares
+a chain's prefix — the other branch is not hidden, there is nowhere to look.
+
+Detecting competing claims needs somewhere they are collected, which is the registry. See
+[`publication-and-versions.md`](../docs/design/publication-and-versions.md). A creator who never
+touches DAON keeps the first row and gets nothing from the second, and that is the trade rather
+than a gap.
+
 ### What each one refuses to do
 
 The boundaries are deliberate and worth knowing before you go looking for a function that is not
@@ -189,7 +207,7 @@ Honest status, because the crate docs describe intent and this describes reality
 | The daemon and its four routes | **Works** |
 | **Submitting to a calendar** | **Missing.** Nothing reaches OpenTimestamps, so **no head is witnessed yet** |
 | **A Bitcoin header source** | **Missing.** `BlockSource` has no implementation here |
-| Rotation, recovery rotation and transfer | **Works.** The five-day delay on a recovery rotation is specified but not yet enforced by a verifier |
+| Rotation, recovery rotation and transfer | **Works.** Effective at their own `seq` — there is deliberately no delay |
 | **Reading content back out of the store** | **Missing.** Segments are stored by hash with no manifest recording their order |
 | **Binary and image registration** | **Missing.** Text only |
 

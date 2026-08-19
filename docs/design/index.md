@@ -22,6 +22,11 @@ evidence. Anyone should be able to read what we decided, see the reasoning, and 
 
 | | |
 | --- | --- |
+| [Decisions, and why]({{ '/design/decisions/' \| relative_url }}) | The load-bearing choices, the reasoning behind each, and the ones we got wrong first |
+
+
+| | |
+| --- | --- |
 | [Data model]({{ '/design/provenance-data-model/' \| relative_url }}) | Leaves, heads and witnesses — what the ledger is and what each part proves |
 | [Registry and provenance]({{ '/design/registry-and-provenance/' \| relative_url }}) | Two systems with two anchors, and why nothing should keep them in sync |
 

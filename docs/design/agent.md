@@ -75,6 +75,15 @@ Four routes: `session/open`, `observe`, `commit`, and `entity/{id}/proof`.
 
 ---
 
+## What it cannot do
+
+Worth knowing before the guarantees, because it bounds them.
+
+The chain proves you wrote something, by a date, with keys you control. It **cannot detect a
+competing fork or resolve one** — a thief works from a copy, so their leaf and yours share a parent
+and branch rather than sequence, and timestamp calendars do not index, so neither side can look for
+the other. Competing claims meet at the registry or nowhere.
+
 ## What it refuses to do
 
 These are load-bearing, not oversights:
