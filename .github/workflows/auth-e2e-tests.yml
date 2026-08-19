@@ -107,6 +107,15 @@ jobs:
           fi
           echo "  container matches playwright $want"
 
+      # The Playwright image has browsers, not a postgres client. apt is fine
+      # here: the dpkg lock that unattended-upgrades holds is on the runner
+      # host, and this runs inside a container that has neither.
+      - name: Install postgres client
+        if: steps.check_frontend.outputs.exists == 'true'
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq postgresql-client
+
       - name: Setup database schema
         if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./api-server

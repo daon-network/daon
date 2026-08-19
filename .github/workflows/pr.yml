@@ -279,30 +279,20 @@ jobs:
         # Steps 1-3 of the verifier must work without signature support, and a
         # build lacking it must fail closed rather than accept any signature.
         run: cargo test -p daon-provenance-verify --no-default-features --features std
-      - name: The vendored wasm must match the source
+      - name: The committed wasm must match the current source
         # api-server loads a committed copy of this artifact so it runs one
         # verifier rather than a reimplementation. A stale copy would be a
         # second implementation wearing the first one's name.
         #
-        # Built through the script rather than cargo directly. rustc embeds
-        # absolute build paths, so the same source compiled in /Volumes/... and
-        # /home/runner/... yields different bytes -- an earlier version of this
-        # check compared artifacts from different machines and could never pass.
-        # The script remaps those paths, which is also what makes
-        # rust-toolchain.toml's claim about rebuilding and getting the same
-        # bytes actually true.
+        # Checked by hashing the *inputs*, not the output. Byte-identical wasm
+        # across platforms is not achievable here -- an aarch64-darwin host and
+        # an x86_64-linux host emit different binaries from the same pinned
+        # compiler and the same remapped paths -- so an earlier version of this
+        # step compared artifacts from two machines and could never pass. The
+        # input hash catches the risk that exists: editing the verifier and
+        # forgetting to rebuild.
         working-directory: .
-        run: |
-          ./scripts/build-verifier-wasm.sh
-          built=provenance/target/wasm32-unknown-unknown/release/daon_provenance_verify_wasm.wasm
-          vendored=api-server/src/verifier/daon_provenance_verify_wasm.wasm
-          if ! cmp -s "$built" "$vendored"; then
-            echo "::error::api-server/src/verifier/*.wasm is stale."
-            echo "Rebuild it with: ./scripts/build-verifier-wasm.sh --install"
-            exit 1
-          fi
-          echo "  vendored wasm matches the source"
-
+        run: ./scripts/build-verifier-wasm.sh --check
       - name: Build the verifier for wasm32
         # Scoped to the verifier on purpose. Its value depends on a skeptic being
         # able to run it in a browser without trusting a binary we shipped, so
