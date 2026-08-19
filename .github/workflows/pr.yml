@@ -283,13 +283,22 @@ jobs:
         # api-server loads a committed copy of this artifact so it runs one
         # verifier rather than a reimplementation. A stale copy would be a
         # second implementation wearing the first one's name.
+        #
+        # Built through the script rather than cargo directly. rustc embeds
+        # absolute build paths, so the same source compiled in /Volumes/... and
+        # /home/runner/... yields different bytes -- an earlier version of this
+        # check compared artifacts from different machines and could never pass.
+        # The script remaps those paths, which is also what makes
+        # rust-toolchain.toml's claim about rebuilding and getting the same
+        # bytes actually true.
+        working-directory: .
         run: |
-          cargo build -p daon-provenance-verify-wasm \
-            --target wasm32-unknown-unknown --release
-          built=target/wasm32-unknown-unknown/release/daon_provenance_verify_wasm.wasm
-          vendored=../api-server/src/verifier/daon_provenance_verify_wasm.wasm
+          ./scripts/build-verifier-wasm.sh
+          built=provenance/target/wasm32-unknown-unknown/release/daon_provenance_verify_wasm.wasm
+          vendored=api-server/src/verifier/daon_provenance_verify_wasm.wasm
           if ! cmp -s "$built" "$vendored"; then
-            echo "::error::api-server/src/verifier/*.wasm is stale -- rebuild and commit it"
+            echo "::error::api-server/src/verifier/*.wasm is stale."
+            echo "Rebuild it with: ./scripts/build-verifier-wasm.sh --install"
             exit 1
           fi
           echo "  vendored wasm matches the source"
