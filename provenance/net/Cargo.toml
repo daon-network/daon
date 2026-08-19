@@ -1,0 +1,20 @@
+[package]
+name = "daon-provenance-net"
+version = "0.0.0"          # not published; the wire format is not frozen yet
+description = "The only crate in this workspace that talks to the network"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+daon-provenance-core.workspace = true
+daon-provenance-witness.workspace = true
+# Blocking, and rustls rather than the system TLS stack. The daemon is
+# synchronous and thread-per-connection; an async runtime it never drives would
+# be dead weight, and a pure-Rust TLS stack keeps the build free of system
+# libraries on every platform.
+ureq = { version = "2", default-features = false, features = ["tls"] }
+
+[dev-dependencies]
+hex.workspace = true

@@ -18,6 +18,7 @@ use daon_provenance_agent::witness::WitnessLog;
 use daon_provenance_agent::{Signer, Store};
 use daon_provenance_core::{Beacon, BeaconChain, Hash, Ingress, Observation};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 use crate::http::{error_body, Request};
 
@@ -64,7 +65,7 @@ pub struct Agent {
 
 struct Inner {
     store: Store,
-    witness: WitnessLog,
+    witness: Arc<WitnessLog>,
     signer: Box<dyn Signer + Send>,
     limits: Limits,
     sessions: HashMap<String, Live>,
@@ -80,7 +81,7 @@ struct Live {
 impl Agent {
     pub fn new(
         store: Store,
-        witness: WitnessLog,
+        witness: Arc<WitnessLog>,
         signer: Box<dyn Signer + Send>,
         limits: Limits,
     ) -> Self {

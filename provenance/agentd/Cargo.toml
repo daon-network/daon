@@ -19,6 +19,7 @@ path = "src/main.rs"
 daon-provenance-core.workspace = true
 daon-provenance-agent = { workspace = true, features = ["keychain"] }
 daon-provenance-witness.workspace = true
+daon-provenance-net.workspace = true
 # Hand-rolling a JSON parser is the one place in this project where doing it
 # ourselves would be reckless rather than principled: the input is
 # attacker-shaped and the failure modes are subtle. HTTP is different -- see
