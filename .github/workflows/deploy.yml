@@ -304,10 +304,11 @@ jobs:
             for attempt in $(seq 1 30); do
               body=$(curl -fsS --max-time 10 https://api.daon.network/health 2>/dev/null || true)
               if [ -n "$body" ]; then
-                served=$(printf '%s' "$body" | python3 -c \
-                  "import sys,json
-try: print(json.load(sys.stdin).get('build',{}).get('commit','missing'))
-except Exception: print('unparseable')" 2>/dev/null || echo "unparseable")
+                # One line on purpose. A multi-line python -c here has to be
+                # indented to stay inside this block scalar, and unindented
+                # continuation lines silently end the YAML block -- which is
+                # exactly how this workflow became unparseable once already.
+                served=$(printf '%s' "$body" | python3 -c "import sys,json;print(json.load(sys.stdin).get('build',{}).get('commit','missing'))" 2>/dev/null || echo "unparseable")
                 [ "$served" = "${{ github.sha }}" ] && break
               fi
               echo "  waiting for the API to serve this build (${attempt}/30, last: ${served:-no response})"

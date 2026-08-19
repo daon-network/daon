@@ -63,6 +63,41 @@ jobs:
             docs:
               - 'docs/**'
 
+  # ── CI itself ─────────────────────────────────────────────────────────────
+
+  workflows-parse:
+    name: Workflows Parse
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # A workflow file that does not parse fails at push time with "this run
+      # likely failed because of a workflow file issue" and no job log, so the
+      # first thing anyone learns is that a deploy did not happen. That is the
+      # same shape as the no-op deploys: CI reporting nothing rather than
+      # reporting a problem.
+      #
+      # The specific way it happened is worth knowing, because YAML invites it:
+      # a `run: |` block scalar ends at the first line indented less than the
+      # block, so an unindented continuation line inside a multi-line shell
+      # command silently terminates the block and everything after it is
+      # reparsed as YAML. It looks completely normal in a diff.
+      - name: Every workflow must parse
+        run: |
+          fail=0
+          for f in .github/workflows/*.yml .github/workflows/*.yaml; do
+            [ -e "$f" ] || continue
+            if python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$f" 2>/tmp/err; then
+              echo "  ok      $f"
+            else
+              echo "::error file=$f::does not parse as YAML: $(tr '\n' ' ' < /tmp/err)"
+              fail=1
+            fi
+          done
+          exit $fail
+
   # ── API Server ────────────────────────────────────────────────────────────
 
   security:
