@@ -99,17 +99,32 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw.outputs.v }}
 
+      # System libraries for webkit -- libavif, libharfbuzz-icu, libsecret,
+      # libhyphen, libwayland-server and friends. Chromium and firefox run on
+      # the bare runner image; webkit does not, and without these its 14 tests
+      # fail on a wall of missing .so files.
+      #
+      # Not cacheable: these are apt packages installed system-wide, not files
+      # under ~/.cache, so this runs even when the browser cache hits.
+      - name: System libraries for webkit
+        if: steps.check_frontend.outputs.exists == 'true'
+        working-directory: ./daon-frontend
+        # unattended-upgrades holds the dpkg lock on GitHub runners and apt waits
+        # on it indefinitely. That is what wedged this job into a 15-minute
+        # cancellation, and the same lock hung the Rust job for an hour. Stopping
+        # it first makes the wait bounded rather than indefinite.
+        run: |
+          sudo systemctl stop unattended-upgrades.service 2>/dev/null || true
+          sudo systemctl stop apt-daily.service apt-daily-upgrade.service 2>/dev/null || true
+          sudo killall -q apt-get apt 2>/dev/null || true
+          npx playwright install-deps webkit
+
       - name: Install Playwright browsers
         if: steps.check_frontend.outputs.exists == 'true' && steps.pw-cache.outputs.cache-hit != 'true'
         working-directory: ./daon-frontend
-        # No --with-deps. It shells out to apt-get, which waits on the dpkg lock
-        # that unattended-upgrades holds on GitHub runners -- the same hang that
-        # wedged the Rust job for an hour. The runner image already carries what
-        # these browsers need, and a missing library fails loudly at launch
-        # rather than silently eating the job's entire time budget.
-        #
-        # This step took 85s on a good run and over seven minutes on the one
-        # that hit the 15-minute ceiling and cancelled, skipping every test.
+        # Browser binaries only; system libraries are the step above. Split so
+        # this half can be cached and so a slow apt cannot cancel the job before
+        # a single test runs.
         run: npx playwright install chromium webkit firefox
 
       - name: Setup database schema
