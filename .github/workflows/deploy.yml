@@ -159,7 +159,17 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./daon-core
-          platforms: linux/amd64,linux/arm64
+          # amd64 only, matching production (x86_64) and pr.yml.
+          #
+          # The runner is amd64, so arm64 is built under QEMU, and cross-compiling
+          # Go that way is slow enough to blow the 15-minute budget: the amd64
+          # stages finished in seconds while arm64's `go build` ran for eleven
+          # minutes and was still going when the job was killed. That cancelled the
+          # deploy of a security update the checks had already passed.
+          #
+          # release.yml still builds both, which is where multi-arch belongs --
+          # that artifact is for other people's machines. This one is for ours.
+          platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
