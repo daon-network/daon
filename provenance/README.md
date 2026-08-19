@@ -193,10 +193,14 @@ Honest status, because the crate docs describe intent and this describes reality
 | The witness loop | **Works.** Runs on a timer from daemon startup; `--no-witness` opts out |
 | The daemon and its four routes | **Works** |
 | Rotation, recovery rotation and transfer | **Works.** Effective at their own `seq` — there is deliberately no delay |
-| **Reading content back out of the store** | **Missing.** Segments are stored by hash with no manifest recording their order |
+| Storing content | **Off by default.** Segments were write-only, and a fixed 1 KiB boundary makes a revision pass cost a full copy of the document. `open_keeping_content` opts in |
 | **Binary and image registration** | **Missing.** Text only |
 
-A chain can now be written, batched, submitted, upgraded and verified end to end. What remains is
-real but no longer load-bearing: an agent that cannot return the content it hashed is a worse
-agent, and one that cannot register a photograph is a narrower one, but neither stops the system
-making the claim it exists to make.
+A chain can now be written, batched, submitted, upgraded and verified end to end.
+
+The creator keeps their own file, which `wire-format.md` §6 already assumed — it has a creator
+generating segment proofs "from content only they hold". A chain costs 282 bytes per revision, so a
+thousand revisions is a few hundred kilobytes.
+
+What remains is binary and image registration, which makes the system narrower rather than
+unfinished.

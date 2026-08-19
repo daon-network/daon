@@ -138,7 +138,7 @@ pub struct StoredLeaf {
 ///
 /// ```text
 /// <root>/
-///   blobs/<first two hex>/<full hex>     content segments, deduplicated
+///   blobs/<first two hex>/<full hex>     content segments, only when kept
 ///   entities/<entity_id hex>/
 ///     leaves/<seq padded to 20>.leaf     218-byte body
 ///     leaves/<seq padded to 20>.sig      64-byte signature
@@ -149,6 +149,7 @@ pub struct StoredLeaf {
 /// on the next revision. For a manuscript edited in place that is most of it.
 pub struct Store {
     root: PathBuf,
+    keep_content: bool,
 }
 
 fn hex32(h: &Hash) -> String {
@@ -157,11 +158,31 @@ fn hex32(h: &Hash) -> String {
 
 impl Store {
     /// Open or create a store rooted at `path`.
+    /// Open a store. Content segments are **not** kept — see
+    /// [`Store::put_content_with`] for why, and [`Store::open_keeping_content`]
+    /// if you want them.
     pub fn open(path: impl AsRef<Path>) -> Result<Self, Error> {
+        Self::open_with(path, false)
+    }
+
+    /// Open a store that also writes content segments to disk.
+    ///
+    /// Costs a full copy of the document per revision whenever an edit lands
+    /// near the top, because segment boundaries are fixed and a shifted
+    /// boundary makes every later segment new. Nothing in this crate reads the
+    /// segments back yet, so this is storage for a future reader rather than a
+    /// present one.
+    pub fn open_keeping_content(path: impl AsRef<Path>) -> Result<Self, Error> {
+        Self::open_with(path, true)
+    }
+
+    fn open_with(path: impl AsRef<Path>, keep_content: bool) -> Result<Self, Error> {
         let root = path.as_ref().to_path_buf();
-        fs::create_dir_all(root.join("blobs"))?;
+        if keep_content {
+            fs::create_dir_all(root.join("blobs"))?;
+        }
         fs::create_dir_all(root.join("entities"))?;
-        Ok(Store { root })
+        Ok(Store { root, keep_content })
     }
 
     fn blob_path(&self, h: &Hash) -> PathBuf {
@@ -196,12 +217,36 @@ impl Store {
         Ok(())
     }
 
-    /// Store a revision's content, one blob per segment.
+    /// Commit to a revision's content, storing the segments only if asked.
     ///
-    /// Returns the `content_commit` for the whole content. Segments already
-    /// present are not rewritten, so an edit that touches one paragraph costs
-    /// one segment rather than a copy of the manuscript.
-    pub fn put_content(&self, content: &[u8]) -> Result<Hash, Error> {
+    /// Returns the `content_commit` either way — that is what a leaf needs, and
+    /// computing it requires no storage at all.
+    ///
+    /// # Why storing is off by default
+    ///
+    /// It cost a great deal and bought nothing. Segments were written and never
+    /// read: no code path reconstructed content from them, because nothing
+    /// recorded the *order* of a revision's segments, so the bytes were on disk
+    /// with no recipe for reassembling them.
+    ///
+    /// And the cost is worse than it looks. Segment boundaries are fixed at
+    /// 1 KiB, so inserting a character near the top of a document shifts every
+    /// boundary after it and makes every subsequent segment new. Deduplication
+    /// saves nothing on exactly the edit pattern a revision pass produces: a
+    /// 500 KB manuscript revised from the top costs 500 KB *per revision*.
+    ///
+    /// So the default is to commit without storing. A leaf is 282 bytes with its
+    /// signature, so a thousand-revision chain costs a few hundred kilobytes and
+    /// the creator keeps their own file — which `wire-format.md` §6 already
+    /// assumes, since it has a creator generating segment proofs "from content
+    /// only they hold".
+    ///
+    /// Passing `true` restores the old behaviour for a caller who wants it and
+    /// understands the bill.
+    pub fn put_content_with(&self, content: &[u8], store_segments: bool) -> Result<Hash, Error> {
+        if !store_segments {
+            return Ok(content_commit(content));
+        }
         for seg in content.chunks(SEGMENT_SIZE.max(1)) {
             let h = daon_provenance_core::hash_tagged(tag::CONTENT, seg);
             let p = self.blob_path(&h);
@@ -217,6 +262,16 @@ impl Store {
             }
         }
         Ok(content_commit(content))
+    }
+
+    /// Commit to content without storing it. See [`Store::put_content_with`].
+    pub fn put_content(&self, content: &[u8]) -> Result<Hash, Error> {
+        self.put_content_with(content, self.keep_content)
+    }
+
+    /// Whether this store writes content segments to disk.
+    pub fn keeps_content(&self) -> bool {
+        self.keep_content
     }
 
     /// Number of leaves in an entity.

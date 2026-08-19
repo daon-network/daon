@@ -156,9 +156,14 @@ fn signatures_verify_against_the_committed_author_key() {
         .is_ok());
 }
 
+/// Deduplication of *stored* segments. Storage is off by default now, so this
+/// opens a store that keeps them -- the property still matters for a caller who
+/// opts in.
+
 #[test]
 fn content_segments_are_deduplicated() {
-    let (dir, s) = store();
+    let dir = tempfile::tempdir().unwrap();
+    let s = Store::open_keeping_content(dir.path()).unwrap();
     let big = vec![b'x'; SEGMENT_SIZE * 3];
     s.put_content(&big).unwrap();
     let count = |d: &std::path::Path| walkdir(d.join("blobs")).len();
@@ -283,4 +288,74 @@ fn a_tampered_leaf_on_disk_fails_its_proof() {
         !verify_inclusion(&after.leaf.leaf_id(), &proof, &head),
         "a tampered leaf must not prove under the old head"
     );
+}
+
+/// Content is not written to disk unless asked for.
+///
+/// The segments were write-only: nothing reconstructed content from them,
+/// because nothing recorded a revision's segment order. Meanwhile a fixed 1 KiB
+/// boundary means an edit near the top of a document makes every later segment
+/// new, so a revision pass cost a full copy of the manuscript each time.
+#[test]
+fn content_is_not_stored_by_default() {
+    let (dir, s) = store();
+    assert!(!s.keeps_content());
+
+    let commit = s.put_content(&vec![b'a'; 8 * 1024]).unwrap();
+
+    assert_eq!(
+        commit,
+        daon_provenance_core::content_commit(&vec![b'a'; 8 * 1024]),
+        "the commitment is unchanged -- only the storage is gone"
+    );
+    assert!(
+        !dir.path().join("blobs").exists(),
+        "no blobs directory is even created"
+    );
+}
+
+/// A chain stays cheap regardless of how much is written.
+#[test]
+fn a_long_chain_costs_only_its_leaves() {
+    let (dir, s) = store();
+    let signer = TestSigner::new(9);
+
+    // Edits at the *top*, which is the pattern that defeats segment dedup.
+    let mut text = vec![b'a'; 64 * 1024];
+    let mut entity = None;
+    for i in 0..50 {
+        text.insert(0, b'x');
+        let (e, _) = s
+            .append(entity.as_ref(), &text, &[obs(5)], beacon(), &signer, i)
+            .unwrap();
+        entity = Some(e);
+    }
+
+    let bytes: u64 = walk(dir.path())
+        .iter()
+        .filter_map(|p| std::fs::metadata(p).ok())
+        .map(|m| m.len())
+        .sum();
+
+    // 50 revisions of a 64 KB document. Storing segments would have cost
+    // megabytes; leaves and signatures cost 282 bytes each.
+    assert!(
+        bytes < 32 * 1024,
+        "50 revisions should cost well under 32 KB, cost {bytes} bytes"
+    );
+}
+
+fn walk(p: &std::path::Path) -> Vec<std::path::PathBuf> {
+    let mut out = Vec::new();
+    if let Ok(rd) = std::fs::read_dir(p) {
+        for e in rd.flatten() {
+            let path = e.path();
+            if path.is_dir() {
+                out.extend(walk(&path));
+            } else {
+                out.push(path);
+            }
+        }
+    }
+    out
 }
