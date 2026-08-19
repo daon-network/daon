@@ -467,7 +467,7 @@ If no: Violation → Legal action
 - ✅ Documentation
 
 ### Phase 2: Ecosystem (6 months)
-- AO3 integration (browser extension)
+- AO3 integration (web registration)
 - Wattpad integration
 - 5 certified brokers
 - Verification website

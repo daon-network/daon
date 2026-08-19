@@ -94,7 +94,7 @@ Use of this Software in AI systems, automation, or machine learning is permitted
 
 Any derivative works, modifications, or software that incorporates this Software must be released under the Liberation License or a compatible license that upholds the same liberation principles.
 
-**Exception for Integrations**: SDKs, plugins, and integrations (like the WordPress plugin or browser extension) may use more permissive licenses for their wrapper code, but the core DAON blockchain and API code must remain Liberation Licensed.
+**Exception for Integrations**: SDKs, plugins, and integrations (like the WordPress plugin or the language SDKs) may use more permissive licenses for their wrapper code, but the core DAON blockchain and API code must remain Liberation Licensed.
 
 ### Compliance and Enforcement
 

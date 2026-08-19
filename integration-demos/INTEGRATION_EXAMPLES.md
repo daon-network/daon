@@ -92,7 +92,7 @@ auto_protect_with_daon license: 'liberation_v1'
 
 #### FanFiction.Net Integration  
 ```javascript
-// Browser extension approach
+// Server-side, from text you already hold
 const content = document.querySelector('#storytext').innerText;
 const result = await daon.protect(content);
 showProtectionNotice(result.verificationUrl);

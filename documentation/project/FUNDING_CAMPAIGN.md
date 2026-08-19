@@ -40,7 +40,7 @@ AI companies like OpenAI, Meta, and Google are making billions by training on cr
 
 ### **$15,000 - Testnet Network (Month 4-6)**  
 🎯 **Multi-validator testnet** with academic partners  
-🎯 **Platform integrations** (browser extension, WordPress plugin)  
+🎯 **Platform integrations** (WordPress plugin, language SDKs)  
 🎯 **Legal document automation** (DMCA, cease & desist)  
 🎯 **First violation detection** and enforcement  
 
@@ -141,7 +141,7 @@ We're building this **with** the creator community, not **for** them. Your suppo
 
 **Month 1:** Launch creator onboarding campaign  
 **Month 2:** Deploy multi-validator testnet  
-**Month 3:** First platform integration (browser extension)  
+**Month 3:** First platform integration (WordPress plugin)  
 **Month 4:** Legal document automation system  
 **Month 5:** AI violation detection and enforcement  
 **Month 6:** Mainnet launch with creator defense fund  

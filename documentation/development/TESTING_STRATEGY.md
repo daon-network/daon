@@ -144,9 +144,9 @@ describe('SDK → API Integration', () => {
 **Scenarios:**
 ```javascript
 describe('Creator Journey E2E', () => {
-  test('Creator protects single work via browser extension', async () => {
+  test('Creator protects single work via the web tool', async () => {
     // 1. Creator writes content
-    // 2. Clicks browser extension
+    // 2. Pastes it into app.daon.network
     // 3. Selects Liberation License
     // 4. Protection submitted to API
     // 5. Transaction committed to blockchain

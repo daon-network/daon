@@ -95,12 +95,15 @@ include Daon::WorkMixin
 auto_protect_with_daon license: 'liberation_v1'
 ```
 
-#### FanFiction.Net Integration  
+#### FanFiction.Net
+
+There is no DAON browser extension -- see [the note on why](/get-started/#ao3-fanfiction-protection).
+Register a published work by pasting it into the web tool, or from your own
+server with any SDK:
+
 ```javascript
-// Browser extension approach
-const content = document.querySelector('#storytext').innerText;
-const result = await daon.protect(content);
-showProtectionNotice(result.verificationUrl);
+const result = await daon.protect(text, { license: 'liberation_v1' });
+console.log(result.verificationUrl);
 ```
 
 ### **Blogging Platforms**

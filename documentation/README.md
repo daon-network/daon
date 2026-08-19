@@ -25,7 +25,6 @@ Documentation for the DAON blockchain platform that protects creator content wit
 ### 👤 I'm a Creator
 1. [Creator Onboarding Guide](guides/CREATOR_ONBOARDING_GUIDE.md) - How to protect your content
 2. [AO3 Integration](guides/AO3_INTEGRATION_GUIDE.md) - If you're on Archive of Our Own
-3. Install browser extension from `/browser-extension/`
 
 ### 💻 I'm a Developer
 1. [Architecture Overview](development/ARCHITECTURE.md) - System design

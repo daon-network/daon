@@ -19,8 +19,8 @@ gradients.
 
 Three palettes were previously in circulation and have all been retired: the teal mark
 (`#5DD5D5 → #3FB8AF → #173F5F`), which themed the whole documentation site; an indigo
-(`#667eea → #764ba2`) used by the browser extension, transactional email, the WordPress
-plugin, and a Grafana dashboard; and the app's own blue/purple/pink, which is what everything
+(`#667eea → #764ba2`) used by the since-deleted browser extension, transactional email, the
+WordPress plugin, and a Grafana dashboard; and the app's own blue/purple/pink, which is what everything
 now uses.
 
 ## Surfaces
@@ -92,8 +92,8 @@ Icons are [lucide](https://lucide.dev) (ISC), self-hosted. Nothing is fetched fr
 no third party sees who reads the docs.
 
 `scripts/build-icon-sprite.mjs` generates every consumer from `lucide-react` -- the same
-package the frontend imports -- so the icons on the docs site, in the browser extension and in
-the WordPress plugin cannot drift from the ones React renders. Run it after changing the
+package the frontend imports -- so the icons on the docs site and in the WordPress plugin
+cannot drift from the ones React renders. Run it after changing the
 `ICONS` map at the top of that script:
 
 ```
@@ -106,7 +106,6 @@ node scripts/build-icon-sprite.mjs
 | Docs site | sprite, inlined via `{% raw %}{% include icons.svg %}{% endraw %}` | `docs/_includes/icons.svg` |
 | WordPress plugin | inline `<svg>` pasted into PHP | `brand/icons/*.svg` |
 | Transactional email | **none -- see below** | -- |
-| Browser extension | **none -- deliberately left alone** | -- |
 
 Icons take their colour from `currentColor` and are sized in `em`, so they track whatever text
 they sit beside. The docs stylesheet carries a matching `.icon` rule.
@@ -120,26 +119,27 @@ substituting anything -- the headings carry themselves. If an email ever genuine
 icon, the only reliable mechanism is a hosted PNG, and it must survive being blocked, because
 most clients suppress remote images by default.
 
-The same constraint would apply to parts of the browser extension: `chrome.contextMenus` titles,
-`chrome.notifications` bodies, `confirm()` and `alert()` are plain-text APIs that cannot hold
-markup either.
+### The browser extension was deleted
 
-### Why the browser extension was left alone
+This section used to explain why `browser-extension/` was left un-branded. It has since been
+removed from the repository altogether, and the reasoning is worth keeping because it is the
+same reasoning that will apply to the next such proposal.
 
-`browser-extension/` is untouched by this brand work, on purpose.
+It was scaffolded in November 2025 and never developed. No CI job built it, nothing imported it,
+and its wallet code was not a placeholder so much as a trap: `generateMnemonic()` drew 12 words
+from a **12-word list** using `Math.random()` — roughly 43 bits of keyspace against BIP-39's 132,
+from a PRNG whose internal state is recoverable from a handful of outputs — the address was
+generated independently of the mnemonic so the phrase derived nothing, and the result was stored
+unencrypted while the UI instructed the user to save that phrase to restore their wallet.
 
-It was scaffolded in November 2025 and has not been developed since. `documentation/project/
-CURRENT_PRIORITIES.md` still lists it as *"Not started"* and *"Designed but not coded"*, no CI
-job builds or releases it, and its wallet code is a placeholder rather than an implementation:
-`generateMnemonic()` draws 12 words from a 12-word list using `Math.random()` (43 bits of
-keyspace against BIP-39's 132, from a non-cryptographic PRNG), the address is generated
-independently of the mnemonic so the phrase derives nothing, and it is stored unencrypted --
-while the UI instructs the user to save that phrase to restore their wallet.
+Leaving it un-branded was the right call at the time, for a reason worth restating: giving an
+abandoned, unsafe prototype real icons would have made it look shippable.
 
-Its `manifest.json` declares `icon{16,32,48,128}.png` while the directory holds `.txt` files
-containing an emoji, so the extension cannot load cleanly. **That broken state is doing useful
-work.** Giving it real icons would make an abandoned, unsafe prototype look shippable. If the
-extension is ever revived, the wallet needs rebuilding before anything cosmetic matters.
+Deleting it is the better call, and not only because of the wallet. An extension cannot hold a
+signing key safely — browser storage is an ordinary file with no hardware backing, which is the
+opposite of everything `provenance/agent/src/keystore.rs` does — and a web store can update it
+silently for every user at once, which defeats the per-code-signature keychain grant the agent
+depends on. See `documentation/architecture/DECISIONS_LOG.md`.
 
 ### A note on the sprite
 
@@ -151,8 +151,7 @@ against a dark background.
 ## Known limitation: small sizes
 
 Below roughly 32 px the ridge gaps and circuit traces collapse into a solid blob. `icon16.png` and
-`icon32.png` exist because `browser-extension/manifest.json` requires them, but they are scaled
-down from the full mark and read poorly.
+`icon32.png` are scaled down from the full mark and read poorly at that size.
 
 A proper favicon needs a **redrawn** simplification — fewer ridges, thicker strokes, dropped
 circuit detail — not a scale-down. That is illustration work, not something derivable from this

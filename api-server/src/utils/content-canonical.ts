@@ -3,8 +3,8 @@
  *
  * The rule, from `docs/design/document-formats.md`: **register the words, not
  * the markup they arrived in.** A creator who publishes the same paragraph
- * through WordPress, a browser extension and the API should get one hash, and
- * they will not if one of those sends `<p>` tags and another does not.
+ * through WordPress, an SDK and the API should get one hash, and they will not
+ * if one of those sends `<p>` tags and another does not.
  *
  * Hashing HTML also makes the hash depend on things the creator never chose —
  * a theme change, a block editor upgrade, a plugin that rewrites attributes —

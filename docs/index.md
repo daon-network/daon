@@ -160,8 +160,8 @@ Simple, fast, and effective protection in four steps.
 
 ### Fanfiction Platforms
 
-- Archive of Our Own (Browser extension)
-- FanFiction.Net (Browser extension)
+- Archive of Our Own (Web tool)
+- FanFiction.Net (Web tool)
 - Wattpad (SDK integration)
 - Custom platforms (Ruby/Rails SDK)
 

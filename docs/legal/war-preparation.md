@@ -25,7 +25,7 @@ When Big Tech eventually escalates their exploitation or creators demand action,
 
 ### Technical Fortifications
 - **DAON blockchain** providing cryptographic ownership proof
-- **Browser extension** protecting 45M+ existing works
+- **Web registration** for works already published
 - **Multi-platform SDKs** for universal integration
 - **Evidence collection** automatic and tamper-proof
 
@@ -47,7 +47,7 @@ When Big Tech eventually escalates their exploitation or creators demand action,
 
 ### Automatic Evidence Collection
 
-**System:** Built into DAON blockchain and browser extension
+**System:** Built into the DAON blockchain and API
 ```
 Features:
 - Real-time scraping detection

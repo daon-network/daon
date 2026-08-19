@@ -34,20 +34,26 @@ description: "Protect your creative work from AI exploitation in 2 minutes"
 ---
 
 ### 📚 **AO3 Fanfiction Protection** 
-**Protect 45M+ existing fanfictions**
+**Protect works you have already published**
 
-1. **Install Extension**
-   - Chrome Web Store → "DAON AO3 Protector"
-   - Click "Add to Chrome"
+1. **Sign in** at [app.daon.network](https://app.daon.network)
 
-2. **Bulk Protect**
-   - Visit your AO3 works page
-   - Click the DAON shield icon
-   - Select "Protect All Works"
+2. **Paste your work**
+   - One work at a time, text pasted in
+   - Choose your licence terms
 
-3. **Done!** Cryptographic proof for all your fics
+3. **Done!** Cryptographic proof, registered under your account
 
-[🔗 Get Browser Extension](/examples/browser-extension/)
+[🔗 Register a work](https://app.daon.network)
+
+> **There is no DAON browser extension, and there will not be one.** An extension
+> would have to hold your signing key in browser storage, which is an ordinary
+> file with no hardware protection, and it could be silently updated by the web
+> store for every user at once — so the code you trusted is not necessarily the
+> code that runs tomorrow. A content script also only sees what the *site* sent
+> to your browser, which is not evidence that you wrote anything.
+>
+> If you are ever offered a "DAON extension", it is not from us.
 
 ---
 
