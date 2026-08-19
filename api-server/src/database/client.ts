@@ -326,18 +326,19 @@ export const db = {
       status?: string;
       expires_at?: Date | null;
       resolution_token?: string | null;
+      verified?: boolean;
     }) {
       const result = await db.query(
         `INSERT INTO content_associations
            (content_hash, entity_id, head, asserted_by, author_key, recovery_key,
-            status, expires_at, resolution_token)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            status, expires_at, resolution_token, verified)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          RETURNING *`,
         [
           data.content_hash, data.entity_id, data.head, data.asserted_by,
           data.author_key ?? null, data.recovery_key ?? null,
           data.status ?? 'current', data.expires_at ?? null,
-          data.resolution_token ?? null,
+          data.resolution_token ?? null, data.verified ?? false,
         ]
       );
       return result.rows[0];

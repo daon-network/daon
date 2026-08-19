@@ -105,6 +105,12 @@ pub struct Observation {
 /// Something that cannot be encoded because it violates the format.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Error {
+    /// A leaf body that is not [`LEAF_BODY_LEN`] bytes.
+    WrongLength,
+    /// A format version this build does not implement.
+    UnsupportedVersion(u8),
+    /// A beacon chain tag that is not 1 or 2.
+    UnknownBeaconChain(u8),
     /// `tool_id` exceeded 64 bytes.
     ToolIdTooLong(usize),
     /// `tool_id` contained a non-ASCII byte. The format forbids it so that no
@@ -265,6 +271,42 @@ impl RevisionLeaf {
     /// checking optional.
     pub fn leaf_id(&self) -> Hash {
         sha256(&[&[tag::LEAF], &self.encode()])
+    }
+
+    /// Parse a leaf body. The inverse of [`RevisionLeaf::encode`].
+    ///
+    /// Rust callers build the struct directly and never needed this; anything
+    /// reaching the verifier across a language boundary has only bytes.
+    ///
+    /// Rejects an unknown format version rather than guessing at a layout it
+    /// does not know. A verifier that read a future leaf under today's offsets
+    /// would report confident nonsense, which is worse than refusing.
+    pub fn decode(b: &[u8]) -> Result<Self, Error> {
+        if b.len() != LEAF_BODY_LEN {
+            return Err(Error::WrongLength);
+        }
+        if b[0] != FORMAT_VERSION {
+            return Err(Error::UnsupportedVersion(b[0]));
+        }
+        let at32 = |o: usize| -> Hash { b[o..o + 32].try_into().unwrap() };
+        Ok(RevisionLeaf {
+            seq: u64::from_be_bytes(b[1..9].try_into().unwrap()),
+            parent_head: at32(9),
+            content_commit: at32(41),
+            meta_commit: at32(73),
+            beacon: Beacon {
+                chain: match b[105] {
+                    1 => BeaconChain::Bitcoin,
+                    2 => BeaconChain::Daon,
+                    other => return Err(Error::UnknownBeaconChain(other)),
+                },
+                height: u64::from_be_bytes(b[106..114].try_into().unwrap()),
+                block_hash: at32(114),
+            },
+            author_key: at32(146),
+            recovery_key: at32(178),
+            local_time_ms: i64::from_be_bytes(b[210..218].try_into().unwrap()),
+        })
     }
 }
 

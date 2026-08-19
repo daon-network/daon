@@ -399,6 +399,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "daon-provenance-verify-wasm"
+version = "0.0.0"
+dependencies = [
+ "daon-provenance-core",
+ "daon-provenance-verify",
+ "ed25519-dalek",
+]
+
+[[package]]
 name = "daon-provenance-witness"
 version = "0.0.0"
 dependencies = [

@@ -26,6 +26,7 @@ import { DatabaseClient, db } from './database/client.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
 import { verifyToken } from './auth/auth.js';
+import { verifyClaim } from './verifier/index.js';
 import { sendKeyEventNotification } from './utils/email.js';
 import healthRoutes from './routes/health.js';
 import { BrokerService } from './broker/broker-service.js';
@@ -872,6 +873,10 @@ app.post('/api/v1/content/:hash/association', [
   body('head').isLength({ min: 64, max: 71 }).withMessage('head required'),
   body('author_key').optional().isLength({ min: 64, max: 71 }),
   body('recovery_key').optional().isLength({ min: 64, max: 71 }),
+  // A proof, if the asserter has one. Hex of the verifier's claim buffer --
+  // see provenance/verify-wasm/src/lib.rs. Optional because an association is
+  // worth recording without one; supplying it is what makes `verified` true.
+  body('proof').optional().isHexadecimal().isLength({ max: 131072 }),
   handleValidationErrors,
 ], async (req: any, res) => {
   try {
@@ -913,6 +918,22 @@ app.post('/api/v1/content/:hash/association', [
     // the recorded key. Soundness is not ownership.
     const needsAttestation = keysDiffer && !asserterIsOwner && ownerOfRecord !== null;
 
+    // Check the proof if one came. This answers "is this a real, witnessed
+    // chain" and never "is this person the owner" -- a thief's rotation
+    // verifies perfectly, because the stolen key is the recorded key. Which is
+    // why a verified assertion still waits for the owner of record.
+    let verification: ReturnType<typeof verifyClaim> | null = null;
+    if (req.body.proof) {
+      verification = verifyClaim(Buffer.from(String(req.body.proof), 'hex'));
+      if (!verification.verified) {
+        return res.status(400).json({
+          success: false,
+          error: 'proof_did_not_verify',
+          message: verification.reason,
+        });
+      }
+    }
+
     const record = await db.associations.append({
       content_hash: contentHash,
       entity_id: entityId,
@@ -923,6 +944,7 @@ app.post('/api/v1/content/:hash/association', [
       status: needsAttestation ? 'pending' : 'current',
       expires_at: needsAttestation ? new Date(Date.now() + ATTESTATION_WINDOW_MS) : null,
       resolution_token: needsAttestation ? crypto.randomBytes(32).toString('hex') : null,
+      verified: verification?.verified ?? false,
     });
 
     // Notify the owner of record, and only them. An unsent email must not fail
@@ -960,13 +982,17 @@ app.post('/api/v1/content/:hash/association', [
         entity_id: entityId,
         head,
         status: record.status,
-        verified: false,
+        verified: record.verified,
+        existed_by_ms: verification?.existedByMs ?? null,
+        signature_checked: verification?.signatureChecked ?? false,
         recorded_at: record.recorded_at,
       },
       note:
         record.status === 'pending'
           ? 'Recorded, and not current: this asserts different chain keys, so it waits for the owner of record. It expires in five days, refused.'
-          : 'Recorded as asserted. DAON has not verified that this chain covers this content.',
+          : verification?.verified
+            ? 'Recorded, and the chain checks out: the leaf proves into a witnessed head. That is not a statement about who owns it.'
+            : 'Recorded as asserted. No proof was supplied, so DAON has not checked this chain.',
       // Stated even when it is nobody, because "no owner of record" is a fact a
       // caller should know rather than infer from silence.
       owner_of_record: ownerOfRecord !== null,

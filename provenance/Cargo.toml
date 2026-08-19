@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["core", "verify", "agent", "witness", "net", "agentd"]
+members = ["core", "verify", "verify-wasm", "agent", "witness", "net", "agentd"]
 
 [workspace.package]
 edition = "2021"
