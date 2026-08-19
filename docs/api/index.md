@@ -356,7 +356,6 @@ mockDAON.enable();
 - [Error Reference](/api/errors/)
 
 ### **Community**
-- [Discord #developers](https://discord.gg/daon) - Live help
 - [GitHub Issues](https://github.com/daon-network/issues) - Bug reports
 - [Stack Overflow](https://stackoverflow.com/tagged/daon) - Q&A
 
@@ -389,7 +388,7 @@ mockDAON.enable();
     <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg></div>
     <h3 class="md-feature__title">Get Help</h3>
     <p class="md-feature__description">Chat with developers</p>
-    <a href="https://discord.gg/daon" class="md-feature__link">Get Help →</a>
+    <a href="https://github.com/daon-network/daon/issues" class="md-feature__link">Get Help →</a>
   </div>
 
   <div class="md-feature">

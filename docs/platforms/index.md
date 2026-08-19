@@ -385,7 +385,6 @@ curl -X POST https://api.daon.network/protect
 - [Rate Limiting Guide](/api/rate-limits/)
 
 ### **Community Support**
-- [Discord #developers](https://discord.gg/daon) - Real-time help
 - [GitHub Issues](https://github.com/daon-network/issues) - Bug reports
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/daon) - Q&A
 
@@ -418,7 +417,7 @@ curl -X POST https://api.daon.network/protect
     <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg></div>
     <h3 class="md-feature__title">Get Help</h3>
     <p class="md-feature__description">Chat with developers</p>
-    <a href="https://discord.gg/daon" class="md-feature__link">Get Help →</a>
+    <a href="https://github.com/daon-network/daon/issues" class="md-feature__link">Get Help →</a>
   </div>
 
   <div class="md-feature">

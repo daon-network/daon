@@ -213,7 +213,6 @@ You get a permanent verification URL as legal evidence
 
 ### **Quick Support:**
 - **Documentation Issues:** Check our [FAQ](/creators/faq/)
-- **Technical Problems:** [Discord Community](https://discord.gg/daon)
 - **Integration Help:** [Platform Examples](/examples/)
 
 ### **Direct Contact:**

@@ -360,19 +360,13 @@ No, protection requires internet connection to write to the blockchain. However,
 
 ---
 
-## 📊 Success Stories
+## Success Stories
 
-### **Fanfiction Writer - 847 Works**
-> *"Five years of AO3 writing protected in 20 minutes. When AI companies started scraping fanfiction for training data, I had blockchain proof that all my works existed first. The Liberation License gave me the legal standing to fight back."*
+There are none to report yet, and the four that were here were invented -- one of
+them claimed a successful lawsuit. They have been removed.
 
-### **Academic Researcher - 156 Papers**
-> *"Protected my entire research portfolio before submitting to journals. When a company tried to use my work in their AI without permission, I had timestamped blockchain evidence. The lawsuit was successful."*
-
-### **Blogger - 1,200 Posts**  
-> *"Ten years of blog posts protected in one session. Three months later, I discovered someone was scraping my entire site for AI training. Now I have the legal tools to make them stop."*
-
-### **Social Media Creator - 5,000 Posts**
-> *"Protected all my viral Twitter threads and Instagram posts. When someone stole my content for a paid course, the verification links made the DMCA takedown trivial."*
+If bulk protection is useful to you, saying so in a GitHub issue would let us put
+something true here.
 
 ---
 
@@ -384,7 +378,6 @@ No, protection requires internet connection to write to the blockchain. However,
 
 **[📖 Technical Documentation](https://github.com/daon-network/daon/tree/main/creator-tools)**
 
-**[💬 Join Creator Community](https://discord.gg/daon)**
 
 **[🛠️ Get Technical Support](mailto:creators@daon.network)**
 
