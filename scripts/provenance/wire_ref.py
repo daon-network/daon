@@ -7,6 +7,7 @@ hexs = lambda b: b.hex()
 # Domain separation tags. Distinct prefixes stop a leaf preimage from ever being
 # reinterpretable as an internal node (the RFC 6962 second-preimage concern).
 T_LEAF, T_NODE, T_OBS, T_CONTENT = b'\x00', b'\x01', b'\x02', b'\x03'
+T_PART = b'\x04'
 
 INGRESS = {'unknown':0, 'keystroke_stream':1, 'paste':2, 'import':3, 'programmatic':4}
 CHAIN   = {'bitcoin':1, 'daon':2}
@@ -54,6 +55,39 @@ def content_commit(content):
     What DAON issues and displays stays whole-revision regardless -- fine
     grained proof is a creator-initiated act, never a queryable surface."""
     return merkle_root([H(T_CONTENT + seg) for seg in segments(content)])
+
+def part_commit(part):
+    """Commitment to one part of a composite work.
+
+    The T_PART tag is load-bearing. Without it a two-part work whose first part
+    is exactly SEGMENT_SIZE bytes produces the same root as the flat
+    concatenation of both -- both being node(H(p0), H(p1)) over the same bytes --
+    so the commitment would say nothing about where the parts divide."""
+    return H(T_PART + content_commit(part))
+
+def content_commit_parts(parts):
+    """Merkle root over the parts of a composite work: a run of text, an image,
+    another run of text.
+
+    Fixed segmentation is right for prose and wrong for a work with pictures in
+    it. A picture is not segment-aligned, so disclosing one figure would mean
+    disclosing every segment that overlaps it -- including the tail of the
+    previous paragraph. And an insertion moves every later boundary, so no two
+    revisions share structure once one part is a multi-megabyte image.
+
+    The leaf is unchanged: content_commit is 32 bytes at offset 41 under either
+    rule. Nothing records which rule was used, because a root already pins its
+    own structure -- reaching it under the other rule is a second preimage.
+
+    An empty list is one empty part, mirroring segments() on empty content."""
+    if not parts:
+        return part_commit(b'')
+    return merkle_root([part_commit(p) for p in parts])
+
+def part_proof(parts, index):
+    """(inclusion_proof) for one whole part -- the disclosure a creator wants:
+    'this panel is part seven of the work I registered', without parts 1-6."""
+    return inclusion_proof([part_commit(p) for p in parts], index)
 
 def segment_proof(content, index):
     """(segment_bytes, inclusion_proof) — lets a holder prove one segment
