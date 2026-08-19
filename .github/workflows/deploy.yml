@@ -222,7 +222,7 @@ jobs:
             # Also create in /opt/daon for any services that reference it
             cp /opt/daon-source/.env /opt/daon/.env
             
-            # Navigate to source directory where docker-compose.yml is
+            # Build from the freshly rsynced source.
             cd /opt/daon-source
             
             # Fix blockchain volume permissions (UID 1000 = daon user in container)
@@ -238,14 +238,40 @@ jobs:
             # Build blockchain image locally
             docker build -t daon-blockchain:latest ./daon-core
 
+            # Compose must run against the project the live containers belong to.
+            #
+            # Docker derives a project name from the working directory, so running
+            # compose in /opt/daon-source addressed project "daon-source" -- which
+            # has no containers. Every stop, rm and up hit an empty project, the
+            # "|| true" swallowed the errors, and the running stack was untouched
+            # for three months while builds succeeded and the job reported green.
+            #
+            # -p pins the project explicitly so the directory stops deciding it.
+            COMPOSE="docker compose -p daon -f /opt/daon/docker-compose.yml --project-directory /opt/daon"
+
             # Stop and remove app containers so new images are guaranteed to run
             # (--force-recreate is unreliable when container_name is set)
-            # Service names must match docker-compose.yml (daon-api-1, daon-api-3, etc.)
-            docker compose stop daon-api-1 daon-api-3 daon-frontend daon-blockchain 2>/dev/null || true
-            docker compose rm -f daon-api-1 daon-api-3 daon-frontend daon-blockchain 2>/dev/null || true
+            $COMPOSE stop daon-api-1 daon-api-3 daon-frontend daon-blockchain 2>/dev/null || true
+            $COMPOSE rm -f daon-api-1 daon-api-3 daon-frontend daon-blockchain 2>/dev/null || true
 
             # Deploy full stack
-            docker compose up -d --remove-orphans
+            $COMPOSE up -d --remove-orphans
+
+            # Assert the containers actually picked up what was just built.
+            #
+            # A health check cannot catch this: the stale container answers
+            # /health perfectly well, which is exactly how three months of
+            # no-op deploys stayed green. Compare image IDs instead.
+            built=$(docker image inspect daon-api:latest --format "{{.Id}}")
+            for c in daon-api-1 daon-api-3; do
+              running=$(docker inspect "$c" --format "{{.Image}}")
+              if [ "$running" != "$built" ]; then
+                echo "::error::$c is running $running but daon-api:latest is $built -- the deploy did not take"
+                docker compose -p daon ps
+                exit 1
+              fi
+              echo "  $c is running the image just built"
+            done
             
             # Run database migrations (all are idempotent via IF NOT EXISTS)
             echo "⏳ Waiting for postgres to be ready..."
