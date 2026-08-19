@@ -18,3 +18,4 @@ ureq = { version = "2", default-features = false, features = ["tls"] }
 
 [dev-dependencies]
 hex.workspace = true
+daon-provenance-witness.workspace = true

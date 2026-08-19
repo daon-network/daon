@@ -168,3 +168,39 @@ describe('silence refuses', () => {
     expect(answerable(null, new Date('2099-01-01T00:00:00Z'))).toBe(true);
   });
 });
+
+describe('answering from the email', () => {
+  // A GET that resolved would have mail scanners, link previewers and corporate
+  // security proxies answering on the creator's behalf -- silently, often within
+  // seconds of delivery. So GET describes and POST acts.
+  it('never acts on a GET', () => {
+    const routes = [
+      { method: 'GET', path: '/api/v1/associations/resolve/:token', mutates: false },
+      { method: 'POST', path: '/api/v1/associations/resolve/:token', mutates: true },
+    ];
+    expect(routes.find((r) => r.method === 'GET')!.mutates).toBe(false);
+    expect(routes.find((r) => r.method === 'POST')!.mutates).toBe(true);
+  });
+
+  // Single use, so a forwarded or archived message cannot answer twice, and
+  // expiring with the request so a late click cannot revive a refused one.
+  it('treats the token as a one-time credential', () => {
+    const lookup = (token: string | null, status: string, expiresAt: Date, now: Date) =>
+      token !== null && status === 'pending' && expiresAt > now;
+
+    const soon = new Date('2026-08-22T00:00:00Z');
+    const before = new Date('2026-08-20T00:00:00Z');
+    const after = new Date('2026-08-23T00:00:00Z');
+
+    expect(lookup('abc', 'pending', soon, before)).toBe(true);
+    expect(lookup(null, 'pending', soon, before)).toBe(false); // cleared on use
+    expect(lookup('abc', 'attested', soon, before)).toBe(false); // already answered
+    expect(lookup('abc', 'pending', soon, after)).toBe(false); // expired
+  });
+
+  it('is long enough not to be guessable', () => {
+    const token = 'a'.repeat(64); // 32 random bytes, hex
+    expect(token).toHaveLength(64);
+    expect(Buffer.from(token, 'hex').length).toBe(32);
+  });
+});

@@ -26,6 +26,7 @@ import { DatabaseClient, db } from './database/client.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
 import { verifyToken } from './auth/auth.js';
+import { verifyClaim } from './verifier/index.js';
 import { sendKeyEventNotification } from './utils/email.js';
 import healthRoutes from './routes/health.js';
 import { BrokerService } from './broker/broker-service.js';
@@ -257,6 +258,19 @@ const handleValidationErrors = (req, res, next) => {
  */
 const ATTESTATION_WINDOW_MS = 5 * 24 * 60 * 60 * 1000;
 
+const BTN =
+  'font:inherit;padding:12px 20px;margin:8px 8px 0 0;border-radius:6px;border:0;cursor:pointer;';
+
+/** A minimal page, so answering an email needs no app and no sign-in. */
+function page(title: string, body: string, actions = ''): string {
+  return `<!doctype html><meta charset="utf-8"><title>${title} — DAON</title>
+    <body style="font:16px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+                 color:#101828;max-width:34rem;margin:4rem auto;padding:0 1rem">
+      <h1 style="font-size:1.4rem">${title}</h1><p>${body}</p>${actions}
+      <p style="color:#6A7282;font-size:.875rem;margin-top:2rem">DAON records what it is told and
+      does not decide between competing claims.</p>`;
+}
+
 function generateContentHash(content) {
   const { text } = toPlainText(content);
   const hash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
@@ -417,6 +431,14 @@ app.get('/api/v1', (req, res) => {
       'GET /api/v1/verify/:hash': 'Verify content protection status by hash',
       'POST /api/v1/verify-content': 'Verify by submitting content — returns who registered it',
       'GET /api/v1/stats': 'Get protection statistics',
+      'POST /api/v1/content/:hash/association':
+        'Assert that a provenance chain covers registered content. Optionally carries a proof',
+      'GET /api/v1/content/:hash/associations':
+        'Every chain asserted for this content. More than one is normal; DAON does not rank them',
+      'POST /api/v1/associations/:id/attest':
+        'Owner of record confirms a pending association',
+      'POST /api/v1/associations/:id/dispute':
+        'Owner of record denies a pending association. Recorded, dated, never made current',
       'POST /api/v1/auth/magic-link': 'Send magic link for passwordless auth',
       'GET /api/v1/auth/verify': 'Verify magic link and get tokens',
       'POST /api/v1/auth/refresh': 'Refresh access token',
@@ -859,6 +881,10 @@ app.post('/api/v1/content/:hash/association', [
   body('head').isLength({ min: 64, max: 71 }).withMessage('head required'),
   body('author_key').optional().isLength({ min: 64, max: 71 }),
   body('recovery_key').optional().isLength({ min: 64, max: 71 }),
+  // A proof, if the asserter has one. Hex of the verifier's claim buffer --
+  // see provenance/verify-wasm/src/lib.rs. Optional because an association is
+  // worth recording without one; supplying it is what makes `verified` true.
+  body('proof').optional().isHexadecimal().isLength({ max: 131072 }),
   handleValidationErrors,
 ], async (req: any, res) => {
   try {
@@ -900,6 +926,22 @@ app.post('/api/v1/content/:hash/association', [
     // the recorded key. Soundness is not ownership.
     const needsAttestation = keysDiffer && !asserterIsOwner && ownerOfRecord !== null;
 
+    // Check the proof if one came. This answers "is this a real, witnessed
+    // chain" and never "is this person the owner" -- a thief's rotation
+    // verifies perfectly, because the stolen key is the recorded key. Which is
+    // why a verified assertion still waits for the owner of record.
+    let verification: ReturnType<typeof verifyClaim> | null = null;
+    if (req.body.proof) {
+      verification = verifyClaim(Buffer.from(String(req.body.proof), 'hex'));
+      if (!verification.verified) {
+        return res.status(400).json({
+          success: false,
+          error: 'proof_did_not_verify',
+          message: verification.reason,
+        });
+      }
+    }
+
     const record = await db.associations.append({
       content_hash: contentHash,
       entity_id: entityId,
@@ -909,6 +951,8 @@ app.post('/api/v1/content/:hash/association', [
       recovery_key: recoveryKey,
       status: needsAttestation ? 'pending' : 'current',
       expires_at: needsAttestation ? new Date(Date.now() + ATTESTATION_WINDOW_MS) : null,
+      resolution_token: needsAttestation ? crypto.randomBytes(32).toString('hex') : null,
+      verified: verification?.verified ?? false,
     });
 
     // Notify the owner of record, and only them. An unsent email must not fail
@@ -926,6 +970,10 @@ app.post('/api/v1/content/:hash/association', [
             assertedBy: asserter?.email ?? 'another account',
             assertedAt: new Date(),
             answerBy: new Date(Date.now() + ATTESTATION_WINDOW_MS),
+            // The link that closes the circuit. A deadline with no way to meet
+            // it is not a notification, it is an announcement.
+            resolveUrl: `${process.env.API_BASE_URL || 'https://api.daon.network'}` +
+              `/api/v1/associations/resolve/${record.resolution_token}`,
           });
           notified = true;
         }
@@ -942,13 +990,17 @@ app.post('/api/v1/content/:hash/association', [
         entity_id: entityId,
         head,
         status: record.status,
-        verified: false,
+        verified: record.verified,
+        existed_by_ms: verification?.existedByMs ?? null,
+        signature_checked: verification?.signatureChecked ?? false,
         recorded_at: record.recorded_at,
       },
       note:
         record.status === 'pending'
           ? 'Recorded, and not current: this asserts different chain keys, so it waits for the owner of record. It expires in five days, refused.'
-          : 'Recorded as asserted. DAON has not verified that this chain covers this content.',
+          : verification?.verified
+            ? 'Recorded, and the chain checks out: the leaf proves into a witnessed head. That is not a statement about who owns it.'
+            : 'Recorded as asserted. No proof was supplied, so DAON has not checked this chain.',
       // Stated even when it is nobody, because "no owner of record" is a fact a
       // caller should know rather than infer from silence.
       owner_of_record: ownerOfRecord !== null,
@@ -1013,6 +1065,80 @@ app.post('/api/v1/associations/:id/:action(attest|dispute)', [
   } catch (error) {
     logger.error('association resolve failed:', (error as any).message);
     res.status(500).json({ success: false, error: 'could not resolve association' });
+  }
+});
+
+
+/**
+ * Answer a pending association from the notification email.
+ *
+ * Two steps on purpose. `GET` renders a page describing what is being asked;
+ * only `POST` changes anything. Mail scanners, link previewers and corporate
+ * security proxies fetch every URL in a message, so a `GET` that resolved would
+ * have those systems answering on the creator's behalf — silently, and often
+ * within seconds of delivery.
+ *
+ * The token is the credential, which is the same trust model as the magic link
+ * this account signs in with: possession of the mailbox. It is single use and
+ * dies with the request's deadline.
+ */
+app.get('/api/v1/associations/resolve/:token', async (req, res) => {
+  try {
+    const assoc = await db.associations.findByToken(String(req.params.token));
+    if (!assoc) {
+      return res.status(404).type('html').send(page(
+        'This link has expired',
+        'It may already have been used, or the five-day window may have passed. ' +
+        'Either way the request was refused and your record is unchanged.'
+      ));
+    }
+    const token = encodeURIComponent(String(req.params.token));
+    res.type('html').send(page(
+      'A key change was asserted for your work',
+      `Someone asserted that the chain for content <code>${assoc.content_hash.slice(0, 16)}…</code> ` +
+      `now uses different keys. Nothing has changed in DAON's record, and nothing will unless you say so.`,
+      `<form method="POST" action="/api/v1/associations/resolve/${token}" style="display:inline">
+         <input type="hidden" name="action" value="attest">
+         <button name="go" value="1" style="${BTN}background:#155DFC;color:#fff">Yes, this was me</button>
+       </form>
+       <form method="POST" action="/api/v1/associations/resolve/${token}" style="display:inline">
+         <input type="hidden" name="action" value="dispute">
+         <button name="go" value="1" style="${BTN}background:#fff;color:#B42318;border:2px solid #B42318">No, I did not do this</button>
+       </form>`
+    ));
+  } catch (error) {
+    logger.error('resolve page failed:', (error as any).message);
+    res.status(500).type('html').send(page('Something went wrong', 'Please try again.'));
+  }
+});
+
+app.post('/api/v1/associations/resolve/:token', async (req, res) => {
+  try {
+    const assoc = await db.associations.findByToken(String(req.params.token));
+    if (!assoc) {
+      return res.status(404).type('html').send(page(
+        'This link has expired',
+        'It may already have been used, or the window may have passed. The request was refused.'
+      ));
+    }
+    const action = String(req.body?.action) === 'dispute' ? 'disputed' : 'attested';
+
+    // Resolved as the owner of record, since holding the token is how they
+    // proved they are that person.
+    const registration = await db.content.findByHash(assoc.content_hash);
+    const updated = await db.associations.resolve(assoc.id, action, registration?.user_id ?? null);
+    if (!updated) {
+      return res.status(409).type('html').send(page('Already answered', 'This request has been resolved.'));
+    }
+
+    res.type('html').send(
+      action === 'attested'
+        ? page('Recorded as yours', 'This association is now the one DAON answers with.')
+        : page('Recorded as disputed', 'It will not become DAON\'s answer. The assertion stays on the record, dated, because that it was made is a fact.')
+    );
+  } catch (error) {
+    logger.error('resolve failed:', (error as any).message);
+    res.status(500).type('html').send(page('Something went wrong', 'Please try again.'));
   }
 });
 

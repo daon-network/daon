@@ -30,6 +30,75 @@ Content-Type: application/json
 
 ---
 
+
+## Provenance associations
+
+A registration and a provenance chain are separate records. Nothing links them in
+the database — both derive from the same content, so anyone holding it computes
+both and checks both. These endpoints record **what somebody asserted**, which is
+a different thing from what is true.
+
+### **POST /content/{contentHash}/association**
+
+Assert that a chain covers registered content. Requires authentication, because an
+assertion nobody can be held to is not worth recording.
+
+```jsonc
+{
+  "entity_id":    "sha256:…",   // the chain's genesis leaf hash
+  "head":         "sha256:…",   // its head at this moment
+  "author_key":   "sha256:…",   // optional; needed to detect a key change
+  "recovery_key": "sha256:…",
+  "proof":        "0a1b2c…"     // optional; hex of a verifier claim buffer
+}
+```
+
+**Associations are never exclusive.** Any number of accounts may assert a chain for
+one content hash and none displaces another. A unique constraint would let whoever
+asserted first squat the hash, and the person best placed to do that is not the
+creator.
+
+**A key change waits for the owner of record:**
+
+| Asserter | Keys | Result |
+| --- | --- | --- |
+| is the owner of record | any | `current` — asserting is attesting |
+| anyone | unchanged | `current` — the chain simply grew |
+| someone else | changed | `pending`, owner emailed, expires in 5 days |
+| — (no owner of record) | changed | `current`, marked never attested |
+
+Silence refuses. A pending assertion expires unanswered rather than being accepted,
+because if silence accepted, the winning move would be to assert against somebody
+on holiday and say nothing.
+
+**Supplying `proof` makes `verified` true**, and it means less than it sounds like.
+DAON runs the verifier — the same `wasm32` build a skeptic runs in a browser — and
+confirms the leaf proves into a witnessed head. It says nothing about who owns
+anything: a thief's rotation verifies perfectly, because the stolen key *is* the
+recorded key. Which is why a verified assertion still waits for the owner.
+
+### **GET /content/{contentHash}/associations**
+
+Every chain asserted for this content, oldest first. More than one is normal and
+**DAON does not rank them** — deciding between competing claims belongs to a forum
+with standing to decide.
+
+### **POST /associations/{id}/attest** · **POST /associations/{id}/dispute**
+
+The owner of record resolves a pending association. Attesting makes it current;
+disputing records the denial, dated and attributed. The assertion stays on the
+record either way, because that it was made is a fact.
+
+### **GET /associations/resolve/{token}** · **POST /associations/resolve/{token}**
+
+The same two answers, from the notification email, without signing in.
+
+`GET` renders a page; only `POST` changes anything. Mail scanners and corporate
+security proxies fetch every URL in a message, so a `GET` that resolved would have
+those systems answering on the creator's behalf. The token is single-use and dies
+with the request's five-day deadline.
+
+
 ## 📝 Core Endpoints
 
 ### **POST /protect**
@@ -182,75 +251,6 @@ Content-Type: application/json
 ```
 
 ---
-
-### **GET /protection/{protectionId}**
-Get protection details by protection ID.
-
-**Request:**
-```http
-GET /v1/protection/prot_1234567890abcdef
-Authorization: Bearer api_key_here
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "protectionId": "prot_1234567890abcdef",
-    "contentHash": "7f8b9c2d4a1e3f5a9b7d2c8e6f4a9b8c",
-    "timestamp": "2024-03-15T14:32:17.123Z",
-    "license": "liberation_v1",
-    "metadata": {
-      "title": "Work Title",
-      "author": "Creator Name",
-      "url": "https://example.com/work"
-    },
-    "blockchainTx": "0x1234567890abcdef...",
-    "status": "confirmed"
-  }
-}
-```
-
----
-
-### **GET /protections**
-List protections for your API key.
-
-**Request:**
-```http
-GET /v1/protections?limit=50&offset=0&sort=timestamp
-Authorization: Bearer api_key_here
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "protections": [
-      {
-        "protectionId": "prot_1234567890",
-        "contentHash": "7f8b9c2d...",
-        "timestamp": "2024-03-15T14:32:17Z",
-        "metadata": {
-          "title": "Latest Work"
-        }
-      }
-    ],
-    "pagination": {
-      "total": 847,
-      "limit": 50,
-      "offset": 0,
-      "hasMore": true
-    }
-  }
-}
-```
-
----
-
-## 🔑 Authentication
 
 ### **API Key Authentication**
 ```http

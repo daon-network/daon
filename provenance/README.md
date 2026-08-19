@@ -29,6 +29,7 @@ core ──── verify        the format, and the four steps that check it
 | [`witness`](witness/) | `.ots` parsing, head batching, turning a proof into a Bitcoin anchor | core |
 | [`agent`](agent/) | On-disk store, keychain signer, coalescing policy, witness state | core, witness |
 | [`net`](net/) | **The only crate that opens a socket.** Calendar client, block source | core, witness |
+| [`verify-wasm`](verify-wasm/) | A C ABI over the verifier, so non-Rust callers run it rather than reimplement it | core, verify |
 | [`agentd`](agentd/) | The daemon: the editor socket, and the witness loop | all of the above |
 
 ### What each one refuses to do
@@ -81,6 +82,17 @@ to run it without trusting a binary we shipped:
 ```sh
 cargo build -p daon-provenance-verify --target wasm32-unknown-unknown --release
 ```
+
+The C-ABI build that DAON's API loads is produced by a script rather than by
+`cargo` directly, because `rustc` embeds absolute build paths and the same
+source compiled in two directories yields different bytes:
+
+```sh
+./scripts/build-verifier-wasm.sh --install
+```
+
+That is what makes the reproducibility claim in `rust-toolchain.toml` true
+rather than aspirational — pinning the compiler is necessary and not sufficient.
 
 ### Worked examples
 
@@ -193,6 +205,8 @@ Honest status, because the crate docs describe intent and this describes reality
 | The witness loop | **Works.** Runs on a timer from daemon startup; `--no-witness` opts out |
 | The daemon and its four routes | **Works** |
 | Rotation, recovery rotation and transfer | **Works.** Effective at their own `seq` — there is deliberately no delay |
+| Calendar client, against a real calendar | **Verified.** `net/tests/live_calendar.rs`, `#[ignore]`d — run it with `-- --ignored` |
+| DAON verifying a submitted proof | **Works.** The API loads the `wasm32` build. Rebuild it with `./scripts/build-verifier-wasm.sh --install`; CI fails if the committed copy drifts |
 | Storing content | **Off by default.** Segments were write-only, and a fixed 1 KiB boundary makes a revision pass cost a full copy of the document. `open_keeping_content` opts in |
 | **Binary and image registration** | **Missing.** Text only |
 

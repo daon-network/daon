@@ -17,7 +17,27 @@ jobs:
   e2e-tests:
     name: E2E Authentication Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Playwright's own image, matching the version in daon-frontend/package.json.
+    # It ships chromium, firefox and webkit with every system library they need,
+    # so nothing here calls apt -- which is what kept cancelling this job while
+    # it waited on a dpkg lock held by unattended-upgrades.
+    #
+    # Pinned rather than floating: a browser build changing under CI without a
+    # commit is the kind of drift that produces a failure nobody can reproduce.
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      # --ipc=host is Playwright's recommendation for browsers in Docker: the
+      # default 64 MB of /dev/shm is thin for a browser.
+      options: --ipc=host
+    env:
+      # GitHub Actions runs container steps as a user whose HOME it does not
+      # own, and firefox refuses to launch when that is true -- all 14 of its
+      # tests failed on it while chromium's 28 passed. Playwright prints this
+      # exact workaround in the failure output.
+      HOME: /root
+    # Raised from 15: the browser install alone consumed most of that budget,
+    # so a slow network cancelled the run before a single test executed.
+    timeout-minutes: 25
     
     services:
       postgres:
@@ -80,22 +100,42 @@ jobs:
         working-directory: ./daon-frontend
         run: npm ci
 
-      - name: Install Playwright browsers
+      # A pinned container tag drifts the moment package.json moves. Checked
+      # here rather than discovered as a mysterious behaviour difference between
+      # a developer's machine and CI.
+      - name: Container image must match the Playwright version
         if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./daon-frontend
-        run: npx playwright install --with-deps chromium webkit firefox
+        run: |
+          want=$(node -p "require('@playwright/test/package.json').version")
+          have="1.57.0"
+          if [ "$want" != "$have" ]; then
+            echo "::error::playwright is $want but the container is pinned to $have"
+            echo "Update the container image tag in .github/workflows/auth-e2e-tests.yml"
+            exit 1
+          fi
+          echo "  container matches playwright $want"
+
+      # The Playwright image has browsers, not a postgres client. apt is fine
+      # here: the dpkg lock that unattended-upgrades holds is on the runner
+      # host, and this runs inside a container that has neither.
+      - name: Install postgres client
+        if: steps.check_frontend.outputs.exists == 'true'
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq postgresql-client
 
       - name: Setup database schema
         if: steps.check_frontend.outputs.exists == 'true'
         working-directory: ./api-server
         env:
-          DB_HOST: localhost
+          DB_HOST: postgres
           DB_PORT: 5432
           DB_NAME: daon_db
           DB_USER: daon_user
           DB_PASSWORD: daon_test_password
         run: |
-          PGPASSWORD=daon_test_password psql -h localhost -U daon_user -d daon_db -f src/database/schema.sql
+          PGPASSWORD=daon_test_password psql -h postgres -U daon_user -d daon_db -f src/database/schema.sql
 
       - name: Start API server
         if: steps.check_frontend.outputs.exists == 'true'
@@ -104,15 +144,15 @@ jobs:
           NODE_ENV: test
           START_SERVER: 'true'
           PORT: 3000
-          DATABASE_URL: postgresql://daon_user:daon_test_password@localhost:5432/daon_db
-          DB_HOST: localhost
+          DATABASE_URL: postgresql://daon_user:daon_test_password@postgres:5432/daon_db
+          DB_HOST: postgres
           DB_PORT: 5432
           DB_NAME: daon_db
           DB_USER: daon_user
           DB_PASSWORD: daon_test_password
           JWT_ACCESS_SECRET: test_access_secret_key_min_32_chars_long
           JWT_REFRESH_SECRET: test_refresh_secret_key_min_32_chars_long
-          SMTP_HOST: localhost
+          SMTP_HOST: mailhog
           SMTP_PORT: 1025
           SMTP_FROM: noreply@daon.network
           SMTP_USER: ''
@@ -131,6 +171,8 @@ jobs:
         env:
           CI: true
           NEXT_PUBLIC_API_URL: http://localhost:3000
+        # All three browsers, webkit included -- the container has its
+        # libraries, which is the whole reason for using it.
         run: npx playwright test
 
       - name: Upload test results
