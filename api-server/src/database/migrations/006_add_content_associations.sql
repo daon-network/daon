@@ -36,7 +36,31 @@ CREATE TABLE IF NOT EXISTS content_associations (
     -- certificate must render these differently.
     verified BOOLEAN NOT NULL DEFAULT FALSE,
 
-    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    -- The chain's keys at this head. Kept so a later association can be seen to
+    -- carry *different* keys, which is what distinguishes "the chain grew" from
+    -- "the chain changed hands".
+    author_key VARCHAR(64),
+    recovery_key VARCHAR(64),
+
+    -- current   the association DAON answers with
+    -- pending   asserted, keys differ, awaiting the owner of record
+    -- attested  the owner of record confirmed it; becomes current
+    -- disputed  the owner of record denied it; never becomes current
+    --
+    -- Pending rather than refused: the date an assertion was made is evidence,
+    -- and discarding it to avoid recording a claim would destroy that. Silence
+    -- never becomes consent on a timer -- an unread email must not decide
+    -- ownership.
+    status VARCHAR(16) NOT NULL DEFAULT 'current',
+
+    -- Who resolved a pending association, and when.
+    resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    resolved_at TIMESTAMP,
+
+    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT assoc_status_known
+        CHECK (status IN ('current', 'pending', 'attested', 'disputed'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_assoc_content ON content_associations(content_hash);

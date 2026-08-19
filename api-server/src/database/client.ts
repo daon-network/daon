@@ -321,15 +321,57 @@ export const db = {
       entity_id: string;
       head: string;
       asserted_by: number | null;
+      author_key?: string | null;
+      recovery_key?: string | null;
+      status?: string;
     }) {
       const result = await db.query(
         `INSERT INTO content_associations
-           (content_hash, entity_id, head, asserted_by)
-         VALUES ($1, $2, $3, $4)
+           (content_hash, entity_id, head, asserted_by, author_key, recovery_key, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
-        [data.content_hash, data.entity_id, data.head, data.asserted_by]
+        [
+          data.content_hash, data.entity_id, data.head, data.asserted_by,
+          data.author_key ?? null, data.recovery_key ?? null,
+          data.status ?? 'current',
+        ]
       );
       return result.rows[0];
+    },
+
+    /**
+     * The association DAON currently answers with, if any.
+     *
+     * Pending and disputed rows are excluded deliberately: they are recorded
+     * facts about what was asserted, not answers.
+     */
+    async currentFor(contentHash: string) {
+      const result = await db.query(
+        `SELECT * FROM content_associations
+          WHERE content_hash = $1 AND status IN ('current', 'attested')
+          ORDER BY recorded_at DESC
+          LIMIT 1`,
+        [contentHash]
+      );
+      return result.rows[0] ?? null;
+    },
+
+    /**
+     * Resolve a pending association.
+     *
+     * Only the owner of record may call this, which the route enforces. Both
+     * outcomes are appended to the row rather than deleting anything -- a
+     * disputed assertion stays on the record, dated and attributed.
+     */
+    async resolve(id: number, status: 'attested' | 'disputed', userId: number) {
+      const result = await db.query(
+        `UPDATE content_associations
+            SET status = $2, resolved_by = $3, resolved_at = CURRENT_TIMESTAMP
+          WHERE id = $1 AND status = 'pending'
+          RETURNING *`,
+        [id, status, userId]
+      );
+      return result.rows[0] ?? null;
     },
 
     /** Every association for a hash, oldest first. Order is chronological, not ranked. */

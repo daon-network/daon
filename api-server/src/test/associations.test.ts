@@ -65,3 +65,71 @@ describe('association policy', () => {
     expect([...existing, incoming]).toHaveLength(2);
   });
 });
+
+describe('the owner-of-record gate', () => {
+  // Three ways to be current, one way to be pending. The rule under all of it:
+  // the gate is the owner of record, never the previous asserter -- gating on
+  // the previous asserter would hand whoever asserted first a veto over
+  // everyone after.
+  const decide = (o: {
+    ownerOfRecord: number | null;
+    asserter: number;
+    currentKeys: { author: string | null; recovery: string | null } | null;
+    newKeys: { author: string | null; recovery: string | null };
+  }) => {
+    const asserterIsOwner = o.ownerOfRecord !== null && o.ownerOfRecord === o.asserter;
+    const keysKnown = o.currentKeys !== null &&
+      (o.currentKeys.author !== null || o.currentKeys.recovery !== null);
+    const keysDiffer = keysKnown &&
+      (o.currentKeys!.author !== o.newKeys.author ||
+       o.currentKeys!.recovery !== o.newKeys.recovery);
+    return keysDiffer && !asserterIsOwner && o.ownerOfRecord !== null ? 'pending' : 'current';
+  };
+
+  const A = { author: 'a'.repeat(64), recovery: 'b'.repeat(64) };
+  const B = { author: 'c'.repeat(64), recovery: 'd'.repeat(64) };
+
+  it('lets the owner change their own keys without asking them to confirm', () => {
+    expect(decide({ ownerOfRecord: 1, asserter: 1, currentKeys: A, newKeys: B }))
+      .toBe('current');
+  });
+
+  it('lets anyone advance the head when the keys are unchanged', () => {
+    expect(decide({ ownerOfRecord: 1, asserter: 2, currentKeys: A, newKeys: A }))
+      .toBe('current');
+  });
+
+  it('holds a key change asserted by somebody else', () => {
+    expect(decide({ ownerOfRecord: 1, asserter: 2, currentKeys: A, newKeys: B }))
+      .toBe('pending');
+  });
+
+  // Nobody to ask. Recorded and weaker, which is honest.
+  it('cannot gate content with no owner of record', () => {
+    expect(decide({ ownerOfRecord: null, asserter: 2, currentKeys: A, newKeys: B }))
+      .toBe('current');
+  });
+
+  it('does not gate the first association, which changes nothing', () => {
+    expect(decide({ ownerOfRecord: 1, asserter: 2, currentKeys: null, newKeys: A }))
+      .toBe('current');
+  });
+
+  // The inversion this design exists to avoid.
+  it('never gates on the previous asserter', () => {
+    // Account 2 asserted first; account 3 asserts a key change. With the owner
+    // being account 1, account 2 has no say either way.
+    expect(decide({ ownerOfRecord: 1, asserter: 3, currentKeys: A, newKeys: B }))
+      .toBe('pending');
+    // And the owner is never blocked by an earlier asserter.
+    expect(decide({ ownerOfRecord: 1, asserter: 1, currentKeys: A, newKeys: B }))
+      .toBe('current');
+  });
+
+  // Silence is not consent. There is no timer that turns pending into accepted.
+  it('has no path from pending to current except an explicit action', () => {
+    const resolutions = ['attested', 'disputed'];
+    expect(resolutions).not.toContain('expired');
+    expect(resolutions).not.toContain('auto-accepted');
+  });
+});

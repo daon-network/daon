@@ -221,7 +221,18 @@ CREATE TABLE IF NOT EXISTS content_associations (
     head VARCHAR(64) NOT NULL,
     asserted_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     verified BOOLEAN NOT NULL DEFAULT FALSE,
-    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    -- The chain's keys at this head, so a later association carrying different
+    -- ones is distinguishable from a chain that simply grew.
+    author_key VARCHAR(64),
+    recovery_key VARCHAR(64),
+    -- current | pending | attested | disputed. A key change is pending until
+    -- the owner of record attests; silence never becomes consent.
+    status VARCHAR(16) NOT NULL DEFAULT 'current',
+    resolved_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    resolved_at TIMESTAMP,
+    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT assoc_status_known
+        CHECK (status IN ('current', 'pending', 'attested', 'disputed'))
 );
 CREATE INDEX IF NOT EXISTS idx_assoc_content ON content_associations(content_hash);
 CREATE INDEX IF NOT EXISTS idx_assoc_entity  ON content_associations(entity_id);
