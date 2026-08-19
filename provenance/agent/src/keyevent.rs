@@ -26,7 +26,7 @@
 //! order is established by Bitcoin rather than by anyone's say-so.
 
 use crate::{Error, Store, StoredLeaf};
-use daon_provenance_core::{Beacon, Hash, RevisionLeaf, KEY_EVENT_SENTINEL};
+use daon_provenance_core::{Beacon, Hash, KeyEvent, RevisionLeaf, KEY_EVENT_SENTINEL};
 
 /// The secret that authorises a key event, and nothing else.
 ///
@@ -157,6 +157,36 @@ impl Store {
             beacon,
             local_time_ms,
         )
+    }
+
+    /// Every key event in an entity, in order, with what each one did.
+    ///
+    /// The agent-side half of detection. A chain proves what you wrote; it
+    /// cannot show you a competing fork, because a thief works from a copy and
+    /// no timestamp calendar indexes. What it *can* do is show you the key
+    /// changes in the chain you hold — which matters after a restore, on a
+    /// shared machine, or in a synced directory, where a rotation may be present
+    /// that the creator did not make.
+    ///
+    /// Reports without judging. Whether a key change was legitimate is not a
+    /// question this can answer, and a client that treats every entry as an
+    /// alarm will be wrong most of the time — a creator's own rotations appear
+    /// here too.
+    pub fn key_events(&self, entity: &Hash) -> Result<Vec<(u64, KeyEvent)>, Error> {
+        let len = self.len(entity)?;
+        let mut out = Vec::new();
+        let mut previous: Option<RevisionLeaf> = None;
+
+        for seq in 0..len {
+            let leaf = self.leaf(entity, seq)?.leaf;
+            if let Some(parent) = &previous {
+                if let Some(event) = leaf.key_event(parent) {
+                    out.push((seq, event));
+                }
+            }
+            previous = Some(leaf);
+        }
+        Ok(out)
     }
 
     /// The entity's most recent leaf, which a key event is classified against.

@@ -290,3 +290,60 @@ fn a_key_event_needs_an_entity_that_exists() {
         .unwrap_err();
     assert!(matches!(e, Error::EmptyEntity));
 }
+
+/// The agent-side detection surface: what key changes are in the chain I hold.
+#[test]
+fn key_events_enumerates_what_happened_in_order() {
+    let (author, recovery) = (sk(1), sk(2));
+    let (rotated, new_recovery) = (sk(3), sk(4));
+    let (_d, store, entity) = started(&author, pk(&recovery));
+
+    // A content revision — must not appear.
+    let ident = Ident {
+        author: author.clone(),
+        recovery: pk(&recovery),
+    };
+    store
+        .append(
+            Some(&entity),
+            b"revised",
+            &[observation()],
+            beacon(),
+            &ident,
+            1_500,
+        )
+        .unwrap();
+
+    store
+        .rotate_author_key(
+            &entity,
+            pk(&rotated),
+            &OneShot(recovery.clone()),
+            beacon(),
+            2_000,
+        )
+        .unwrap();
+    store
+        .rotate_recovery_key(
+            &entity,
+            pk(&new_recovery),
+            &OneShot(rotated.clone()),
+            beacon(),
+            3_000,
+        )
+        .unwrap();
+
+    let events = store.key_events(&entity).unwrap();
+    assert_eq!(
+        events,
+        vec![(2, KeyEvent::Rotation), (3, KeyEvent::RecoveryRotation)],
+        "content revisions are not key events, and order is chain order"
+    );
+}
+
+#[test]
+fn a_chain_with_no_key_events_reports_none() {
+    let (author, recovery) = (sk(1), sk(2));
+    let (_d, store, entity) = started(&author, pk(&recovery));
+    assert!(store.key_events(&entity).unwrap().is_empty());
+}
