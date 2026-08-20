@@ -76,6 +76,14 @@ struct Live {
     entity: Option<Hash>,
     tool_id: Vec<u8>,
     policy: Session,
+    /// `part_commit` of each part accepted so far, in order.
+    ///
+    /// Hashes, never bytes. A work is streamed past the agent one part at a
+    /// time and each part is dropped as soon as it is committed to, so this
+    /// costs 32 bytes per part: a three-hundred-page graphic novel is under ten
+    /// kilobytes of session state, and the size of a registrable work stops
+    /// being a property of the daemon's memory.
+    parts: Vec<Hash>,
 }
 
 impl Agent {
@@ -103,6 +111,7 @@ impl Agent {
         match (req.method.as_str(), req.path.as_str()) {
             ("POST", "/v1/session/open") => self.session_open(req, now_ms),
             ("POST", "/v1/observe") => self.observe(req, now_ms),
+            ("POST", "/v1/part") => self.part(req),
             ("POST", "/v1/commit") => self.commit(req, now_ms),
             ("GET", p) if p.starts_with("/v1/entity/") && p.ends_with("/proof") => {
                 self.proof(req, p)
@@ -186,6 +195,7 @@ impl Agent {
                 entity,
                 tool_id: body.tool_id.clone().into_bytes(),
                 policy,
+                parts: Vec::new(),
             },
         );
 
@@ -269,6 +279,9 @@ impl Agent {
 #[derive(Deserialize)]
 struct CommitReq {
     session: String,
+    /// Absent when the work was streamed as parts, which is the whole point of
+    /// `/v1/part`: a composite has no single buffer to put here.
+    #[serde(default)]
     content: String,
     reason: String,
 }
@@ -289,7 +302,58 @@ struct NotCommitted {
     retry_after_ms: u64,
 }
 
+/// What accepting one part produced.
+#[derive(Serialize)]
+struct PartAccepted {
+    part: String,
+    index: usize,
+    parts_total: usize,
+}
+
 impl Agent {
+    /// `POST /v1/part?session=…` — add one part to the work being assembled.
+    ///
+    /// The body is the part's raw bytes, not JSON. **JSON cannot carry a PNG**:
+    /// a JSON string is a sequence of Unicode scalar values, so arbitrary bytes
+    /// must be escaped or encoded to survive it. Base64 was the obvious
+    /// alternative and does not fit — it inflates by a third, so against the
+    /// fixed 64 MiB [`MAX_BODY`](crate::http::MAX_BODY) the real ceiling would be
+    /// 48 MiB, and a limit that depends on an encoding the caller never chose is
+    /// a limit nobody can predict.
+    ///
+    /// The agent commits to the bytes and drops them. What it keeps is 32 bytes,
+    /// so the ceiling applies to a single *part* rather than to the work: a
+    /// novel with three figures, or three hundred pages of artwork, are the same
+    /// problem at different scales.
+    ///
+    /// Order is the order of calls, and it is committed — see `wire-format.md`
+    /// §6. An editor that wants a different order sends the parts in it.
+    fn part(&self, req: &Request) -> Reply {
+        let Some(session) = req.query.get("session") else {
+            return Reply::err(400, "missing_session", "expected ?session=s_…");
+        };
+
+        let mut inner = self.inner.lock().unwrap();
+        let Inner {
+            store, sessions, ..
+        } = &mut *inner;
+        let Some(live) = sessions.get_mut(session) else {
+            return Reply::err(404, "unknown_session", "no such session");
+        };
+
+        let commit = match store.put_part(&req.body) {
+            Ok(h) => h,
+            Err(e) => return Reply::err(500, "part_failed", &e.to_string()),
+        };
+        live.parts.push(commit);
+
+        Reply::ok(&PartAccepted {
+            part: hex_id(&commit),
+            index: live.parts.len() - 1,
+            parts_total: live.parts.len(),
+        })
+    }
+
     fn commit(&self, req: &Request, now_ms: i64) -> Reply {
         let body: CommitReq = match parse(&req.body) {
             Ok(b) => b,
@@ -303,6 +367,17 @@ impl Agent {
         let Some(live) = inner.sessions.get_mut(&body.session) else {
             return Reply::err(404, "unknown_session", "no such session");
         };
+
+        // Both at once is refused rather than resolved. Either could plausibly
+        // be what the caller meant, they commit to different roots, and guessing
+        // would silently register a work the creator did not describe.
+        if !live.parts.is_empty() && !body.content.is_empty() {
+            return Reply::err(
+                400,
+                "ambiguous_content",
+                "sent parts and content; commit one or the other",
+            );
+        }
 
         match live.policy.decide(reason, now_ms) {
             Decision::Commit => {}
@@ -338,6 +413,11 @@ impl Agent {
         let entity = live.entity;
         let tool = live.tool_id.clone();
         let _ = tool;
+        // Taken, not borrowed: a committed part belongs to the revision that
+        // committed it. Leaving them would silently fold this revision's parts
+        // into the next one, which is the kind of bug that only shows up as a
+        // wrong hash months later.
+        let parts = std::mem::take(&mut live.parts);
 
         // The beacon is a free lower bound on time, taken from a recent Bitcoin
         // block. Until the daemon has a block source this is the zero beacon,
@@ -357,14 +437,27 @@ impl Agent {
             ..
         } = &mut *inner;
 
-        let appended = store.append(
-            entity.as_ref(),
-            body.content.as_bytes(),
-            &observations,
-            beacon,
-            signer.as_ref(),
-            now_ms,
-        );
+        // A composite finishes from the part hashes alone -- the bytes were
+        // dropped as each part arrived, which is what lets a work exceed memory.
+        let appended = if parts.is_empty() {
+            store.append(
+                entity.as_ref(),
+                body.content.as_bytes(),
+                &observations,
+                beacon,
+                signer.as_ref(),
+                now_ms,
+            )
+        } else {
+            store.append_commit(
+                entity.as_ref(),
+                daon_provenance_core::merkle_root(&parts),
+                &observations,
+                beacon,
+                signer.as_ref(),
+                now_ms,
+            )
+        };
 
         let (entity_id, leaf) = match appended {
             Ok(v) => v,
