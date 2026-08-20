@@ -614,7 +614,10 @@ app.post("/api/v1/protect", [optionalAuth,
     .isObject()
     .withMessage('Metadata must be an object'),
   body('license')
-    .optional()
+    // `values: 'null'` so an explicit `"license": null` falls back to the
+    // default exactly as omitting the field does. Without it, a client that
+    // serialises absent values as null is rejected for supplying no opinion.
+    .optional({ values: 'null' })
     .isIn([
       'all-rights-reserved',
       'copyright',
@@ -645,11 +648,17 @@ app.post("/api/v1/protect", [optionalAuth,
     const {
       content,
       metadata = {},
-      license = 'liberation_v1',
-      ai_training_policy = 'prohibited',
+      // licence and policy are read below, not destructured: a destructuring
+      // default only fires on `undefined`.
       licensing_email,
       licensing_uri,
     } = req.body;
+
+    // `??` rather than a destructuring default, so an explicit null means
+    // "no opinion, use the default" instead of being stored as a record with
+    // no licence at all.
+    const license = req.body.license ?? 'liberation_v1';
+    const ai_training_policy = req.body.ai_training_policy ?? 'prohibited';
 
     if (ai_training_policy === 'contact_required' && !licensing_email && !licensing_uri) {
       return res.status(400).json({
@@ -686,8 +695,47 @@ app.post("/api/v1/protect", [optionalAuth,
           }
         });
       }
+      // The DB is authoritative, but it can be reachable and still not have the
+      // row -- for instance when an earlier write failed and only the cache
+      // recorded it. Consulting the cache here is what stops that turning into a
+      // second record for content that is already protected.
+      const cached = protectedContent.get(contentHash);
+      if (cached) {
+        logger.info(`Content already protected (cache): ${contentHash}`);
+        contentProtectionsTotal.labels(license, 'existing').inc();
+        return res.json({
+          success: true,
+          contentHash,
+          verificationUrl,
+          timestamp: cached.timestamp,
+          license: cached.license,
+          message: 'Content already protected',
+          existing: true,
+          blockchain: { enabled: blockchainEnabled, tx: cached.blockchainTx }
+        });
+      }
     } catch (dbCheckError) {
       logger.warn('DB existence check failed, continuing:', dbCheckError.message);
+
+      // Fall back to the process cache. Without this a transient database error
+      // turns a duplicate registration into a second record for content that is
+      // already protected -- the DB check is the only thing between "already
+      // protected" and a duplicate, and it is allowed to fail.
+      const cached = protectedContent.get(contentHash);
+      if (cached) {
+        logger.info(`Content already protected (cache): ${contentHash}`);
+        contentProtectionsTotal.labels(license, 'existing').inc();
+        return res.json({
+          success: true,
+          contentHash,
+          verificationUrl,
+          timestamp: cached.timestamp,
+          license: cached.license,
+          message: 'Content already protected',
+          existing: true,
+          blockchain: { enabled: blockchainEnabled, tx: cached.blockchainTx }
+        });
+      }
     }
 
     // If blockchain enabled, use it as source of truth
@@ -1565,7 +1613,11 @@ app.post('/api/v1/broker/protect',
       .optional()
       .isString(),
     body('license')
-      .optional()
+      // `values: 'null'` so an explicit `"license": null` falls back to the
+      // default exactly as omitting the field does. Without it, a client that
+      // serialises absent values as null is rejected for supplying no opinion.
+      // (express-validator 7 renamed this from `{ nullable: true }`.)
+      .optional({ values: 'null' })
       .isIn(['liberation_v1', 'all-rights-reserved', 'copyright', 'cc0', 'cc-by', 'cc-by-sa', 'cc-by-nd', 'cc-by-nc', 'cc-by-nc-sa'])
       .withMessage('Invalid license type'),
     handleValidationErrors
@@ -2595,6 +2647,30 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
+  // A body over the limit is a foreseeable client mistake, not a server fault.
+  // It was reaching the catch-all below, which logged it as "Unhandled error"
+  // and answered 500 -- so a caller sending a large file was told DAON had
+  // broken, and the log filled with stack traces for ordinary input.
+  if (err?.type === 'entity.too.large' || err?.status === 413) {
+    const limit = err.limit ? `${Math.floor(err.limit / (1024 * 1024))}MB` : 'the limit';
+    return res.status(413).json({
+      success: false,
+      error: 'payload_too_large',
+      message: `Request body exceeds ${limit}.`,
+      limit: err.limit ?? null,
+      received: err.length ?? null
+    });
+  }
+
+  // Malformed JSON is likewise the caller's doing.
+  if (err?.type === 'entity.parse.failed' || (err instanceof SyntaxError && 'body' in err)) {
+    return res.status(400).json({
+      success: false,
+      error: 'malformed_json',
+      message: 'Request body is not valid JSON.'
+    });
+  }
+
   logger.error('Unhandled error:', err);
   res.status(500).json({
     success: false,

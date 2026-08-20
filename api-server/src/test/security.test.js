@@ -25,7 +25,14 @@ describe('Security Tests', () => {
       const response = await request(app)
         .options('/api/v1/protect')
         .set('Origin', 'http://localhost:3000')
-        .expect(200);
+        // A real preflight announces the method and headers it intends to use.
+        // Without these, CORS has nothing to echo back and omits
+        // access-control-allow-headers entirely -- which is correct behaviour,
+        // and which this test read as a missing header.
+        .set('Access-Control-Request-Method', 'POST')
+        .set('Access-Control-Request-Headers', 'content-type')
+        // A successful preflight is 204: there is no body to return.
+        .expect(204);
 
       assert.ok(response.headers['access-control-allow-origin']);
       assert.ok(response.headers['access-control-allow-methods']);
@@ -53,7 +60,7 @@ describe('Security Tests', () => {
       const response = await request(app)
         .post('/api/v1/protect')
         .send({
-          content: 'Test content',
+          content: 'Prototype pollution probe, distinct from other cases',
           metadata: {
             title: xssPayload,
             author: 'Test Author'
@@ -71,13 +78,16 @@ describe('Security Tests', () => {
       const response = await request(app)
         .post('/api/v1/protect')
         .send({ content: oversizedContent })
-        .expect(400);
+        .expect(413);
 
       assert.strictEqual(response.body.success, false);
-      assert.strictEqual(response.body.error, 'Validation failed');
+      assert.strictEqual(response.body.error, 'payload_too_large');
     });
 
     test('should reject malformed hash in verification', async () => {
+      // Paths outside the route correctly 404 -- only malformed *hashes* on the
+      // route should 400. This list previously mixed the two and asserted 400
+      // for '/etc/passwd', which would have meant the router matched it.
       const malformedHashes = [
         'not-a-hash',
         '12345', // too short
@@ -89,7 +99,11 @@ describe('Security Tests', () => {
 
       for (const hash of malformedHashes) {
         const response = await request(app)
-          .get(`/api/v1/verify/${hash}`)
+          // Encoded, so each value reaches the route as one path segment. Raw
+          // '../../../etc/passwd' is normalised to '/etc/passwd' by the HTTP
+          // layer and never reaches the router -- safe, but it means this was
+          // asserting on the normaliser rather than on the validator.
+          .get(`/api/v1/verify/${encodeURIComponent(hash)}`)
           .expect(400);
 
         assert.strictEqual(response.body.success, false);
@@ -111,7 +125,10 @@ describe('Security Tests', () => {
         const response = await request(app)
           .post('/api/v1/protect')
           .send({
-            content: 'Test content',
+            // Distinct per case: duplicate detection correctly answers 200
+            // for content already registered, so reusing one string here made
+            // every iteration after the first assert against the wrong status.
+            content: `Licence case ${JSON.stringify(license)} padding text`,
             license: license
           });
 
@@ -258,7 +275,10 @@ describe('Security Tests', () => {
       assert.ok(!responseStr.includes('/Users/'));
       assert.ok(!responseStr.includes('/home/'));
       assert.ok(!responseStr.includes('C:\\'));
-      assert.ok(!responseStr.includes(__dirname));
+      // `__dirname` is not defined in an ES module, so referencing it threw a
+      // ReferenceError before any assertion ran. process.cwd() is the same check
+      // and actually exists.
+      assert.ok(!responseStr.includes(process.cwd()));
     });
   });
 
@@ -279,10 +299,11 @@ describe('Security Tests', () => {
     test('should handle OPTIONS requests correctly', async () => {
       const response = await request(app)
         .options('/api/v1/protect')
-        .expect(200);
+        // 204 No Content is the correct answer to a preflight; there is no body
+        // to send. This asserted 200 and had never run to say so.
+        .expect(204);
 
-      // Should allow preflight requests
-      assert.ok(response.status === 200);
+      assert.strictEqual(response.status, 204);
     });
   });
 });

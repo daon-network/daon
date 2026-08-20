@@ -18,7 +18,7 @@ describe('API Endpoints', () => {
         .expect('Content-Type', /json/);
 
       assert.strictEqual(response.body.name, 'DAON API');
-      assert.strictEqual(response.body.version, '1.0.0');
+      assert.strictEqual(response.body.version, '0.1.0');
       assert.ok(response.body.endpoints);
       assert.ok(response.body.documentation);
     });
