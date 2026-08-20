@@ -40,6 +40,8 @@ pub mod tag {
     pub const OBSERVATION: u8 = 0x02;
     /// Content segment.
     pub const CONTENT: u8 = 0x03;
+    /// One part of a composite work — see [`content_commit_parts`](crate::content_commit_parts).
+    pub const PART: u8 = 0x04;
 }
 
 /// Wire format version, carried in the first byte of every hashed structure.
@@ -189,6 +191,87 @@ pub fn content_commit(content: &[u8]) -> Hash {
         .map(|s| sha256(&[&[tag::CONTENT], s]))
         .collect();
     merkle_root(&leaves)
+}
+
+// ── Composite works ───────────────────────────────────────────────────────
+
+/// Commitment to one part of a composite work.
+///
+/// The extra `0x04` is not decoration. Without it a two-part work whose first
+/// part is exactly [`SEGMENT_SIZE`] bytes would produce the same root as the flat
+/// concatenation of the two, because both are `node(H(part₀), H(part₁))` over the
+/// same bytes. The commitment would then be ambiguous about where the parts
+/// divide, and the whole reason to have parts is that the division is meaningful.
+///
+/// Tagging the part level also means a single-part work is *not* the same as the
+/// flat content, which is the honest answer: `[image]` and `image` are different
+/// claims about the same bytes.
+pub fn part_commit(part: &[u8]) -> Hash {
+    sha256(&[&[tag::PART], &content_commit(part)])
+}
+
+/// Commitment over a work made of ordered parts — a run of text, an image,
+/// another run of text.
+///
+/// # Why this exists
+///
+/// [`content_commit`] cuts at fixed [`SEGMENT_SIZE`] boundaries, which is right
+/// for prose and wrong for a work with pictures in it, for two reasons.
+///
+/// **A picture is not segment-aligned.** To disclose one figure you would have to
+/// disclose every segment overlapping it, and those segments also contain the
+/// tail of the preceding paragraph and the head of the next. You could never
+/// disclose exactly the figure — only a byte range that approximately contains
+/// it. That defeats the stated purpose of segmenting at all: proving one passage
+/// without revealing the whole revision.
+///
+/// **An insertion moves every later boundary.** Add a sentence on page two and
+/// every subsequent 1 KiB cut shifts, so every later segment hash changes. For
+/// prose that is merely wasteful. For a work where one part is a multi-megabyte
+/// image it means no two revisions share any structure at all.
+///
+/// # What it does not change
+///
+/// The leaf is untouched: `content_commit` is 32 bytes at offset 41 whichever
+/// rule produced it, so this is not a format version bump and old leaves are
+/// unaffected.
+///
+/// **The four-step verifier never runs this.** Content commitment is opaque bytes
+/// to the four steps — they check a signature and an inclusion path, not what the
+/// content was. This adds no fifth step, which is the property that has killed
+/// several previous proposals and deserves to keep killing them.
+///
+/// Nothing needs to record *which* rule was used, either. A root already pins its
+/// own structure: producing bytes and a path that fold to the same root under the
+/// other rule is a second-preimage problem, not a choice a claimant gets to make
+/// later.
+///
+/// # Degenerate cases
+///
+/// An empty list is one empty part, mirroring [`segments`] on empty content — a
+/// work with no parts and a work with one empty part are the same work.
+pub fn content_commit_parts(parts: &[&[u8]]) -> Hash {
+    if parts.is_empty() {
+        return part_commit(&[]);
+    }
+    let leaves: Vec<Hash> = parts.iter().map(|p| part_commit(p)).collect();
+    merkle_root(&leaves)
+}
+
+/// Proof that one whole part sits at `index` of a composite work.
+///
+/// Fold it with [`verify_inclusion`] against [`part_commit`] of the disclosed
+/// part. This is the disclosure a creator actually wants to make: *this panel,
+/// this figure, this photograph is part seven of the work I registered* — without
+/// handing over parts one through six.
+///
+/// Proving something *inside* a part is a second, independent step: run
+/// [`inclusion_proof`] over that part's own segments against its
+/// [`content_commit`]. The two levels compose but are deliberately not fused,
+/// because most disclosures only need one of them.
+pub fn part_proof(parts: &[&[u8]], index: usize) -> Vec<ProofStep> {
+    let leaves: Vec<Hash> = parts.iter().map(|p| part_commit(p)).collect();
+    inclusion_proof(&leaves, index)
 }
 
 /// Which chain a beacon value came from. An enum, so adding a source is a format

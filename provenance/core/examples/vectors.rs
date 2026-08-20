@@ -68,6 +68,41 @@ fn main() {
     println!("seg_root\t{}", hex(&content_commit(&seg_doc)));
     println!("leaf_body\t{}", hex(&leaf.encode()));
     println!("leaf_id\t{}", hex(&leaf.leaf_id()));
+    // Composite works. `aligned` vs `flat_of_aligned` is the collision the
+    // 0x04 part tag exists to prevent: a first part of exactly SEGMENT_SIZE
+    // gives the parts tree the same shape as the concatenation.
+    let comp: Vec<&[u8]> = vec![
+        b"page one text",
+        b"\x89PNG\r\n\x1a\n figure bytes",
+        b"page two text",
+    ];
+    let aligned_a = vec![b'x'; 1024];
+    let aligned_b = vec![b'y'; 500];
+    let aligned: Vec<&[u8]> = vec![&aligned_a, &aligned_b];
+    let mut concat = aligned_a.clone();
+    concat.extend_from_slice(&aligned_b);
+
+    println!("part_commit_text\t{}", hex(&part_commit(comp[0])));
+    println!("part_commit_image\t{}", hex(&part_commit(comp[1])));
+    println!("parts_root\t{}", hex(&content_commit_parts(&comp)));
+    println!(
+        "parts_root_single\t{}",
+        hex(&content_commit_parts(&[comp[1]]))
+    );
+    println!("parts_root_empty\t{}", hex(&content_commit_parts(&[])));
+    println!(
+        "parts_root_aligned\t{}",
+        hex(&content_commit_parts(&aligned))
+    );
+    println!("flat_of_aligned\t{}", hex(&content_commit(&concat)));
+    for (i, (side, sib)) in part_proof(&comp, 1).iter().enumerate() {
+        let s = match side {
+            Side::Left => "L",
+            Side::Right => "R",
+        };
+        println!("part_proof{i}\t{s}:{}", hex(sib));
+    }
+
     for (i, l) in leaves.iter().enumerate() {
         println!("leaf{i}\t{}", hex(l));
     }

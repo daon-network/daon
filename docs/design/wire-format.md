@@ -199,6 +199,56 @@ content_commit = merkle_root([ SHA256(0x03 || seg) for seg in segments(content) 
 Content under 1 KiB is a single segment, so `content_commit = SHA256(0x03 ‖ content)` and small
 documents behave exactly like a flat content hash.
 
+### Composite works: text with pictures in it
+
+**Normative.** A work whose content is an ordered sequence of *parts* — a run of text, an image,
+another run of text — commits as a Merkle tree over the parts:
+
+```
+part_commit(p)          = SHA256(0x04 ‖ content_commit(p))
+content_commit_parts(P) = merkle_root([ part_commit(p) for p in P ])
+```
+
+An empty list is one empty part, mirroring `segments` on empty content.
+
+**Why not just segment the concatenation.** Fixed 1 KiB cuts are right for prose and wrong for a
+work with pictures in it, for two reasons that both defeat the purpose of segmenting at all:
+
+- **A picture is not segment-aligned.** Disclosing one figure would mean disclosing every segment
+  that overlaps it, and those segments also carry the tail of the preceding paragraph and the head
+  of the next. The creator could never disclose exactly the figure, only a byte range that
+  approximately contains it.
+- **An insertion moves every later boundary.** Add a sentence on page two and every subsequent cut
+  shifts, so every later segment hash changes. For prose that is wasteful; where one part is a
+  multi-megabyte image it means no two revisions share any structure.
+
+**The `0x04` tag is load-bearing, not decoration.** A two-part work whose first part is exactly
+`SEGMENT_SIZE` bytes has the same tree *shape* as the flat concatenation of both parts — both are
+`node(H(p₀), H(p₁))` over the same bytes in the same order. Without a distinct domain tag the two
+would produce an identical root and the commitment would say nothing about where the parts divide,
+which is the one thing parts are for. §9 carries `parts_root_aligned` and `flat_of_aligned` as a
+vector pair for exactly this case.
+
+It follows that a single-part work is **not** the same commitment as the bare content:
+`[image]` and `image` are different claims about the same bytes, and the format says so.
+
+**The leaf does not change, and neither does the verifier.** `content_commit` is 32 bytes at
+offset 41 under either rule. This is not a format version bump, and old leaves are unaffected.
+
+Nothing records *which* rule produced those 32 bytes, and nothing needs to. A root already pins its
+own structure: producing bytes and a path that fold to the same root under the other rule is a
+second-preimage problem, not a choice a claimant gets to make after the fact.
+
+**This is not a fifth step.** The four-step verifier never computes a content commitment — it
+checks a signature and an inclusion path, and treats these 32 bytes as opaque. Content disclosure
+is a separate, creator-initiated act, as it already was for segments.
+
+**Disclosure has two independent levels.** *This panel is part seven of the work* is
+`part_proof`, folded against `part_commit` of the disclosed part. *This passage is inside that
+part* is an ordinary segment proof against that part's own `content_commit`. They compose, but
+they are deliberately not fused: most disclosures need only one of them, and a creator proving a
+figure is theirs should not have to reveal how long the surrounding chapter is.
+
 ### The all-zero sentinel: this leaf is a key event
 
 **Normative.** `content_commit` of **32 zero bytes** means the leaf records a key change rather

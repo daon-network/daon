@@ -38,6 +38,22 @@ out = [
     ('leaf_body', hexs(encode_leaf_body(**leaf))),
     ('leaf_id', hexs(leaf_id(**leaf))),
 ]
+# Composite works: a run of text, a picture, another run of text. The
+# 'flat' pair is the collision the T_PART tag exists to prevent -- first part
+# exactly SEGMENT_SIZE means the parts tree and the concatenation share a shape.
+comp = [b'page one text', b'\x89PNG\r\n\x1a\n figure bytes', b'page two text']
+flat_parts = [b'x' * 1024, b'y' * 500]
+out += [
+    ('part_commit_text',   hexs(part_commit(comp[0]))),
+    ('part_commit_image',  hexs(part_commit(comp[1]))),
+    ('parts_root',         hexs(content_commit_parts(comp))),
+    ('parts_root_single',  hexs(content_commit_parts([comp[1]]))),
+    ('parts_root_empty',   hexs(content_commit_parts([]))),
+    ('parts_root_aligned', hexs(content_commit_parts(flat_parts))),
+    ('flat_of_aligned',    hexs(content_commit(flat_parts[0] + flat_parts[1]))),
+]
+out += [(f'part_proof{i}', f'{s.decode()}:{hexs(h)}')
+        for i, (s, h) in enumerate(part_proof(comp, 1))]
 out += [(f'leaf{i}', hexs(l)) for i, l in enumerate(leaves)]
 out.append(('merkle_root', hexs(root)))
 out += [(f'proof{i}', f'{s.decode()}:{hexs(h)}') for i, (s, h) in enumerate(proof)]
