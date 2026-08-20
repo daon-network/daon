@@ -234,14 +234,24 @@ def test_verify_strips_sha256_prefix_from_url(requests_mock):
     assert "sha256:" not in requests_mock.last_request.path
 
 
-def test_verify_hashes_raw_content_when_not_prefixed(requests_mock):
-    requests_mock.get(
-        f"{API_URL}/api/v1/verify/{TEST_HASH_HEX}", json=VERIFY_RESPONSE
+def test_verify_sends_content_to_the_server_rather_than_hashing_it(requests_mock):
+    """Content goes to the server; the server decides what it commits to.
+
+    This test previously asserted the opposite -- that the client hashed the
+    content itself and looked the result up. It did, and the hash it produced
+    was not the one the server records, because the server canonicalises first.
+    So verifying by content answered "not registered" for content that was.
+    """
+    requests_mock.post(
+        f"{API_URL}/api/v1/verify-content",
+        json={**VERIFY_RESPONSE, "contentHash": TEST_HASH_HEX},
     )
     client = DAONClient()
-    client.verify(TEST_CONTENT)
+    result = client.verify(TEST_CONTENT)
 
-    assert requests_mock.last_request.path == f"/api/v1/verify/{TEST_HASH_HEX}"
+    assert requests_mock.last_request.path == "/api/v1/verify-content"
+    assert requests_mock.last_request.json()["content"] == TEST_CONTENT
+    assert result.content_commit == f"sha256:{TEST_HASH_HEX}"
 
 
 def test_verify_maps_is_valid_to_verified(requests_mock):

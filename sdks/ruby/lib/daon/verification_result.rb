@@ -41,7 +41,7 @@ module Daon
 
     def blockchain_url
       return nil unless content_hash
-      "https://explorer.daon.network/content/#{content_hash}"
+      nil
     end
 
     def to_h

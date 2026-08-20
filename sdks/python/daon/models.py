@@ -81,14 +81,27 @@ class ProtectionRequest:
 
 @dataclass
 class ProtectionResult:
-    """Result of content protection operation."""
+    """Result of content protection operation.
+
+    ``content_commit`` is the identity of the work: a Merkle root over 1 KiB
+    segments of the content, per ``wire-format.md`` §6, and the same value the
+    local provenance agent computes for the same bytes.
+
+    The chain fields are incidental. A transaction hash records *where* the
+    commitment was anchored, not *what* was committed, and an SDK that led with
+    it would make the anchor look like the evidence.
+    """
     success: bool
-    content_hash: str
+    content_commit: str
     tx_hash: Optional[str] = None
     verification_url: Optional[str] = None
-    blockchain_url: Optional[str] = None
     error: Optional[str] = None
     timestamp: Optional[datetime] = field(default_factory=datetime.now)
+
+    @property
+    def content_hash(self) -> str:
+        """Deprecated alias for :attr:`content_commit`."""
+        return self.content_commit
 
     @property
     def protected(self) -> bool:
@@ -115,16 +128,23 @@ class ProtectionResult:
 
 @dataclass
 class VerificationResult:
-    """Result of content verification operation."""
+    """Result of content verification operation.
+
+    ``content_commit`` is what was looked up -- see :class:`ProtectionResult`.
+    """
     verified: bool
-    content_hash: str
+    content_commit: str
     creator: Optional[str] = None
     license: Optional[str] = None
     timestamp: Optional[datetime] = None
     platform: Optional[str] = None
     verification_url: Optional[str] = None
-    blockchain_url: Optional[str] = None
     error: Optional[str] = None
+
+    @property
+    def content_hash(self) -> str:
+        """Deprecated alias for :attr:`content_commit`."""
+        return self.content_commit
 
     @property
     def protected(self) -> bool:

@@ -21,7 +21,7 @@ module Daon
 
     def blockchain_url
       return nil unless tx_hash
-      "https://explorer.daon.network/tx/#{tx_hash}"
+      nil
     end
 
     def to_h

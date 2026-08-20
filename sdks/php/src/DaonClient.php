@@ -74,7 +74,7 @@ class DaonClient
                 'tx_hash' => $blockchainTx,
                 'verification_url' => $response['verificationUrl'] ?? null,
                 'blockchain_url' => $blockchainTx
-                    ? "https://explorer.daon.network/tx/{$blockchainTx}"
+                    ? null
                     : null,
                 'timestamp' => isset($response['timestamp']) ? new \DateTime($response['timestamp']) : new \DateTime(),
             ]);
@@ -109,7 +109,7 @@ class DaonClient
                 'license' => $response['license'] ?? null,
                 'timestamp' => isset($response['timestamp']) ? new \DateTime($response['timestamp']) : null,
                 'verification_url' => $response['verificationUrl'] ?? null,
-                'blockchain_url' => "https://explorer.daon.network/content/{$apiHash}",
+                'blockchain_url' => null,
             ]);
 
         } catch (\Exception $e) {
