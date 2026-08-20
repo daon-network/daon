@@ -18,7 +18,8 @@ Official Go SDK for the DAON Creator Protection Network. Protect your creative w
 ## Installation
 
 ```bash
-go get github.com/daon-network/daon-go-sdk
+# not published as a standalone module; use the monorepo path
+go get github.com/daon-network/daon/sdks/go
 ```
 
 ## Quick Start
@@ -389,17 +390,15 @@ MIT License - see [LICENSE](../../LICENSE) for details.
 
 ## Links
 
-- **Documentation**: https://docs.daon.network/go
+- **Documentation**: https://daon.network/
 - **API Server**: https://api.daon.network
 - **Website**: https://daon.network
-- **Discord**: https://discord.gg/daon
 - **Issues**: https://github.com/daon-network/daon-go-sdk/issues
 
 ## Support
 
 - 📧 Email: dev@daon.network
-- 💬 Discord: https://discord.gg/daon
-- 📖 Docs: https://docs.daon.network
+- 📖 Docs: https://daon.network
 
 ---
 

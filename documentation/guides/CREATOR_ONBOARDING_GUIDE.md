@@ -136,7 +136,7 @@ Install the platform plugin for where you publish, so new works get protected au
 
 ### **Medium/Substack Writers**
 1. **Copy Content:** Select and copy your published article
-2. **Use Web Tool:** Visit protect.daon.network  
+2. **Use Web Tool:** Visit app.daon.network  
 3. **Paste & Protect:** Choose license and protect
 4. **Save Verification:** Keep blockchain proof link
 
@@ -191,19 +191,12 @@ The blockchain record provides cryptographic proof you created the content first
 
 ---
 
-## 🚀 Success Stories
+## Success Stories
 
-### **Writer, AO3 User**
-> *"Protected 847 fanfics in 20 minutes with the bulk tool. Now I have proof I wrote them before any AI company trained on them."*
+None yet. This section carried four accounts from creators who do not exist --
+one referencing a lawsuit, another an AI company caught scraping. They are gone.
 
-### **WordPress Blogger**  
-> *"Plugin took 2 minutes to install. Three months later, I got proof someone was scraping my blog for AI training. Now I have legal standing to fight it."*
-
-### **Academic Researcher**
-> *"Protected my entire research portfolio. When a company used my work in their AI without permission, I had timestamped blockchain proof for the lawsuit."*
-
-### **Medium Writer**
-> *"Started protecting my articles after installation. Six months later, my work showed up in an AI output verbatim. Blockchain proof made the legal case slam-dunk."*
+If DAON is useful to you and you are willing to be named, open an issue.
 
 ---
 
@@ -215,10 +208,9 @@ The blockchain record provides cryptographic proof you created the content first
 - **Everyone Else:** [Download Bulk Tool](../creator-tools/)
 
 ### **Need Help?**
-- **Discord Community:** https://discord.gg/daon
 - **Email Support:** creators@daon.network
-- **Documentation:** https://docs.daon.network
-- **Status Updates:** https://status.daon.network
+- **Documentation:** https://daon.network
+- **Status:** https://api.daon.network/health
 
 ### **Spread the Word**
 - **Twitter:** Share your protection status
@@ -259,7 +251,7 @@ Every day you wait is more potential exploitation of your unprotected work.
 Seriously. Install plugin, activate protection, done forever.
 
 ### **Join the Movement**  
-Thousands of creators are already protecting their work. Be part of the revolution.
+DAON is early. If it is useful to you, the project would benefit from hearing so.
 
 ---
 

@@ -319,13 +319,13 @@ Yes! You can always **grant additional permissions** or **sell commercial licens
 
 <div class="license-selection">
 
-**[🛡️ Liberation License v1.0](https://docs.daon.network/legal/liberation-license/)**  
+**[🛡️ Liberation License v1.0](https://daon.network/legal/liberation-license/)**  
 *Recommended for most creators*
 
 **[📚 Creative Commons BY-NC](https://creativecommons.org/licenses/by-nc/4.0/)**  
 *Great for academic work*
 
-**[🔒 All Rights Reserved](https://docs.daon.network/legal/all-rights-reserved/)**  
+**[🔒 All Rights Reserved](https://daon.network/legal/all-rights-reserved/)**  
 *Maximum protection*
 
 </div>

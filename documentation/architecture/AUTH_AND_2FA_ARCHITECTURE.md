@@ -151,7 +151,7 @@ DAON uses a **refresh token + device trust** architecture to provide:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. User visits protect.daon.network                         │
+│ 1. User visits app.daon.network                         │
 │ 2. Clicks "Sign in with Email"                              │
 │ 3. Enters email: fanficauthor@gmail.com                     │
 │ 4. POST /api/v1/auth/magic-link                             │
@@ -214,7 +214,7 @@ User Experience: One-time setup, clear instructions
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. User visits protect.daon.network                         │
+│ 1. User visits app.daon.network                         │
 │ 2. Clicks "Sign in with Email"                              │
 │ 3. Enters email: fanficauthor@gmail.com                     │
 │ 4. Receives magic link, clicks                              │
@@ -250,7 +250,7 @@ User Experience: Seamless, no 2FA prompt
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. User on new laptop, visits protect.daon.network          │
+│ 1. User on new laptop, visits app.daon.network          │
 │ 2. Signs in with magic link                                 │
 │ 3. Backend:                                                  │
 │    - Device fingerprint: def789 (different from trusted)    │
@@ -1295,7 +1295,7 @@ TOTP_ISSUER=DAON
 TOTP_WINDOW=1
 
 # Frontend
-FRONTEND_URL=https://protect.daon.network
+FRONTEND_URL=https://app.daon.network
 
 # Device Fingerprinting
 FINGERPRINTJS_API_KEY=optional_for_pro_version

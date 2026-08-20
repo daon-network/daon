@@ -185,7 +185,6 @@ The Liberation License ensures DAON serves **human liberation**, not corporate e
 **Questions:**
 - Legal: legal@daon.network
 - General: contact@daon.network
-- Community: https://discord.gg/daon
 
 ---
 

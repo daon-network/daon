@@ -248,7 +248,6 @@ Global: Internet Archive, Wikimedia (digital preservation)
 
 **Website**: https://daon.network  
 **Code**: https://github.com/daon-network/daon-core  
-**Community**: https://discord.gg/daon  
 **Support**: https://ko-fi.com/daonnetwork  
 
 *DAON: Because your creativity belongs to you, not Big Tech.*

@@ -19,7 +19,8 @@ DAON Network empowers creators to protect their intellectual property through bl
 # Sign in and protect content through the UI
 
 # Option 2: Use CLI (Advanced)
-npm install -g @daon/cli
+# (no CLI is published)
+npm install daon-sdk
 daon protect "My Creative Work" --license liberation_v1
 ```
 
@@ -70,7 +71,7 @@ git push origin main
 ### **For SDK Users** (Developers Integrating DAON)
 ```bash
 # Use the public API
-npm install @daon/sdk
+npm install daon-sdk
 # Point to: https://api.daon.network
 
 # See SDK documentation in sdks/
@@ -82,7 +83,6 @@ npm install @daon/sdk
 - **🚀 [API Documentation](api-server/README.md)** - REST API reference
 - **🔧 [Integration Examples](integration-demos/)** - Platform integrations
 - **🖥️ [Monitoring Guide](docs/MONITORING_GUIDE.md)** - Production monitoring
-- **🆘 [Support Community](https://discord.gg/daon)** - Get help from creators
 
 ## 💡 Key Features
 
@@ -103,12 +103,24 @@ npm install @daon/sdk
 - **AO3 integration** for fanfiction
 - **Bulk tools** for large content libraries
 
-## 📊 Usage Statistics
+## Status
 
-- **🔒 Content Protected**: 50,000+ works
-- **👥 Active Creators**: 1,200+
-- **🌍 Global Verifications**: 15,000+/day
-- **⚡ API Response Time**: <100ms
+DAON is early. The numbers that were here -- 50,000+ works, 1,200+ creators,
+15,000+ verifications a day -- were invented. The real ones, as of August 2026:
+
+| | |
+| --- | --- |
+| Content records | 109 |
+| Registered accounts | 3 |
+| Chain | `daon-mainnet-1`, live |
+| API | `https://api.daon.network`, healthy |
+
+The 109 records date from April and May 2026 and carry no owner: a volume was
+wiped and they were reconstructed from blockchain transactions, which preserved
+the hashes but not who registered them.
+
+Publishing invented adoption figures for a project about proving what is true was
+indefensible, so they are gone rather than adjusted.
 
 ## 🤝 Contributing
 
@@ -160,7 +172,6 @@ Liberation License protections are enforced through blockchain consensus and do 
 - **🌐 Website**: [daon.network](https://daon.network)
 - **📧 Email**: [hello@daon.network](mailto:hello@daon.network)
 - **🐦 Twitter**: [@daon_network](https://twitter.com/daon_network)
-- **💬 Discord**: [discord.gg/daon](https://discord.gg/daon)
 - **☕ Support**: [ko-fi.com/greenfieldoverride](https://ko-fi.com/greenfieldoverride)
 
 ---

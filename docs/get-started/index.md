@@ -62,21 +62,19 @@ description: "Protect your creative work from AI exploitation in 2 minutes"
 
 1. **Choose Your SDK**
    ```bash
-   # Node.js/JavaScript
-   npm install @daon/sdk
-   
-   # Python
-   pip install daon
-   
-   # Ruby (for Rails/AO3)
-   gem install daon
-   
-   # PHP
-   composer require daon/client
-   
-   # Go
-   go get github.com/daon-network/go-sdk
-   ```
+# Node.js -- the only SDK currently published
+npm install daon-sdk
+```
+
+The Python, Ruby, PHP and Go SDKs **are not published to any package registry.**
+Their source lives in [`sdks/`](https://github.com/daon-network/daon/tree/main/sdks)
+and can be used from a checkout. The publish workflows for them last failed in
+March 2026 and have not been re-run.
+
+> **Do not run `pip install daon`.** That name belongs to an unrelated project
+> ("Daon Korean Analyzer" by `rasoio`) and has nothing to do with DAON. Earlier
+> versions of these docs told people to install it.
+
 
 2. **3-Line Integration**
    ```javascript
@@ -196,16 +194,14 @@ You get a permanent verification URL as legal evidence
 
 ---
 
-## 🎉 Success Stories
+## Success Stories
 
-> **"Protected 847 fanfics in 20 minutes. Now I have proof I wrote them before any AI trained on them."**  
-> — AO3 Creator with 2M+ words
+There are none yet. This section previously carried testimonials from creators
+who do not exist -- several asserting legal or financial outcomes -- and they
+have been removed rather than rewritten.
 
-> **"Plugin installation took 2 minutes. Three months later, got proof someone scraped my blog. Now I have legal standing."**  
-> — WordPress Food Blogger
-
-> **"DAON SDK integration: literally 3 lines of code. Now all our users get automatic protection."**  
-> — Indie Writing Platform Developer
+If DAON is useful to you and you are willing to be named, open an issue. One real
+account is worth more than the invented ones were.
 
 ---
 

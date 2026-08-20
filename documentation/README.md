@@ -165,7 +165,7 @@ scripts/
 - **Main README:** `/README.md` (project root)
 - **API Docs:** `/api-server/README.md`
 - **SDK Docs:** `/sdks/<language>/README.md`
-- **Public Docs Site:** https://docs.daon.network (GitHub Pages)
+- **Public Docs Site:** https://daon.network (GitHub Pages)
 - **License:** `/LICENSE.md`
 
 ---
@@ -175,7 +175,7 @@ scripts/
 - **Issues:** https://github.com/daon-network/daon/issues
 - **Discord:** #support channel
 - **Email:** support@daon.network
-- **Docs Site:** https://docs.daon.network
+- **Docs Site:** https://daon.network
 
 ---
 

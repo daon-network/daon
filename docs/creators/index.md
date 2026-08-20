@@ -241,14 +241,12 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 
 ## Success Stories
 
-> **"Protected 847 fanfictions in 20 minutes using the bulk tool. Now I have legal proof I wrote them all before AI companies could scrape them."**  
-> — AO3 Author, 2.3M words protected
+There are none yet. This section previously carried testimonials from creators
+who do not exist -- several asserting legal or financial outcomes -- and they
+have been removed rather than rewritten.
 
-> **"WordPress plugin took 2 minutes to install. Three months later, I caught someone using my blog posts to train an AI model. Now I have legal standing to fight it."**  
-> — Food Blogger, 500+ recipe posts
-
-> **"Simple web tool let me protect my poetry collection in minutes. Peace of mind that my work is legally protected."**  
-> — Indie Poet, 150+ poems
+If DAON is useful to you and you are willing to be named, open an issue. One real
+account is worth more than the invented ones were.
 
 ---
 

@@ -486,6 +486,7 @@ If no: Violation → Legal action
 
 ### 1. Install SDK
 ```bash
+# @daon/broker-sdk is not published; this is a design sketch
 npm install @daon/broker-sdk
 ```
 

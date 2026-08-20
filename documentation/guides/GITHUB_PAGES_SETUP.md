@@ -73,7 +73,7 @@ Value: 185.199.111.153
 TTL: 3600
 ```
 
-**If you want `https://docs.daon.network` (subdomain):**
+**If you want `https://daon.network` (subdomain):**
 
 1. Update `docs/CNAME` to: `docs.daon.network`
 2. Add DNS record:

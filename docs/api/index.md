@@ -14,21 +14,19 @@ description: "Complete API reference and SDK documentation for all supported lan
 
 ### **1. Choose Your Language**
 ```bash
-# JavaScript/Node.js
-npm install @daon/sdk
-
-# Python
-pip install daon
-
-# Ruby
-gem install daon
-
-# PHP
-composer require daon/client
-
-# Go
-go get github.com/daon-network/go-sdk
+# Node.js -- the only SDK currently published
+npm install daon-sdk
 ```
+
+The Python, Ruby, PHP and Go SDKs **are not published to any package registry.**
+Their source lives in [`sdks/`](https://github.com/daon-network/daon/tree/main/sdks)
+and can be used from a checkout. The publish workflows for them last failed in
+March 2026 and have not been re-run.
+
+> **Do not run `pip install daon`.** That name belongs to an unrelated project
+> ("Daon Korean Analyzer" by `rasoio`) and has nothing to do with DAON. Earlier
+> versions of these docs told people to install it.
+
 
 ### **2. Basic Protection**
 ```javascript

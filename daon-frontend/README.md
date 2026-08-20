@@ -326,7 +326,6 @@ MIT License - See [LICENSE](../LICENSE) for details
 ## Support
 
 - **Issues:** https://github.com/daon-network/daon/issues
-- **Discord:** https://discord.gg/daon
 - **Email:** hello@daon.network
 - **Funding:** https://ko-fi.com/greenfieldoverride
 

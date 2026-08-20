@@ -464,6 +464,5 @@ docker-compose -f docker-compose.production.yml up -d --scale api-server=3
 
 ## Support
 
-- Documentation: https://docs.daon.network
+- Documentation: https://daon.network
 - Issues: https://github.com/your-org/greenfield-blockchain/issues
-- Community: https://discord.gg/daon
