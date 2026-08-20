@@ -225,7 +225,8 @@ Honest status, because the crate docs describe intent and this describes reality
 | Calendar client, against a real calendar | **Verified.** `net/tests/live_calendar.rs`, `#[ignore]`d — run it with `-- --ignored` |
 | DAON verifying a submitted proof | **Works.** The API loads the `wasm32` build. Rebuild it with `./scripts/build-verifier-wasm.sh --install`; CI fails if the committed copy drifts |
 | Storing content | **Off by default.** Segments were write-only, and a fixed 1 KiB boundary makes a revision pass cost a full copy of the document. `open_keeping_content` opts in |
-| **Binary and image registration** | **Missing.** Text only |
+| Composite works: text with images | **Works.** `POST /v1/part` streams a work past the agent one part at a time; the agent keeps 32 bytes per part. `wire-format.md` §6 |
+| **Standalone binary registration** | **Not a separate feature.** A lone image is a one-part work |
 
 A chain can now be written, batched, submitted, upgraded and verified end to end.
 

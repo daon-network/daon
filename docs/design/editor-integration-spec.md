@@ -212,6 +212,44 @@ exists to preserve. The agent commits all observations in a window to the leaf a
 over the sequence, so a leaf carries each one intact and a holder can later disclose one without
 the others. See `wire-format.md` §3.
 
+### `POST /v1/part?session=…`
+
+Add one part to a work made of text and pictures — a novel with a figure in it, a manuscript with
+a screenshot, a graphic novel at the extreme.
+
+**The body is the part's raw bytes, not JSON.** There is no envelope and no field name:
+
+```
+POST /v1/part?session=s_01J… HTTP/1.1
+Content-Length: 84213
+
+<the bytes>
+```
+
+```jsonc
+// response
+{ "part": "sha256:…",     // part_commit of these bytes
+  "index": 1,             // where it sits, zero-based
+  "parts_total": 2 }
+```
+
+**Why not base64 in the JSON body.** A JSON string is a sequence of Unicode scalar values, so a
+PNG has to be encoded to survive it. Base64 inflates by a third, and against the fixed 64 MiB body
+limit that puts the real ceiling at 48 MiB — right in the middle of ordinary raw photo sizes, so
+some frames from a camera fit and others do not. A limit that depends on an encoding the caller
+never chose is a limit nobody can predict.
+
+**The agent keeps 32 bytes and drops the rest.** Each part is committed to as it arrives, so the
+body limit applies to a single *part* rather than to the work. Three hundred pages of artwork is
+under ten kilobytes of session state, and the size of a registrable work stops being a property of
+the daemon's memory.
+
+**Order is the order of calls, and it is committed.** An editor that wants a different order sends
+the parts in that order. See `wire-format.md` §6 for what the ordering commits to.
+
+Parts belong to the revision that commits them: after `commit` the pending list is empty, and the
+next revision starts from nothing.
+
 ### `POST /v1/commit`
 
 Request that accumulated observations become a revision leaf.
@@ -220,6 +258,7 @@ Request that accumulated observations become a revision leaf.
 // request
 { "session": "s_01J…",
   "content": "…",              // full buffer; committed as SHA256(0x03‖bytes)
+                               // omit entirely when the work was sent as parts
   "reason":  "idle" }          // | save | close | explicit
 
 // response — committed
@@ -236,6 +275,10 @@ Request that accumulated observations become a revision leaf.
 
 **`commit` is a request, not a command.** The agent may coalesce, defer, or refuse it. An editor
 that treats a non-commit as an error is misreading the contract — §4 covers why.
+
+**Send `content` or parts, never both.** They commit to different roots, either could plausibly be
+what the caller meant, and guessing would silently register a work the creator did not describe.
+The agent answers `400 ambiguous_content` rather than choosing.
 
 ### `GET /v1/entity/{id}/proof?seq=N`
 

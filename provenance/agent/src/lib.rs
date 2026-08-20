@@ -32,8 +32,8 @@ pub mod policy;
 pub mod witness;
 
 use daon_provenance_core::{
-    content_commit, inclusion_proof, merkle_root, meta_commit, tag, Beacon, Hash, Observation,
-    ProofStep, RevisionLeaf, SEGMENT_SIZE,
+    content_commit, content_commit_parts, inclusion_proof, merkle_root, meta_commit, part_commit,
+    tag, Beacon, Hash, Observation, ProofStep, RevisionLeaf, SEGMENT_SIZE,
 };
 use std::fs;
 use std::io::Write;
@@ -349,6 +349,49 @@ impl Store {
         Ok((self.leaf(entity, seq)?, inclusion_proof(&ids, seq as usize)))
     }
 
+    /// Commit to one part of a composite work, returning its [`part_commit`].
+    ///
+    /// The caller keeps 32 bytes and may drop the part's bytes immediately. That
+    /// is the whole point: a work is registered by streaming its parts past the
+    /// agent one at a time, so the agent's memory is 32 bytes per part rather
+    /// than the size of the work. Three hundred pages of artwork is under ten
+    /// kilobytes of state.
+    ///
+    /// Storage follows the same rule as [`Store::put_content`] — off unless the
+    /// store was opened with [`Store::open_keeping_content`].
+    pub fn put_part(&self, part: &[u8]) -> Result<Hash, Error> {
+        self.put_content(part)?;
+        Ok(part_commit(part))
+    }
+
+    /// Append a revision whose content is an ordered sequence of parts.
+    ///
+    /// For the in-memory case: a novel with a figure in it, where holding the
+    /// whole work at once is unremarkable. Large works should stream through
+    /// [`Store::put_part`] and finish with [`Store::append_commit`].
+    #[allow(clippy::too_many_arguments)]
+    pub fn append_parts(
+        &self,
+        entity: Option<&Hash>,
+        parts: &[&[u8]],
+        observations: &[Observation],
+        beacon: Beacon,
+        signer: &dyn Signer,
+        local_time_ms: i64,
+    ) -> Result<(Hash, StoredLeaf), Error> {
+        for p in parts {
+            self.put_content(p)?;
+        }
+        self.append_commit(
+            entity,
+            content_commit_parts(parts),
+            observations,
+            beacon,
+            signer,
+            local_time_ms,
+        )
+    }
+
     /// Append a revision.
     ///
     /// For `seq` 0 this creates the entity, whose id is the genesis leaf id —
@@ -363,10 +406,34 @@ impl Store {
         signer: &dyn Signer,
         local_time_ms: i64,
     ) -> Result<(Hash, StoredLeaf), Error> {
+        let cc = self.put_content(content)?;
+        self.append_commit(entity, cc, observations, beacon, signer, local_time_ms)
+    }
+
+    /// Append a revision from an already-computed content commitment.
+    ///
+    /// The shared tail of [`Store::append`] and [`Store::append_parts`], and the
+    /// entry point for a caller that streamed parts and holds only their
+    /// [`part_commit`] hashes — fold those with
+    /// [`daon_provenance_core::merkle_root`] and pass the result.
+    ///
+    /// Takes 32 bytes rather than content on purpose. A store that insisted on
+    /// seeing the bytes could not register a work larger than memory, and would
+    /// make the size of a work a property of the implementation rather than of
+    /// the format.
+    #[allow(clippy::too_many_arguments)]
+    pub fn append_commit(
+        &self,
+        entity: Option<&Hash>,
+        cc: Hash,
+        observations: &[Observation],
+        beacon: Beacon,
+        signer: &dyn Signer,
+        local_time_ms: i64,
+    ) -> Result<(Hash, StoredLeaf), Error> {
         if observations.is_empty() {
             return Err(Error::NoObservations);
         }
-        let cc = self.put_content(content)?;
         let mc = meta_commit(observations).map_err(|_| Error::NoObservations)?;
 
         let (seq, parent_head) = match entity {
