@@ -44,6 +44,9 @@ interface Exports {
   daon_buffer_len(): number;
   daon_verify(len: number): number;
   daon_existed_by_ms(): bigint;
+  daon_content_begin(): void;
+  daon_content_update(len: number): number;
+  daon_content_finish(): number;
 }
 
 let loaded: Exports | null = null;
@@ -126,4 +129,41 @@ export function verifyClaim(claim: Buffer): VerifyResult {
     signatureChecked: false,
     reason: REASONS[code] ?? `verification failed (${code})`,
   };
+}
+
+/**
+ * Commit to file bytes, using the same rule the provenance agent uses.
+ *
+ * This is deliberately not a `sha256` of the file. A creator who registers a
+ * photograph here and later verifies it through the local agent must get the
+ * same identity, or neither lookup finds the other and they own one file with
+ * two records. So the rule is `content_commit` from `wire-format.md` §6 — a
+ * Merkle root over 1 KiB segments, which for content under 1 KiB reduces to a
+ * single tagged hash.
+ *
+ * Reimplementing that in TypeScript would take about fifteen lines and would be
+ * a second implementation of the format. The first symptom of it drifting would
+ * be a creator's own file failing to verify against their own record, which is
+ * the worst failure this system has. So it streams through the wasm instead.
+ *
+ * Returns null when the verifier is unavailable — callers must treat that as
+ * "cannot commit", never as "committed to nothing".
+ */
+export function contentCommit(bytes: Buffer): Buffer | null {
+  const w = loadVerifier();
+  if (!w) return null;
+
+  const ptr = w.daon_buffer();
+  const cap = w.daon_buffer_len();
+
+  w.daon_content_begin();
+  for (let off = 0; off < bytes.length; off += cap) {
+    const chunk = bytes.subarray(off, Math.min(off + cap, bytes.length));
+    new Uint8Array(w.memory.buffer, ptr, chunk.length).set(chunk);
+    if (w.daon_content_update(chunk.length) !== 0) return null;
+  }
+  if (w.daon_content_finish() !== 32) return null;
+
+  // Copy out before anything else touches the arena.
+  return Buffer.from(new Uint8Array(w.memory.buffer, ptr, 32));
 }

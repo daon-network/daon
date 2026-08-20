@@ -35,7 +35,7 @@
 //! The verifier never allocates for the caller and never returns a pointer, so
 //! there is nothing to free and no way to leak.
 
-use daon_provenance_core::{Hash, ProofStep, RevisionLeaf, Side, LEAF_BODY_LEN};
+use daon_provenance_core::{ContentHasher, Hash, ProofStep, RevisionLeaf, Side, LEAF_BODY_LEN};
 use daon_provenance_verify::{verify, Claim, Failure, WitnessAttestation};
 
 /// The claim verified. Positive results are distinguishable so a caller can
@@ -104,6 +104,70 @@ pub unsafe extern "C" fn daon_verify(len: usize) -> i32 {
 #[no_mangle]
 pub extern "C" fn daon_existed_by_ms() -> i64 {
     unsafe { LAST_EXISTED_BY }
+}
+
+// ── Content commitment, streamed ──────────────────────────────────────────
+//
+// DAON's API has to commit to an uploaded file, and the file does not fit in the
+// arena — a photograph is larger than 64 KiB and a scan is much larger. It could
+// have reimplemented the rule in TypeScript in about fifteen lines, which is
+// exactly the temptation this crate exists to remove: a second implementation of
+// the format is a second thing to keep correct, and the first symptom of it
+// drifting would be a creator's file failing to verify against its own record.
+//
+// So the caller feeds the file through the same arena in pieces. Chunk
+// boundaries do not affect the result, so it can read the file however it likes.
+
+static mut HASHER: Option<ContentHasher> = None;
+
+/// Begin (or restart) a streamed content commitment.
+#[no_mangle]
+pub extern "C" fn daon_content_begin() {
+    unsafe { HASHER = Some(ContentHasher::new()) }
+}
+
+/// Feed the first `len` bytes of [`daon_buffer`] into the running commitment.
+///
+/// Returns 0, or [`ERR_MALFORMED_INPUT`] if `len` exceeds the arena or no
+/// [`daon_content_begin`] has been called.
+///
+/// # Safety
+///
+/// `len` must be the number of bytes the caller actually wrote.
+#[no_mangle]
+pub unsafe extern "C" fn daon_content_update(len: usize) -> i32 {
+    if len > ARENA {
+        return ERR_MALFORMED_INPUT;
+    }
+    let buf = &*core::ptr::addr_of!(BUFFER);
+    match (*core::ptr::addr_of_mut!(HASHER)).as_mut() {
+        Some(h) => {
+            h.update(&buf[..len]);
+            0
+        }
+        None => ERR_MALFORMED_INPUT,
+    }
+}
+
+/// Finish, writing the 32-byte commitment to the start of [`daon_buffer`].
+///
+/// Returns 32 on success, or [`ERR_MALFORMED_INPUT`] if no commitment was begun.
+/// The hasher is consumed: a further `update` needs a fresh `begin`.
+///
+/// # Safety
+///
+/// Single-threaded use only, as with the rest of this interface.
+#[no_mangle]
+pub unsafe extern "C" fn daon_content_finish() -> i32 {
+    match (*core::ptr::addr_of_mut!(HASHER)).take() {
+        Some(h) => {
+            let out = h.finish();
+            let buf = &mut *core::ptr::addr_of_mut!(BUFFER);
+            buf[..32].copy_from_slice(&out);
+            32
+        }
+        None => ERR_MALFORMED_INPUT,
+    }
 }
 
 static mut LAST_EXISTED_BY: i64 = 0;

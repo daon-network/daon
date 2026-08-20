@@ -1,3 +1,18 @@
+/**
+ * Full-stack integration: a running API and a running blockchain node.
+ *
+ * NOT a unit test. It talks to API_URL (default http://localhost:3000) and
+ * BLOCKCHAIN_RPC (default http://localhost:26657) over the network, so it fails
+ * without both -- which is why it carries `.integration.` in its name and is not
+ * part of `npm test`.
+ *
+ *     docker compose up -d
+ *     npx tsx --test src/test/full-stack.integration.test.js
+ *
+ * It sat as `integration.test.js` for nine months, matched by no runner, quietly
+ * reporting six failures nobody saw. The failures were the absent services, not
+ * the code -- but nothing said so, which is the actual defect being fixed here.
+ */
 import { test, describe, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { createRequire } from 'module';

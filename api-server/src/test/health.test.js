@@ -15,8 +15,12 @@ describe('Health Check Endpoint', () => {
 
     assert.strictEqual(response.body.status, 'healthy');
     assert.ok(response.body.timestamp);
-    assert.strictEqual(response.body.version, '1.0.0');
-    assert.ok(typeof response.body.blockchain === 'string');
+    assert.strictEqual(response.body.version, '0.1.0');
+      // /health reports blockchain as an object -- { enabled, connected,
+      // chainId, height } -- not a string. That richer shape has been live for
+      // months; this test never ran to notice.
+      assert.strictEqual(typeof response.body.blockchain, 'object');
+      assert.strictEqual(typeof response.body.blockchain.enabled, 'boolean');
   });
 
   test('Health check should include security headers', async () => {
