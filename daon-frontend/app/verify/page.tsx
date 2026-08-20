@@ -54,6 +54,33 @@ export default function VerifyContentPage() {
       reader.readAsText(f);
     });
 
+  const readFileAsBytes = (f: File): Promise<ArrayBuffer> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(f);
+    });
+
+  /**
+   * Text files are read as text and canonicalised; everything else is sent as
+   * bytes.
+   *
+   * The distinction matters and is not cosmetic. Registering a manuscript should
+   * survive it being re-saved with different line endings, so its identity comes
+   * from the words. A photograph has no equivalent -- any normalisation that made
+   * a re-encoded image match would be a similarity judgement -- so its identity
+   * is its exact bytes.
+   *
+   * Reading a PNG with readAsText, which is what this page used to do to
+   * everything, decodes it as UTF-8 and produces mojibake. It would have hashed
+   * something that was neither the file nor any text the creator wrote.
+   */
+  const TEXT_EXTENSIONS =
+    /\.(txt|md|markdown|html?|json|jsx?|tsx?|css|scss|py|rb|java|c|cpp|h|go|rs|sh|yml|yaml|xml|csv)$/i;
+
+  const isTextFile = (f: File) => TEXT_EXTENSIONS.test(f.name) || f.type.startsWith('text/');
+
   const handleVerify = async () => {
     setError(null);
     setResult(null);
@@ -94,6 +121,41 @@ export default function VerifyContentPage() {
 
       if (response.status === 404) {
         setResult({ success: false, isValid: false, contentHash: data.contentHash, error: data.error });
+      } else if (!response.ok) {
+        setError(data.message || data.error || 'Verification failed');
+      } else {
+        setResult(data);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to contact verification server');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /** Send a file's exact bytes. No JSON envelope: base64 would inflate it by a
+   *  third against the server's limit, for an encoding the user never chose. */
+  const verifyBytes = async (f: File) => {
+    setLoading(true);
+    try {
+      const bytes = await readFileAsBytes(f);
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const apiUrl = baseUrl.includes('/api/v1') ? baseUrl : `${baseUrl}/api/v1`;
+
+      const response = await fetch(`${apiUrl}/verify-content`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: bytes,
+      });
+      const data = await response.json();
+
+      if (response.status === 404) {
+        setResult({
+          success: false,
+          isValid: false,
+          contentHash: data.contentHash,
+          error: data.message || data.error,
+        });
       } else if (!response.ok) {
         setError(data.message || data.error || 'Verification failed');
       } else {
@@ -187,7 +249,7 @@ export default function VerifyContentPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".txt,.md,.html,.json,.js,.ts,.jsx,.tsx,.css,.py,.rb,.java,.c,.cpp,.go,.rs"
+                  accept="image/*,.pdf,.txt,.md,.html,.json,.js,.ts,.jsx,.tsx,.css,.py,.rb,.java,.c,.cpp,.go,.rs"
                   onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                   className="block w-full text-sm text-gray-900 border border-gray-300 rounded-xl cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-3 file:px-4 file:rounded-l-xl file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />

@@ -193,6 +193,111 @@ pub fn content_commit(content: &[u8]) -> Hash {
     merkle_root(&leaves)
 }
 
+/// Deepest subtree stack [`ContentHasher`] can need.
+///
+/// One entry per distinct subtree size, so `n` segments need `log2(n)` entries.
+/// 64 covers 2^64 segments — more than the addressable universe of 1 KiB pieces,
+/// and cheap enough at 2 KiB of stack that bounding it beats reasoning about it.
+const HASHER_STACK: usize = 64;
+
+/// [`content_commit`] over content that arrives in pieces.
+///
+/// Same result, without holding the content. `content_commit` takes a `&[u8]`,
+/// which means a caller must have the whole thing in memory — fine for a
+/// manuscript, not for a photograph, and not at all for a file larger than the
+/// machine. This computes the identical root from a stream.
+///
+/// The trick is that the RFC 6962 split `merkle_root` uses is compatible with
+/// building bottom-up: keep a stack of completed subtrees, combine whenever the
+/// top two are the same size, and fold what remains right-to-left at the end.
+/// Memory is one segment plus `log2(n)` hashes, so a gigabyte costs the same as
+/// a kilobyte. `hasher_matches_content_commit` asserts the two agree across
+/// sizes rather than trusting that argument.
+pub struct ContentHasher {
+    /// Completed subtrees, each with the number of leaves beneath it.
+    stack: [(u64, Hash); HASHER_STACK],
+    depth: usize,
+    /// Bytes of the segment currently being filled.
+    partial: [u8; SEGMENT_SIZE],
+    partial_len: usize,
+    /// Whether anything at all has been fed.
+    any: bool,
+}
+
+impl Default for ContentHasher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ContentHasher {
+    /// A hasher over empty content.
+    pub fn new() -> Self {
+        ContentHasher {
+            stack: [(0, [0u8; 32]); HASHER_STACK],
+            depth: 0,
+            partial: [0u8; SEGMENT_SIZE],
+            partial_len: 0,
+            any: false,
+        }
+    }
+
+    /// Feed the next bytes. Chunk boundaries do not affect the result.
+    pub fn update(&mut self, mut bytes: &[u8]) {
+        if !bytes.is_empty() {
+            self.any = true;
+        }
+        while !bytes.is_empty() {
+            let want = SEGMENT_SIZE - self.partial_len;
+            let take = want.min(bytes.len());
+            self.partial[self.partial_len..self.partial_len + take].copy_from_slice(&bytes[..take]);
+            self.partial_len += take;
+            bytes = &bytes[take..];
+
+            // Only seal a full segment. A short one is only the last segment,
+            // and sealing it early would split content that has not ended.
+            if self.partial_len == SEGMENT_SIZE {
+                let leaf = sha256(&[&[tag::CONTENT], &self.partial]);
+                self.push(leaf);
+                self.partial_len = 0;
+            }
+        }
+    }
+
+    fn push(&mut self, leaf: Hash) {
+        self.stack[self.depth] = (1, leaf);
+        self.depth += 1;
+        // Combine equal-sized neighbours. This is what makes the streaming shape
+        // match the recursive split rather than merely resembling it.
+        while self.depth >= 2 && self.stack[self.depth - 1].0 == self.stack[self.depth - 2].0 {
+            let (n, right) = self.stack[self.depth - 1];
+            let (_, left) = self.stack[self.depth - 2];
+            self.depth -= 2;
+            self.stack[self.depth] = (n * 2, node(&left, &right));
+            self.depth += 1;
+        }
+    }
+
+    /// The content commitment over everything fed so far.
+    pub fn finish(mut self) -> Hash {
+        // Empty content is one empty segment, matching `segments`.
+        if !self.any && self.partial_len == 0 {
+            return sha256(&[&[tag::CONTENT], &[]]);
+        }
+        if self.partial_len > 0 {
+            let leaf = sha256(&[&[tag::CONTENT], &self.partial[..self.partial_len]]);
+            self.push(leaf);
+        }
+        // Fold right-to-left: the trailing subtrees are the shallow ones, which
+        // is exactly the shape the recursive split produces.
+        let mut acc = self.stack[self.depth - 1].1;
+        for i in (0..self.depth - 1).rev() {
+            acc = node(&self.stack[i].1, &acc);
+        }
+        acc
+    }
+}
+
 // ── Composite works ───────────────────────────────────────────────────────
 
 /// Commitment to one part of a composite work.

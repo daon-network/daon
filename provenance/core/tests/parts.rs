@@ -170,3 +170,62 @@ fn a_composite_is_never_the_key_event_sentinel() {
         assert_ne!(content_commit_parts(&refs), [0u8; 32]);
     }
 }
+
+// ── Streaming ─────────────────────────────────────────────────────────────
+
+use daon_provenance_core::ContentHasher;
+
+/// The claim that makes streaming usable: identical roots, any chunking.
+#[test]
+fn hasher_matches_content_commit() {
+    let sizes = [
+        0usize,
+        1,
+        2,
+        100,
+        1023,
+        1024,
+        1025,
+        2047,
+        2048,
+        2049,
+        3000,
+        4096,
+        5000,
+        7 * 1024,
+        8 * 1024,
+        8 * 1024 + 1,
+        100_000,
+    ];
+    for &n in &sizes {
+        let data: Vec<u8> = (0..n).map(|i| (i * 7 + 3) as u8).collect();
+        let mut h = ContentHasher::new();
+        h.update(&data);
+        assert_eq!(
+            h.finish(),
+            content_commit(&data),
+            "streamed root differs at {n} bytes"
+        );
+    }
+}
+
+/// Chunk boundaries must not be observable in the output — a caller reading a
+/// file cannot control how the reads land.
+#[test]
+fn chunking_does_not_change_the_root() {
+    let data: Vec<u8> = (0..50_000).map(|i| (i * 13) as u8).collect();
+    let expected = content_commit(&data);
+
+    for chunk in [1usize, 7, 512, 1023, 1024, 1025, 4096, 49_999] {
+        let mut h = ContentHasher::new();
+        for piece in data.chunks(chunk) {
+            h.update(piece);
+        }
+        assert_eq!(h.finish(), expected, "chunk size {chunk} changed the root");
+    }
+}
+
+#[test]
+fn a_streamed_empty_is_an_empty_segment() {
+    assert_eq!(ContentHasher::new().finish(), content_commit(&[]));
+}

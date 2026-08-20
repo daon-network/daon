@@ -47,14 +47,14 @@ Whether you're a writer, artist, blogger, or any type of creator, DAON gives you
     <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg></div>
     <h3 class="md-feature__title">Visual Artists</h3>
     <p class="md-feature__description">DeviantArt, Instagram, portfolio sites</p>
-    <p><strong>Status:</strong> Not supported yet</p>
+    <p><strong>Best Tool:</strong> Upload the file</p>
     <ul class="md-feature__list">
-      <li><strong>Image files cannot be registered today</strong></li>
-      <li>DAON currently accepts text only</li>
-      <li>Written work about your art can be registered</li>
-      <li>Image support is planned, not built</li>
+      <li>Register an image by its exact bytes</li>
+      <li>Same identity the local agent computes</li>
+      <li>Proof the file existed at a point in time</li>
+      <li><strong>A re-exported file is a different file</strong></li>
     </ul>
-    <a href="https://github.com/daon-network/daon/issues" class="md-feature__link">Follow progress →</a>
+    <a href="/creators/getting-started/" class="md-feature__link">Get Started →</a>
   </div>
 
   <div class="md-feature">

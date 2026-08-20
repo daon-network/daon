@@ -23,6 +23,7 @@ import { body, param, validationResult } from 'express-validator';
 import client from 'prom-client';
 import blockchainClient from './blockchain.js';
 import { DatabaseClient, db } from './database/client.js';
+import { contentCommit } from './verifier/index.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
 import { verifyToken } from './auth/auth.js';
@@ -160,6 +161,16 @@ if (process.env.NODE_ENV !== 'test') {
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
+
+// File uploads arrive as raw bytes, never base64 in a JSON field. Base64
+// inflates by a third, so a stated limit would silently become three quarters of
+// itself -- and a limit that depends on an encoding the caller never chose is a
+// limit nobody can predict.
+//
+// The cap is smaller than what the local agent accepts, deliberately: this is a
+// shared service buffering whole files in memory, and one is a resource everyone
+// contends for while the other is the creator's own machine.
+app.use(express.raw({ type: 'application/octet-stream', limit: '25mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Metrics middleware
@@ -283,6 +294,48 @@ function generateContentHash(content) {
     throw new EmptyAfterStrippingError();
   }
   return hash;
+}
+
+/**
+ * Commit to a file's bytes.
+ *
+ * Files are not canonicalised. There is no equivalent of stripping markup for a
+ * photograph: any normalisation that made a re-encoded image hash the same would
+ * be a similarity judgement, and this system does not make those.
+ *
+ * So a re-exported JPEG is a different file, and says so. That is the honest
+ * answer rather than the convenient one.
+ *
+ * The commitment is `content_commit` from `wire-format.md` §6, computed by the
+ * same wasm the provenance agent uses -- so a creator who registers a photograph
+ * here and verifies it through the agent gets one identity, not two.
+ */
+function generateFileHash(bytes) {
+  const commit = contentCommit(bytes);
+  if (!commit) {
+    throw new Error('the content verifier is not available on this server');
+  }
+  return commit.toString('hex');
+}
+
+/**
+ * Handle a route that accepts either JSON text or raw file bytes.
+ *
+ * Returns the file buffer when this is a binary request, or null to let the
+ * existing text path run untouched. Kept as one function so a future route
+ * cannot accidentally accept bytes without the size and emptiness checks.
+ */
+function fileBodyOrNull(req, res) {
+  if (!Buffer.isBuffer(req.body)) return null;
+  if (req.body.length === 0) {
+    res.status(400).json({
+      success: false,
+      error: 'empty_file',
+      message: 'The uploaded file has no bytes.'
+    });
+    return undefined;
+  }
+  return req.body;
 }
 
 /**
@@ -456,6 +509,100 @@ app.get('/api/v1', (req, res) => {
 });
 
 // Content protection endpoint
+/**
+ * Register a file — the binary half of POST /api/v1/protect.
+ *
+ * Licence and metadata travel as query parameters because the body is the file.
+ * A multipart parser would let them share the body, at the cost of a parser
+ * handling attacker-shaped input for the sake of two scalars.
+ */
+app.post('/api/v1/protect', optionalAuth, async (req, res, next) => {
+  const bytes = fileBodyOrNull(req, res);
+  if (bytes === null) return next();
+  if (bytes === undefined) return;
+
+  try {
+    const contentHash = generateFileHash(bytes);
+    const license = (req.query.license as string) || 'liberation_v1';
+    const title = (req.query.title as string) || null;
+
+    const existing = await db.content.findByHash(contentHash).catch(() => null);
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        error: 'already_registered',
+        contentHash,
+        message: 'These exact bytes are already registered.',
+        registeredAt: existing.created_at ?? null
+      });
+    }
+
+    const timestamp = new Date().toISOString();
+    const verificationUrl = generateVerificationUrl(contentHash);
+    let blockchainTx = null;
+
+    if (blockchainEnabled && blockchainClient.connected) {
+      try {
+        const result = await blockchainClient.registerContent(
+          contentHash,
+          { title: title || 'Untitled File', type: 'file' },
+          license
+        );
+        blockchainTx = result.txHash;
+        logger.info(`File registered on blockchain: ${contentHash} (tx: ${blockchainTx})`);
+      } catch (blockchainError) {
+        logger.error('Blockchain file registration failed:', blockchainError);
+      }
+    }
+
+    const protectionRecord = {
+      contentHash,
+      timestamp,
+      license,
+      metadata: {
+        title: title || 'Untitled File',
+        type: 'file',
+        byteLength: bytes.length
+      },
+      verificationUrl,
+      blockchainTx,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    };
+    protectedContent.set(contentHash, protectionRecord);
+
+    try {
+      await db.content.create({
+        user_id: (req as any).userId || null,
+        content_hash: contentHash,
+        title: title || 'Untitled File',
+        description: null,
+        content_type: 'file',
+        license,
+        blockchain_tx: blockchainTx,
+        verification_url: verificationUrl,
+      });
+    } catch (dbWriteError) {
+      if ((dbWriteError as any).code !== '23505') {
+        logger.warn('Failed to persist file to DB:', (dbWriteError as any).message);
+      }
+    }
+
+    return res.status(201).json({
+      success: true,
+      contentHash,
+      license,
+      timestamp,
+      verificationUrl,
+      bytes: bytes.length,
+      blockchain: { enabled: blockchainEnabled, tx: blockchainTx }
+    });
+  } catch (e) {
+    logger.error('protect-file failed:', e.message);
+    return res.status(500).json({ success: false, error: 'registration_failed', message: e.message });
+  }
+});
+
 app.post("/api/v1/protect", [optionalAuth,
   body('content')
     .notEmpty()
@@ -1163,6 +1310,85 @@ app.get('/api/v1/content/:hash/associations', async (req, res) => {
   } catch (error) {
     logger.error('association lookup failed:', (error as any).message);
     res.status(500).json({ success: false, error: 'could not read associations' });
+  }
+});
+
+/**
+ * Verify a file — the binary half of POST /api/v1/verify-content.
+ *
+ * Registered before the JSON route and calls next() when the body is not a
+ * Buffer, so a text request reaches the existing handler unchanged. Splitting on
+ * content type rather than on a second URL keeps one endpoint for "do you have
+ * this content", which is the question a caller is actually asking.
+ */
+app.post('/api/v1/verify-content', async (req, res, next) => {
+  const bytes = fileBodyOrNull(req, res);
+  if (bytes === null) return next();     // text request; existing path handles it
+  if (bytes === undefined) return;       // already answered (empty file)
+
+  try {
+    const contentHash = generateFileHash(bytes);
+
+    let record = null;
+    let source = 'memory';
+
+    if (blockchainEnabled && blockchainClient.connected) {
+      try {
+        const onChain = await blockchainClient.verifyContent(contentHash);
+        if (onChain.verified) {
+          record = onChain;
+          source = 'blockchain';
+        }
+      } catch (err) {
+        logger.warn('verify-file blockchain lookup failed:', err.message);
+      }
+    }
+
+    if (!record) {
+      try {
+        const dbRecord = await db.content.findByHash(contentHash);
+        if (dbRecord) {
+          record = dbRecord;
+          source = 'database';
+        }
+      } catch (err) {
+        logger.warn('verify-file database lookup failed:', err.message);
+      }
+    }
+
+    if (!record) {
+      record = protectedContent.get(contentHash) || null;
+    }
+
+    if (!record) {
+      contentVerificationsTotal.labels('not_found').inc();
+      return res.status(404).json({
+        success: false,
+        isValid: false,
+        contentHash,
+        error: 'Content not found in protection registry',
+        // Said plainly, because it is the first thing someone hits: a file that
+        // has been re-exported, recompressed or had metadata rewritten is a
+        // different file and will not be found. Nothing here judges similarity.
+        message:
+          'No record for these exact bytes. Re-encoding, cropping or editing ' +
+          'metadata produces a different file, which DAON treats as different content.'
+      });
+    }
+
+    logger.info(`File verification: ${contentHash} [${source}]`);
+    contentVerificationsTotal.labels('success').inc();
+    return res.json({
+      success: true,
+      isValid: true,
+      contentHash,
+      source,
+      bytes: bytes.length,
+      record
+    });
+  } catch (e) {
+    logger.error('verify-file failed:', e.message);
+    return res.status(500).json({ success: false, error: 'verification_failed', message: e.message });
   }
 });
 
