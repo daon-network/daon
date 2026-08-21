@@ -15,7 +15,7 @@ interface AuthenticatorGuideProps {
   onClose: () => void;
 }
 
-type AuthApp = 'google' | 'authy' | '1password' | 'microsoft' | 'bitwarden';
+type AuthApp = 'apple' | 'google' | 'authy' | '1password' | 'microsoft' | 'bitwarden';
 
 interface AppGuide {
   name: string;
@@ -31,6 +31,23 @@ interface AppGuide {
 }
 
 const AUTHENTICATOR_APPS: Record<AuthApp, AppGuide> = {
+  // First, because it is the only option that needs no download at all. Every
+  // other entry here starts with "go to a store and install something", which is
+  // the step people abandon -- and roughly half of them are holding a device
+  // that has had this built in since iOS 15.
+  apple: {
+    name: 'iPhone or Mac (built in)',
+    iconColor: 'text-gray-700',
+    platforms: ['iOS', 'macOS'],
+    steps: [
+      'Nothing to install -- this is already on your device',
+      'Open Settings (iPhone) or System Settings \u2192 Passwords (Mac)',
+      'Find or create the entry for DAON, then tap "Set Up Verification Code"',
+      'Choose "Scan QR Code" and point your camera at the code on this page',
+      'Enter the 6-digit code it shows to complete setup'
+    ],
+    downloadLinks: {}
+  },
   google: {
     name: 'Google Authenticator',
     iconColor: 'text-blue-500',
