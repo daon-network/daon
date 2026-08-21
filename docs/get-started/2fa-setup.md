@@ -405,13 +405,6 @@ If you're having trouble setting up 2FA or have questions not covered in this gu
 
 ---
 
-## Additional Resources
-
-- [Account Security Best Practices](/get-started/security)
-- [Managing Trusted Devices](/get-started/trusted-devices)
-- [API Authentication Guide](/api/authentication)
-- [Privacy Policy](/legal/privacy)
-
 ---
 
 **🛡️ Secure your creative works with confidence using DAON's two-factor authentication.**

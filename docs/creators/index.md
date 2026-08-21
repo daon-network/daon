@@ -222,14 +222,8 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 ## Getting Help
 
 ### **Documentation & Guides**
-- [WordPress Plugin Guide](/examples/wordpress/)
 - [Bulk Protection Tutorial](/creators/bulk-protection/)
 - [Embedding Your Verification Token](/creators/embedding-tokens/) — AO3, WordPress, images, PDF, plain text
-- [Frequently Asked Questions](/creators/faq/)
-
-### **Community Support**
-- [Creator Stories](/community/stories/) - Success stories and tips
-- [Best Practices](/creators/best-practices/) - Optimization guides
 
 ### **Direct Support**
 - **General Questions:** support@daon.network
@@ -264,7 +258,6 @@ account is worth more than the invented ones were.
     <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-circle-question-mark"/></svg></div>
     <h3 class="md-feature__title">Read FAQ</h3>
     <p class="md-feature__description">Common questions answered</p>
-    <a href="/creators/faq/" class="md-feature__link">Read FAQ →</a>
   </div>
 
   <div class="md-feature">

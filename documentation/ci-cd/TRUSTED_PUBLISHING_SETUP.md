@@ -74,7 +74,7 @@ steps:
    - **Expiration:** 90 days or custom
    - **Packages and scopes:**
      - Select: `Read and write`
-     - Package: `@daon/sdk`
+     - Package: `daon-sdk`
    - **Organizations:** (select your org if applicable)
    - **IP allowlist:** (optional - can restrict to GitHub Actions IPs)
 4. Copy token and add to GitHub Secrets as `NPM_TOKEN`
@@ -265,7 +265,7 @@ git push origin main
 # publish-node-sdk.yml should run
 
 # 4. Verify on npm
-# Check: https://www.npmjs.com/package/@daon/sdk
+# Check: https://www.npmjs.com/package/daon-sdk
 ```
 
 ### Test RubyGems Publishing

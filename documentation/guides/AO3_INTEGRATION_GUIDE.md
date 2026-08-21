@@ -151,7 +151,7 @@ class DaonProtection < ApplicationRecord
   
   def blockchain_url
     return nil unless tx_hash
-    "https://explorer.daon.network/tx/#{tx_hash}"
+    "https://api.daon.network/api/v1/verify/#{tx_hash}"
   end
 end
 ```

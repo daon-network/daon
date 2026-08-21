@@ -77,7 +77,6 @@ description: "Add DAON creator protection to your platform in 3 lines of code"
       <li>Works with any theme</li>
     </ul>
     <p><strong>Best For:</strong> WordPress blogs, news sites, content publishers</p>
-    <a href="/examples/wordpress/" class="md-feature__link">Download Plugin →</a>
   </div>
 
   <div class="md-feature">
@@ -343,8 +342,6 @@ account is worth more than the invented ones were.
 - [Complete API Reference](/api/reference/)
 - [SDK Documentation by Language](/api/)
 - [Integration Examples](/examples/)
-- [Error Handling Guide](/api/errors/)
-- [Rate Limiting Guide](/api/rate-limits/)
 
 ### **Community Support**
 - [GitHub Issues](https://github.com/daon-network/issues) - Bug reports

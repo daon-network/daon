@@ -31,7 +31,7 @@ March 2026 and have not been re-run.
 ### **2. Basic Protection**
 ```javascript
 // Node.js/JavaScript
-import { protect } from '@daon/sdk';
+import { protect } from 'daon-sdk';
 
 const result = await protect(
     content,
@@ -58,11 +58,11 @@ console.log('Verified:', verification.isValid);
     <h3 class="md-feature__title">JavaScript/TypeScript</h3>
     <p class="md-feature__description">For web apps, Node.js, React, Vue, Angular</p>
     <ul class="md-feature__list">
-      <li><a href="/api/nodejs/">Node.js SDK Guide</a></li>
-      <li><a href="/api/nodejs/types/">TypeScript Definitions</a></li>
-      <li><a href="/api/nodejs/react/">React Integration</a></li>
-      <li><a href="/api/nodejs/vue/">Vue Integration</a></li>
-      <li><a href="/api/nodejs/express/">Express.js Integration</a></li>
+      <li>Node.js SDK Guide</li>
+      <li>TypeScript Definitions</li>
+      <li>React Integration</li>
+      <li>Vue Integration</li>
+      <li>Express.js Integration</li>
     </ul>
     <p><strong>Key Features:</strong> TypeScript support, CommonJS & ESM modules, Browser compatibility, Async/await ready</p>
   </div>
@@ -72,11 +72,11 @@ console.log('Verified:', verification.isValid);
     <h3 class="md-feature__title">Python</h3>
     <p class="md-feature__description">For Django, Flask, FastAPI, academic platforms</p>
     <ul class="md-feature__list">
-      <li><a href="/api/python/">Python SDK Guide</a></li>
-      <li><a href="/api/python/django/">Django Integration</a></li>
-      <li><a href="/api/python/flask/">Flask Integration</a></li>
-      <li><a href="/api/python/fastapi/">FastAPI Integration</a></li>
-      <li><a href="/api/python/academic/">Academic Use Cases</a></li>
+      <li>Python SDK Guide</li>
+      <li>Django Integration</li>
+      <li>Flask Integration</li>
+      <li>FastAPI Integration</li>
+      <li>Academic Use Cases</li>
     </ul>
     <p><strong>Key Features:</strong> Django model mixins, Flask decorators, Async support, Type hints included</p>
   </div>
@@ -86,11 +86,11 @@ console.log('Verified:', verification.isValid);
     <h3 class="md-feature__title">Ruby</h3>
     <p class="md-feature__description">For Rails, AO3-style platforms, fanfiction sites</p>
     <ul class="md-feature__list">
-      <li><a href="/api/ruby/">Ruby SDK Guide</a></li>
-      <li><a href="/api/ruby/rails/">Rails Integration</a></li>
-      <li><a href="/api/ruby/activerecord/">ActiveRecord Mixins</a></li>
+      <li>Ruby SDK Guide</li>
+      <li>Rails Integration</li>
+      <li>ActiveRecord Mixins</li>
       <li><a href="/platforms/ao3-integration/">AO3 Integration Example</a></li>
-      <li><a href="/api/ruby/sinatra/">Sinatra Integration</a></li>
+      <li>Sinatra Integration</li>
     </ul>
     <p><strong>Key Features:</strong> ActiveRecord integration, Rails generators, AO3-compatible, Gem-based distribution</p>
   </div>
@@ -100,11 +100,11 @@ console.log('Verified:', verification.isValid);
     <h3 class="md-feature__title">PHP</h3>
     <p class="md-feature__description">For WordPress, Laravel, Symfony, legacy systems</p>
     <ul class="md-feature__list">
-      <li><a href="/api/php/">PHP SDK Guide</a></li>
-      <li><a href="/api/php/wordpress/">WordPress Integration</a></li>
-      <li><a href="/api/php/laravel/">Laravel Integration</a></li>
-      <li><a href="/api/php/symfony/">Symfony Integration</a></li>
-      <li><a href="/api/php/legacy/">Legacy PHP Guide</a></li>
+      <li>PHP SDK Guide</li>
+      <li>WordPress Integration</li>
+      <li>Laravel Integration</li>
+      <li>Symfony Integration</li>
+      <li>Legacy PHP Guide</li>
     </ul>
     <p><strong>Key Features:</strong> WordPress hooks, Laravel facades, PSR-4 autoloading, PHP 7.4+ support</p>
   </div>
@@ -114,11 +114,11 @@ console.log('Verified:', verification.isValid);
     <h3 class="md-feature__title">Go</h3>
     <p class="md-feature__description">For high-performance systems, microservices</p>
     <ul class="md-feature__list">
-      <li><a href="/api/go/">Go SDK Guide</a></li>
-      <li><a href="/api/go/grpc/">gRPC Integration</a></li>
-      <li><a href="/api/go/microservices/">Microservices Pattern</a></li>
-      <li><a href="/api/go/performance/">Performance Optimization</a></li>
-      <li><a href="/api/go/concurrent/">Concurrent Protection</a></li>
+      <li>Go SDK Guide</li>
+      <li>gRPC Integration</li>
+      <li>Microservices Pattern</li>
+      <li>Performance Optimization</li>
+      <li>Concurrent Protection</li>
     </ul>
     <p><strong>Key Features:</strong> High performance, Concurrent operations, gRPC support, Minimal dependencies</p>
   </div>
@@ -129,10 +129,10 @@ console.log('Verified:', verification.isValid);
     <p class="md-feature__description">For any language or custom integrations</p>
     <ul class="md-feature__list">
       <li><a href="/api/reference/">REST API Reference</a></li>
-      <li><a href="/api/reference/auth/">Authentication</a></li>
-      <li><a href="/api/reference/rate-limits/">Rate Limiting</a></li>
-      <li><a href="/api/reference/webhooks/">Webhooks</a></li>
-      <li><a href="/api/reference/errors/">Error Handling</a></li>
+      <li>Authentication</li>
+      <li>Rate Limiting</li>
+      <li>Webhooks</li>
+      <li>Error Handling</li>
     </ul>
     <p><strong>Key Features:</strong> Language-agnostic, HTTP/JSON interface, Webhook support, OpenAPI specification</p>
   </div>
@@ -337,7 +337,7 @@ For development and testing:
 ### **Mock Responses**
 SDK includes built-in mock responses for testing:
 ```javascript
-import { mockDAON } from '@daon/sdk/testing';
+import { mockDAON } from 'daon-sdk/testing';
 
 // Enable mocks for unit tests
 mockDAON.enable();
@@ -351,7 +351,6 @@ mockDAON.enable();
 - [Complete API Reference](/api/reference/)
 - [SDK Guides by Language](/api/)
 - [Integration Examples](/examples/)
-- [Error Reference](/api/errors/)
 
 ### **Community**
 - [GitHub Issues](https://github.com/daon-network/issues) - Bug reports

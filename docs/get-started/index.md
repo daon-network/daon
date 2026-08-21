@@ -29,7 +29,7 @@ description: "Protect your creative work from AI exploitation in 2 minutes"
 
 3. **Done!** All new posts are automatically protected
 
-[📥 Download WordPress Plugin](/examples/wordpress/)
+📥 Download WordPress Plugin
 
 ---
 
@@ -78,7 +78,7 @@ March 2026 and have not been re-run.
 
 2. **3-Line Integration**
    ```javascript
-   import { protect } from '@daon/sdk';
+   import { protect } from 'daon-sdk';
    
    const result = await protect(content, metadata, 'liberation_v1');
    console.log('Protected:', result.verificationUrl);
@@ -208,7 +208,7 @@ account is worth more than the invented ones were.
 ## 🆘 Need Help?
 
 ### **Quick Support:**
-- **Documentation Issues:** Check our [FAQ](/creators/faq/)
+- **Documentation Issues:** Check our FAQ
 - **Integration Help:** [Platform Examples](/examples/)
 
 ### **Direct Contact:**
@@ -218,7 +218,7 @@ account is worth more than the invented ones were.
 
 ### **Emergency Support:**
 - **Legal Threats:** legal@daon.network
-- **Platform Down:** [Status Page](https://status.daon.network)
+- **Platform Down:** [API health](https://api.daon.network/health)
 - **Security Issues:** security@daon.network
 
 ---
@@ -235,11 +235,6 @@ account is worth more than the invented ones were.
 <a href="/examples/" class="cta-button secondary">
   📋 **Integration Examples**<br>
   <small>Copy-paste code snippets</small>
-</a>
-
-<a href="/platforms/overview/" class="cta-button secondary">
-  🏢 **Platform Integration**<br>
-  <small>Add protection to your site</small>
 </a>
 
 <a href="/legal/liberation-license/" class="cta-button secondary">

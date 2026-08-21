@@ -446,7 +446,7 @@ on:
 If publish fails:
 ```bash
 # npm
-npm unpublish @daon/sdk@1.0.1
+npm unpublish daon-sdk@1.0.1
 
 # PyPI (contact support)
 # RubyGems
@@ -518,7 +518,7 @@ jobs:
 # Only publish if version changed
 - name: Check version change
   run: |
-    CURRENT=$(npm show @daon/sdk version)
+    CURRENT=$(npm show daon-sdk version)
     NEW=$(jq -r .version package.json)
     if [ "$CURRENT" = "$NEW" ]; then
       echo "Version unchanged, skipping publish"

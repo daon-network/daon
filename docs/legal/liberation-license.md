@@ -202,12 +202,6 @@ def check_liberation_license(content):
 - **Enforcement:** enforcement@daon.network
 - **Emergency:** urgent-legal@daon.network
 
-### **Creator Resources:**
-- [License FAQ](/legal/liberation-license/faq/)
-- [Enforcement Guide](/legal/liberation-license/enforcement/)
-- [Compensation Calculator](/legal/liberation-license/calculator/)
-- [Legal Templates](/legal/liberation-license/templates/)
-
 ---
 
 ## Success Stories
@@ -228,16 +222,6 @@ account is worth more than the invented ones were.
 <a href="/get-started/" class="cta-button primary">
   🛡️ **Protect Your Work**<br>
   <small>Apply Liberation License now</small>
-</a>
-
-<a href="/legal/liberation-license/faq/" class="cta-button secondary">
-  ❓ **License FAQ**<br>
-  <small>Common questions answered</small>
-</a>
-
-<a href="/legal/liberation-license/enforcement/" class="cta-button secondary">
-  ⚖️ **Enforcement Guide**<br>
-  <small>How to fight violations</small>
 </a>
 
 <a href="mailto:licensing@daon.network" class="cta-button secondary">

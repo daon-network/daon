@@ -16,7 +16,6 @@ Documentation for the DAON blockchain platform that protects creator content wit
 - **[legal/](legal/)** - License information and compliance docs
 - **[ci-cd/](ci-cd/)** - CI/CD workflows and automation
 - **[security/](security/)** - ⚠️ **Security policies and pre-launch checklist**
-- **[archive/](archive/)** - Historical documentation and session notes
 
 ---
 
@@ -150,7 +149,6 @@ scripts/
 - Planning → `project/`
 - Legal → `legal/`
 - CI/CD → `ci-cd/`
-- Historical → `archive/`
 
 ### When to Update This README
 - Adding new documentation files

@@ -20,9 +20,6 @@ description: "Legal foundation for creator protection including the Liberation L
 The Liberation License is specifically designed to prevent unauthorized AI training while preserving fair use and educational access.
 
 - [Full Liberation License Text](/legal/liberation-license/)
-- [License FAQ](/legal/liberation-license/faq/)
-- [Legal Analysis](/legal/liberation-license/analysis/)
-- [Enforcement Guide](/legal/liberation-license/enforcement/)
 
 ---
 
@@ -32,9 +29,6 @@ The Liberation License is specifically designed to prevent unauthorized AI train
 Comprehensive guide for when creators need to escalate to legal action against violators.
 
 - [War Preparation Guide](/legal/war-preparation/)
-- [Evidence Collection](/legal/evidence-collection/)
-- [Legal Strategy](/legal/legal-strategy/)
-- [Court Documentation](/legal/court-docs/)
 
 ---
 
@@ -43,10 +37,6 @@ Comprehensive guide for when creators need to escalate to legal action against v
 
 Documentation of creator rights in the digital age and how DAON supports enforcement.
 
-- [Creator Rights Overview](/legal/creator-rights/)
-- [Copyright & AI Training](/legal/copyright-ai/)
-- [International Framework](/legal/international/)
-- [Precedent Cases](/legal/precedents/)
 
 ---
 
@@ -55,10 +45,6 @@ Documentation of creator rights in the digital age and how DAON supports enforce
 
 How DAON maintains creator privacy while providing legal protection.
 
-- [Privacy Policy](/legal/privacy/)
-- [GDPR Compliance](/legal/gdpr/)
-- [Data Minimization](/legal/data-minimization/)
-- [Right to Deletion](/legal/right-to-deletion/)
 
 </div>
 
@@ -156,25 +142,16 @@ How DAON maintains creator privacy while providing legal protection.
 
 ---
 
-## 🛠️ Legal Tools & Resources
+## Legal Tools & Resources
 
-### **For Creators:**
-- [DMCA Takedown Generator](/legal/tools/dmca/)
-- [License Violation Report](/legal/tools/violation-report/)
-- [Evidence Collection Kit](/legal/tools/evidence-kit/)
-- [Legal Letter Templates](/legal/tools/letters/)
+**None of these exist.** This section listed a DMCA takedown generator, a
+violation report tool, an evidence collection kit, legal letter templates,
+platform compliance guides, safe-harbour documentation, user-agreement templates
+and a case archive — twenty-two links in total, every one of them to a page that
+was never written.
 
-### **For Platforms:**
-- [Platform Compliance Guide](/legal/platforms/compliance/)
-- [DMCA Safe Harbor](/legal/platforms/safe-harbor/)
-- [User Agreement Templates](/legal/platforms/user-agreements/)
-- [Terms of Service](/legal/platforms/terms/)
-
-### **For Legal Professionals:**
-- [Expert Witness Network](/legal/professionals/experts/)
-- [Case Law Database](/legal/professionals/cases/)
-- [Legal Brief Templates](/legal/professionals/briefs/)
-- [Forensic Analysis Tools](/legal/professionals/forensics/)
+They have been removed rather than left as dead links. If any of them get built,
+they can be listed here then.
 
 ---
 
@@ -233,18 +210,6 @@ How DAON maintains creator privacy while providing legal protection.
 
 ---
 
-## 🚀 Stay Informed
-
-### **Legal Updates:**
-- [Legal Blog](/blog/legal/) - Analysis of new cases and legislation
-- [Newsletter](/newsletter/) - Monthly legal developments
-- [Webinars](/events/legal-webinars/) - Expert legal education
-
-### **Policy Development:**
-- [EU AI Act](/legal/policy/eu-ai-act/) - European AI regulation updates
-- [US Copyright Office](/legal/policy/us-copyright/) - American policy changes
-- [International Treaties](/legal/policy/international/) - Global developments
-
 ---
 
 <div class="cta-section">
@@ -252,11 +217,6 @@ How DAON maintains creator privacy while providing legal protection.
 <a href="/legal/liberation-license/" class="cta-button primary">
   📜 **Liberation License**<br>
   <small>Core legal protection framework</small>
-</a>
-
-<a href="/legal/creator-rights/" class="cta-button secondary">
-  🛡️ **Creator Rights**<br>
-  <small>Understanding your legal standing</small>
 </a>
 
 <a href="/legal/war-preparation/" class="cta-button secondary">

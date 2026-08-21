@@ -45,7 +45,6 @@ Choose the right protection method for your creative work.
       <li>Academic institutions welcome</li>
       <li>Strengthen decentralization</li>
     </ul>
-    <a href="/get-started/validator/" class="md-feature__link">Setup Guide →</a>
   </div>
 
   <div class="md-feature">
@@ -206,7 +205,6 @@ Simple, fast, and effective protection in four steps.
 - [Getting Started Guide](/creators/getting-started/)
 - [Bulk Protection Tool](/creators/bulk-protection/)
 - [Understanding Licenses](/creators/licenses/)
-- [Legal Protection](/creators/legal/)
 
 </div>
 
@@ -217,7 +215,6 @@ Simple, fast, and effective protection in four steps.
 - [Integration Overview](/platforms/)
 - [Quick Integration Examples](/examples/)
 - [SDK Documentation](/api/)
-- [WordPress Plugin Guide](/platforms/wordpress/)
 
 </div>
 
@@ -226,11 +223,6 @@ Simple, fast, and effective protection in four steps.
 ### For Developers
 
 - [API Reference](/api/reference/)
-- [Node.js SDK](/api/nodejs/)
-- [Python SDK](/api/python/)
-- [PHP SDK](/api/php/)
-- [Ruby SDK](/api/ruby/)
-- [Go SDK](/api/go/)
 
 </div>
 
@@ -239,9 +231,6 @@ Simple, fast, and effective protection in four steps.
 ### Legal Framework
 
 - [Liberation License](/legal/liberation-license/)
-- [Creator Rights](/legal/creator-rights/)
-- [AI Training Compliance](/legal/ai-compliance/)
-- [GDPR & Privacy](/legal/privacy/)
 
 </div>
 
@@ -256,13 +245,11 @@ Simple, fast, and effective protection in four steps.
 - [Email Support](mailto:support@daon.network) - Direct help for complex issues
 
 ### **Stay Updated**  
-- [Status Page](https://status.daon.network) - System status and maintenance
-- [Blog](/blog/) - Deep dives and creator stories
+- [API health](https://api.daon.network/health) - System status and maintenance
 
 ### **Contribute**
 - [GitHub Organization](https://github.com/daon-network) - All our code is open source
 - [Documentation](https://github.com/daon-network/docs) - Help improve these docs
-- [Creator Stories](/community/stories/) - Share your protection journey
 
 ---
 

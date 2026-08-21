@@ -390,7 +390,7 @@ function verifyWebhook(payload, signature, secret) {
 
 ### **Node.js/JavaScript**
 ```javascript
-import { DAON } from '@daon/sdk';
+import { DAON } from 'daon-sdk';
 
 const daon = new DAON('your-api-key');
 
@@ -519,7 +519,7 @@ curl -X POST https://sandbox-api.daon.network/v1/protect \
 
 ### **Developer Resources**
 - **Stack Overflow:** Tag questions with `daon-api`
-- **Status Page:** [status.daon.network](https://status.daon.network)
+- **Status Page:** [api.daon.network/health](https://api.daon.network/health)
 
 ---
 

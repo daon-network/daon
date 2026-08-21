@@ -355,7 +355,7 @@ ssh USER@SERVER 'docker exec daon-blockchain daond status | jq .SyncInfo.latest_
 
 ### Current SDKs (What You Have)
 
-**1. Node.js/TypeScript** (`@daon/sdk`)
+**1. Node.js/TypeScript** (`daon-sdk`)
 - ✅ Full TypeScript support
 - ✅ CommonJS + ESM builds
 - ✅ Type definitions
@@ -402,7 +402,7 @@ npm login
 npm publish --access public
 ```
 
-**URL**: https://www.npmjs.com/package/@daon/sdk
+**URL**: https://www.npmjs.com/package/daon-sdk
 
 ---
 

@@ -97,7 +97,7 @@ api_url: "https://api.daon.network"  # Already configured
 **API URL:** `https://api.daon.network` (configured)
 
 ```javascript
-import { DAONClient } from '@daon/sdk';
+import { DAONClient } from 'daon-sdk';
 
 const client = new DAONClient({
   apiUrl: 'https://api.daon.network'
