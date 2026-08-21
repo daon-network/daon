@@ -19,7 +19,20 @@ import { sendMagicLinkEmail, sendEmailChangeConfirmation, sendEmailChangeVerific
 
 const DEVICE_TRUST_LIFETIME = parseInt(process.env.DEVICE_TRUST_LIFETIME || '2592000', 10); // 30 days
 const MAGIC_LINK_LIFETIME = 1800; // 30 minutes
+// Verifying 2FA means opening an app you already have and reading six digits.
+// Five minutes is generous for that.
 const TEMP_SESSION_LIFETIME = 300; // 5 minutes
+
+// *Setting up* 2FA may mean installing an authenticator app first: leaving the
+// page, finding one in a store, installing it, scanning, typing a code. Five
+// minutes is hostile for that, and it is what a real signup died on -- a student
+// clicked their magic link 31 seconds after requesting it, was shown a QR code,
+// and the session expired before they entered anything at all.
+//
+// Matching MAGIC_LINK_LIFETIME is deliberate: they have already proved control
+// of the address, and the secret is inert until they confirm a code, so a longer
+// window grants nothing the magic link did not already grant.
+const SETUP_SESSION_LIFETIME = MAGIC_LINK_LIFETIME; // 30 minutes
 
 export interface DeviceInfo {
   user_agent: string;
@@ -176,6 +189,8 @@ export class AuthService {
     manual_entry_key: string;
     issuer: string;
     account_name: string;
+    /** Seconds remaining, so the page can say so instead of expiring silently. */
+    expires_in: number;
   }> {
     // Verify session
     const session = await this.verifyTempSession(sessionId, '2fa_setup');
@@ -208,7 +223,8 @@ export class AuthService {
       qr_code: qrCode,
       manual_entry_key: formatTotpSecret(secret),
       issuer: process.env.TOTP_ISSUER || 'DAON',
-      account_name: email
+      account_name: email,
+      expires_in: SETUP_SESSION_LIFETIME
     };
   }
   
@@ -381,7 +397,10 @@ export class AuthService {
    */
   private async createTempSession(userId: number, flowType: string): Promise<string> {
     const sessionId = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + TEMP_SESSION_LIFETIME * 1000);
+    const lifetime = flowType === '2fa_setup'
+      ? SETUP_SESSION_LIFETIME
+      : TEMP_SESSION_LIFETIME;
+    const expiresAt = new Date(Date.now() + lifetime * 1000);
     
     await this.db.query(
       'INSERT INTO temp_sessions (session_id, user_id, flow_type, expires_at, created_at) VALUES ($1, $2, $3, $4, NOW())',
@@ -401,7 +420,15 @@ export class AuthService {
     );
     
     if (result.rows.length === 0) {
-      throw new Error('Invalid or expired session');
+      // Say what happened and what to do. "Invalid or expired session" leaves
+      // someone mid-setup with a dead page, a consumed magic link, and no idea
+      // that requesting a new link is the way forward.
+      throw new Error(
+        expectedFlowType === '2fa_setup'
+          ? 'Your setup session expired. Request a new sign-in link and you can '
+            + 'start again -- your account is fine and nothing was lost.'
+          : 'Your session expired. Request a new sign-in link to continue.'
+      );
     }
     
     const session = result.rows[0];
