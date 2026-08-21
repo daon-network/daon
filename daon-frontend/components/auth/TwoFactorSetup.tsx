@@ -307,6 +307,25 @@ export function TwoFactorSetup({ tempSessionId, onSuccess, onError }: TwoFactorS
         {/* Authenticator Guide Modal */}
         <AuthenticatorGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />
 
+        {/*
+          The longer written guide existed but nothing in this flow linked to it,
+          so the only help available at the moment of confusion was the modal
+          above. Someone standing at a QR code wondering what to install had no
+          way to reach it.
+        */}
+        <p className="text-sm text-gray-500 text-center">
+          On an iPhone or Mac you don&apos;t need to install anything &mdash; verification
+          codes are built into Settings &rarr; Passwords.{' '}
+          <a
+            href="https://daon.network/get-started/2fa-setup/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            Full setup guide
+          </a>
+        </p>
+
         {/* Step 2: Verify */}
         <div className="border border-gray-200 rounded-xl p-6 space-y-4">
           <div className="flex items-center space-x-2">

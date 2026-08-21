@@ -24,15 +24,18 @@ rather than a request for their attention.
 >
 > You started setting up a DAON account and didn't get past the two-factor step.
 >
-> That step asks you to install an authenticator app, and it only gave you five
+> That step asks you to set up an authenticator, and it only gave you five
 > minutes to do it. That was too short. It's thirty now.
 >
 > If you'd like to pick it up: **[Finish setting up →]**
 >
-> It goes faster if you have an authenticator app ready first — Aegis, Ente
-> Auth, 1Password, Bitwarden, Google Authenticator, any of them. Two-factor is
-> required on every DAON account, because the account holds ownership records
-> for your work and we'd rather not make those easy to steal.
+> **If you have an iPhone or a Mac, you don't need to install anything** — it's
+> already built in. Settings → Passwords → tap the entry → *Set Up Verification
+> Code*. On Android or a PC, any authenticator works: Aegis, Ente Auth,
+> 1Password, Bitwarden, Google Authenticator.
+>
+> Two-factor is required on every DAON account, because the account holds
+> ownership records for your work and we'd rather not make those easy to steal.
 >
 > If you'd rather not, that's genuinely fine: **[delete my account and data]**.
 >
@@ -47,7 +50,8 @@ rather than a request for their attention.
 | "that was our fault" in the subject | It was. Leading with it means they know within one line that this isn't a nudge. |
 | No date, no timings, no "we noticed" | Nothing that reveals what the logs hold. |
 | The fix is stated before the ask | They learn something true whether or not they click. |
-| App names listed | The thing that blocked them was not knowing what they needed. Naming options removes the research step. |
+| Apple's built-in option first | It is the one that needs no install at all, and most people don't know their phone already does this. The barrier was never unwillingness — it was standing at a QR code wondering what to go download. Removing the download removes the barrier. |
+| Other app names listed after | For everyone not on Apple, naming options removes the research step. |
 | Why 2FA is mandatory, in one clause | Answers the obvious objection without arguing. |
 | Delete link as prominent as the resume link | If the answer is no, make no easy. An escape hatch that is hard to find is a dark pattern. |
 | "the only message of this kind" | A promise, and it should be kept. |

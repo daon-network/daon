@@ -28,6 +28,31 @@ Even if someone discovers your password, they cannot access your account without
 
 ## Choose Your Authenticator App
 
+### On an iPhone or Mac, you already have one
+
+**Platforms:** iOS 15+, macOS Monterey+
+**Best for:** anyone on Apple hardware — there is nothing to download
+
+Apple builds verification codes into the Passwords settings. Most people don't
+know this and go install a separate app they didn't need.
+
+1. **iPhone:** Settings → Passwords. **Mac:** System Settings → Passwords
+2. Find or create the entry for DAON
+3. Tap **Set Up Verification Code** → **Scan QR Code**
+4. Point the camera at the QR code on the DAON setup page
+5. Enter the 6-digit code it shows
+
+Codes then appear alongside your saved password and sync across your devices
+through iCloud Keychain, so a new phone doesn't mean setting 2FA up again.
+
+> **One caveat worth knowing.** If your DAON password *and* your verification
+> codes both live in the same Apple Passwords entry, anyone who gets into your
+> Apple account has both factors. That is a real tradeoff for convenience. If
+> you want the factors genuinely separate, use a dedicated app below and keep it
+> on one device.
+
+---
+
 Select from one of these popular authenticator apps:
 
 ### Google Authenticator
