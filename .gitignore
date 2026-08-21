@@ -38,3 +38,8 @@ __pycache__/
 
 # Rust build artifacts
 provenance/target/
+
+# Python build artefacts
+sdks/python/*.egg-info/
+sdks/python/**/__pycache__/
+sdks/ruby/*.gem

@@ -29,7 +29,9 @@ jobs:
       - name: Run tests
         run: |
           cd sdks/ruby
-          bundle exec rspec || echo "No tests yet, skipping"
+          # Not `|| echo`: a test step that swallows its own failure is not a
+          # test step. These reported success while never running.
+          bundle exec rspec
 
   publish:
     name: Publish to RubyGems

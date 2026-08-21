@@ -114,7 +114,7 @@ export class DAONClient {
         contentHash,
         txHash: data.blockchainTx ?? data.blockchain?.tx ?? undefined,
         verificationUrl: data.verificationUrl,
-        blockchainUrl: data.blockchainTx ? `https://explorer.daon.network/tx/${data.blockchainTx}` : undefined,
+        blockchainUrl: data.blockchainTx ? undefined : undefined,
         timestamp: data.timestamp ?? new Date().toISOString()
       };
     } catch (error) {
@@ -146,7 +146,7 @@ export class DAONClient {
         license: data.license,
         timestamp: data.timestamp,
         verificationUrl: data.verificationUrl,
-        blockchainUrl: `https://explorer.daon.network/content/${apiHash}`
+        blockchainUrl: undefined
       };
     } catch (error) {
       return {

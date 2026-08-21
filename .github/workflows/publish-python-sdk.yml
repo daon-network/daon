@@ -23,13 +23,16 @@ jobs:
       - name: Install dependencies
         run: |
           cd sdks/python
-          pip install build pytest pytest-cov
+          pip install build pytest pytest-cov requests-mock
           pip install -e .
       
       - name: Run tests
         run: |
           cd sdks/python
-          pytest || echo "No tests yet, skipping"
+          # Not `|| echo`: a test step that swallows its own failure is not a
+          # test step, and this one hid a collection error behind a cheerful
+          # message for months.
+          pytest
 
   publish:
     name: Publish to PyPI

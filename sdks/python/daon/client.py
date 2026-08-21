@@ -104,21 +104,30 @@ class DAONClient:
 
             return ProtectionResult(
                 success=data.get("success", False),
-                content_hash=content_hash,
+                content_commit=content_hash,
                 tx_hash=blockchain_tx,
                 verification_url=data.get("verificationUrl"),
-                blockchain_url=f"https://explorer.daon.network/tx/{blockchain_tx}" if blockchain_tx else None,
             )
 
         except requests.exceptions.RequestException as e:
             raise NetworkError(f"Failed to connect to DAON network: {e}") from e
 
     def verify(self, content_or_hash: str) -> VerificationResult:
-        """Verify content protection status."""
+        """Verify content protection status.
+
+        Given a ``sha256:`` value, that value is looked up directly. Given
+        content, the content is **sent to the server**, which computes the
+        commitment.
+
+        It used to hash locally, and the local hash did not match what the
+        server records -- the server canonicalises first. So verifying a work by
+        its content reported "not registered" for content that was registered,
+        which is the worst answer this method can give.
+        """
         if content_or_hash.startswith("sha256:"):
             content_hash = content_or_hash
         else:
-            content_hash = self.generate_content_hash(content_or_hash)
+            return self._verify_content(content_or_hash)
 
         # API expects 64-char hex only — strip sha256: prefix
         api_hash = content_hash[7:] if content_hash.startswith("sha256:") else content_hash
@@ -130,22 +139,48 @@ class DAONClient:
             )
 
             if response.status_code == 404:
-                return VerificationResult(verified=False, content_hash=content_hash)
+                return VerificationResult(verified=False, content_commit=content_hash)
 
             response.raise_for_status()
             data = response.json()
 
             return VerificationResult(
                 verified=data.get("isValid", False),
-                content_hash=content_hash,
+                content_commit=content_hash,
                 license=data.get("license"),
                 timestamp=_parse_timestamp(data.get("timestamp")),
                 verification_url=data.get("verificationUrl"),
-                blockchain_url=f"https://explorer.daon.network/content/{api_hash}",
             )
 
         except requests.exceptions.RequestException as e:
             raise NetworkError(f"Failed to connect to DAON network: {e}") from e
+
+    def _verify_content(self, content: str) -> VerificationResult:
+        """Ask the server what this content commits to, and whether it is known."""
+        try:
+            response = self.session.post(
+                f"{self.api_url}/api/v1/verify-content",
+                json={"content": content},
+                timeout=self.timeout,
+            )
+            data = response.json() if response.content else {}
+            commit = data.get("contentHash") or ""
+            if commit and not commit.startswith("sha256:"):
+                commit = f"sha256:{commit}"
+
+            if response.status_code == 404:
+                return VerificationResult(verified=False, content_commit=commit)
+            response.raise_for_status()
+
+            return VerificationResult(
+                verified=data.get("isValid", False),
+                content_commit=commit,
+                license=data.get("license"),
+                timestamp=_parse_timestamp(data.get("timestamp")),
+                verification_url=data.get("verificationUrl"),
+            )
+        except requests.RequestException as exc:
+            raise NetworkError(f"Verification failed: {exc}") from exc
 
     def check_liberation_compliance(
         self, content_hash: str, use_case: LiberationUseCase
@@ -185,7 +220,24 @@ class DAONClient:
         )
 
     def generate_content_hash(self, content: str) -> str:
-        """Generate a SHA-256 hash of content (raw, matching the API's hash function exactly)."""
+        """**Deprecated. This does not match what the server records.**
+
+        It returns ``sha256(raw utf-8)``. The API canonicalises first --
+        stripping markup so the same words registered through different tools
+        agree -- and hashes that. The two values differ for any content with
+        markup, so anything registered against this hash will not be found by a
+        lookup of the same work.
+
+        The server is authoritative. Call :meth:`protect` or :meth:`verify` and
+        use the ``content_commit`` it returns.
+        """
+        import warnings
+        warnings.warn(
+            "generate_content_hash does not match the server's content commitment; "
+            "use the content_commit returned by protect() or verify()",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         hex_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
         return f"sha256:{hex_hash}"
 
