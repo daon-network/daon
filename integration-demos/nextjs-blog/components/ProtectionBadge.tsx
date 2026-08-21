@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { verify } from '@daon/sdk';
+import { verify } from 'daon-sdk';
 
 interface ProtectionBadgeProps {
   content: string;

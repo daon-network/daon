@@ -12,7 +12,7 @@
 ### 1. **Next.js Blog** (3 lines of code)
 
 ```typescript
-import { protect } from '@daon/sdk';
+import { protect } from 'daon-sdk';
 
 // Protect content when publishing
 const result = await protect(postContent, {

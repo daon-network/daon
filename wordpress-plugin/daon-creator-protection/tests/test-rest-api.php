@@ -48,7 +48,7 @@ class Test_REST_API extends \PHPUnit\Framework\TestCase {
             'content_hash'     => 'sha256:abc123def456',
             'tx_hash'          => '0xdeadbeef',
             'verification_url' => 'https://daon.network/verify/abc123',
-            'blockchain_url'   => 'https://explorer.daon.network/tx/0xdeadbeef',
+            'blockchain_url'   => 'https://api.daon.network/api/v1/verify/0xdeadbeef',
             'license'          => 'liberation_v1',
             'protected_at'     => '2026-05-01 10:00:00',
             'verified_at'      => '2026-05-01 10:00:05',
@@ -74,7 +74,7 @@ class Test_REST_API extends \PHPUnit\Framework\TestCase {
         $this->assertSame('liberation_v1', $result['license']);
         $this->assertSame('2026-05-01 10:00:00', $result['protected_at']);
         $this->assertSame('https://daon.network/verify/abc123', $result['verification_url']);
-        $this->assertSame('https://explorer.daon.network/tx/0xdeadbeef', $result['blockchain_url']);
+        $this->assertSame('https://api.daon.network/api/v1/verify/0xdeadbeef', $result['blockchain_url']);
     }
 
     public function test_verify_returns_error_for_unprotected_post(): void {

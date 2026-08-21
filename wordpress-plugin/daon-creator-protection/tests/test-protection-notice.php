@@ -46,7 +46,7 @@ class Test_Protection_Notice extends \PHPUnit\Framework\TestCase {
             'content_hash'     => 'sha256:abc123',
             'tx_hash'          => '0xdeadbeef',
             'verification_url' => 'https://daon.network/verify/abc123',
-            'blockchain_url'   => 'https://explorer.daon.network/tx/0xdeadbeef',
+            'blockchain_url'   => 'https://api.daon.network/api/v1/verify/0xdeadbeef',
             'license'          => 'liberation_v1',
             'protected_at'     => '2026-05-01 10:00:00',
             'verified_at'      => '2026-05-01 10:00:05',

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { DAONClient } from '@daon/sdk';
+import { DAONClient } from 'daon-sdk';
 
 // Example API route showing how to protect content server-side
 export default async function handler(

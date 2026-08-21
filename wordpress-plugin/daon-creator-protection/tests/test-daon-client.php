@@ -58,7 +58,7 @@ class Test_DAON_Client extends \PHPUnit\Framework\TestCase {
         $result = $this->client->protect_content('content', array(), 'liberation_v1');
 
         $this->assertSame(
-            'https://explorer.daon.network/tx/0xdeadbeef',
+            'https://api.daon.network/api/v1/verify/0xdeadbeef',
             $result['blockchain_url']
         );
     }
