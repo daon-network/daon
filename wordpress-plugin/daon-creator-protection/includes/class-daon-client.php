@@ -44,7 +44,7 @@ class DAON_Client {
                     'tx_hash' => $response['tx_hash'] ?? null,
                     'verification_url' => $response['verification_url'] ?? null,
                     'blockchain_url' => isset($response['tx_hash']) 
-                        ? "https://explorer.daon.network/tx/{$response['tx_hash']}" 
+                        ? "https://api.daon.network/api/v1/verify/{$response['tx_hash']}" 
                         : null
                 );
             } else {
