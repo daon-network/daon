@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-DAON content protection uses a **web-first approach** where users upload content directly to `protect.daon.network`, receive immediate ownership binding to their verified identity, and get embed codes to paste into their works on any platform.
+DAON content protection uses a **web-first approach** where users upload content directly to `app.daon.network`, receive immediate ownership binding to their verified identity, and get embed codes to paste into their works on any platform.
 
 **No browser extension. No claim codes. No anonymous registration.**
 
@@ -36,7 +36,7 @@ DAON content protection uses a **web-first approach** where users upload content
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    protect.daon.network                  │
+│                    app.daon.network                  │
 │                      (Next.js / React)                   │
 │                                                          │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │
@@ -80,7 +80,7 @@ DAON content protection uses a **web-first approach** where users upload content
 ### Flow 1: First-Time User Protects Fanfic
 
 ```
-1. User visits protect.daon.network
+1. User visits app.daon.network
 2. Clicks "Sign in with Email" (or Discord)
 3. Enters email address
 4. Receives magic link email
@@ -99,7 +99,7 @@ DAON content protection uses a **web-first approach** where users upload content
 ### Flow 2: Returning User Protects New Work
 
 ```
-1. User visits protect.daon.network
+1. User visits app.daon.network
 2. Already signed in (session cookie)
 3. Pastes new content
 4. Clicks "Protect My Work"
@@ -111,7 +111,7 @@ DAON content protection uses a **web-first approach** where users upload content
 
 ```
 1. User edits their fanfic significantly
-2. Visits protect.daon.network
+2. Visits app.daon.network
 3. Pastes updated content
 4. Optionally links to previous version
 5. Gets new embed code
@@ -231,7 +231,7 @@ Send magic link email for passwordless sign-in.
 **Implementation:**
 1. Generate random 64-char token
 2. Store in magic_tokens table (expires in 15 minutes)
-3. Send email with link: `protect.daon.network/auth/verify?token={token}`
+3. Send email with link: `app.daon.network/auth/verify?token={token}`
 4. Rate limit: 3 per email per hour
 
 ---
@@ -276,7 +276,7 @@ Initiate Discord OAuth flow.
 ```javascript
 // Redirects to Discord OAuth
 // After user approves, Discord redirects to:
-// protect.daon.network/auth/discord/callback?code=xyz
+// app.daon.network/auth/discord/callback?code=xyz
 
 // Callback Response: 200 OK
 {
@@ -654,7 +654,7 @@ func (k Keeper) GetVersionHistory(ctx sdk.Context, contentHash string) ([]types.
 
 ---
 
-## Frontend: protect.daon.network
+## Frontend: app.daon.network
 
 ### Tech Stack
 
@@ -790,7 +790,7 @@ components/
 
 ### New Services Needed
 
-1. **protect.daon.network** (Vercel or self-hosted)
+1. **app.daon.network** (Vercel or self-hosted)
    - Next.js app
    - Connects to existing API
 
@@ -817,7 +817,7 @@ SMTP_PASS=<SendGrid API key>
 EMAIL_FROM=noreply@daon.network
 
 # URLs
-FRONTEND_URL=https://protect.daon.network
+FRONTEND_URL=https://app.daon.network
 API_URL=https://api.daon.network
 ```
 
@@ -850,7 +850,7 @@ API_URL=https://api.daon.network
 
 ### Week 3: Frontend
 
-- [ ] Set up Next.js project for protect.daon.network
+- [ ] Set up Next.js project for app.daon.network
 - [ ] Build sign-in page (email + OAuth)
 - [ ] Build content upload page
 - [ ] Build protection result page with embed codes
@@ -862,7 +862,7 @@ API_URL=https://api.daon.network
 
 - [ ] Build iOS Shortcut
 - [ ] Set up email service (SendGrid)
-- [ ] Deploy protect.daon.network
+- [ ] Deploy app.daon.network
 - [ ] Test full flow end-to-end
 - [ ] Write launch messaging
 - [ ] Prepare community posts

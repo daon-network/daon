@@ -214,7 +214,7 @@ assert(instances.has("api-3"));
 describe("First-time creator protects content", () => {
   test("Complete workflow", async () => {
     // 1. Creator visits docs site
-    const docs = await fetch("https://docs.daon.network");
+    const docs = await fetch("https://daon.network");
     assert(docs.status === 200);
 
     // 2. Creator protects their first fanfic

@@ -498,10 +498,12 @@ app.get('/api/v1', (req, res) => {
       'POST /api/v1/auth/2fa/setup': 'Setup 2FA with TOTP',
       'GET /api/v1/auth/devices': 'Get trusted devices'
     },
-    documentation: 'https://docs.daon.network/api/',
+    documentation: 'https://daon.network/api/',
     support: {
       email: 'api-support@daon.network',
-      discord: 'https://discord.gg/daon',
+        // No discord: discord.gg/daon is an unrelated gaming server that has
+        // held that vanity code since 2020. DAON has no Discord.
+        issues: 'https://github.com/daon-network/daon/issues',
       funding: 'https://ko-fi.com/greenfieldoverride'
     },
     message: 'Protecting creativity with blockchain technology. Support DAON: https://ko-fi.com/greenfieldoverride'
@@ -2636,11 +2638,11 @@ app.use((req, res) => {
     success: false,
     error: 'Endpoint not found',
     message: 'The requested API endpoint does not exist',
-    documentation: 'https://docs.daon.network/api/',
+    documentation: 'https://daon.network/api/',
     support: {
       message: 'Help keep DAON free for creators',
       funding: 'https://ko-fi.com/greenfieldoverride',
-      community: 'https://discord.gg/daon'
+        community: 'https://github.com/daon-network/daon/issues'
     }
   });
 });

@@ -248,79 +248,41 @@ const autosave = debounce(async (content) => {
 
 ## Available SDKs
 
-<div class="platform-grid">
+**One SDK is published.** The rest exist as source in the repository but are not
+on any package registry — their publish workflows last failed in March 2026.
 
-### **JavaScript/Node.js**
+### JavaScript/Node.js — published
+
 ```bash
-npm install @daon/sdk
+npm install daon-sdk
 ```
-- ✅ TypeScript support
-- ✅ CommonJS & ESM
-- ✅ Browser compatible
-- ✅ React/Vue/Angular ready
 
-### **Python**
-```bash
-pip install daon
-```
-- ✅ Django integration
-- ✅ Flask integration
-- ✅ FastAPI support
-- ✅ Async/await ready
+- TypeScript support
+- CommonJS & ESM
 
-### **Ruby**
-```bash
-gem install daon
-```
-- ✅ Rails integration
-- ✅ ActiveRecord mixins
-- ✅ Sinatra support
-- ✅ AO3-style platforms
+### Python, Ruby, PHP, Go — source only
 
-### **PHP**
-```bash
-composer require daon/client
-```
-- ✅ WordPress integration
-- ✅ Laravel support
-- ✅ Symfony integration
-- ✅ Legacy PHP 7.4+
+Not published. Use them from a checkout of
+[`sdks/`](https://github.com/daon-network/daon/tree/main/sdks).
 
-### **Go**
-```bash
-go get github.com/daon-network/go-sdk
-```
-- ✅ High performance
-- ✅ Concurrent protection
-- ✅ gRPC support
-- ✅ Microservices ready
+> **Do not run `pip install daon`.** That name belongs to an unrelated project —
+> "Daon Korean Analyzer" by `rasoio` — and has nothing to do with DAON. Earlier
+> versions of this page told people to install it.
 
-### **REST API**
-```bash
-curl -X POST https://api.daon.network/protect
-```
-- ✅ Any language/platform
-- ✅ HTTP/JSON interface
-- ✅ Webhook callbacks
-- ✅ Rate limiting included
-
-</div>
+This page previously advertised `@daon/sdk`, `pip install daon`,
+`gem install daon`, `composer require daon/client` and
+`go get github.com/daon-network/go-sdk`. None of those exist.
 
 ---
 
-## Platform Success Stories
+## Success Stories
 
-> **"DAON integration took literally 3 lines of code. Now we can offer our 50K+ writers real protection against AI exploitation."**  
-> — Indie Writing Platform Developer
+There are none yet. This section previously carried testimonials from creators
+who do not exist -- several asserting legal or financial outcomes -- and they
+have been removed rather than rewritten.
 
-> **"Plugin installation was 2 minutes. Three months later, we helped a blogger identify unauthorized scraping of their content. Legal standing achieved."**  
-> — WordPress Agency Owner
-
-> **"Added DAON to our academic preprint server. Researchers love knowing their papers are protected before peer review."**  
-> — University IT Director
-
-> **"Fanfiction community embraced protection immediately. 89% adoption rate within 2 weeks of launching."**  
-> — Fanfic Platform Owner
+If DAON is useful to you and you are willing to be named, open an issue. One real
+account is worth more than the invented ones were.
 
 ---
 

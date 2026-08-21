@@ -210,16 +210,14 @@ def check_liberation_license(content):
 
 ---
 
-## 🌟 Success Stories
+## Success Stories
 
-> **"Liberation License stopped a major AI company from training on my 500+ blog posts. They reached out for proper licensing within a week of my DMCA notice."**  
-> — Technology Blogger
+There are none yet. This section previously carried testimonials from creators
+who do not exist -- several asserting legal or financial outcomes -- and they
+have been removed rather than rewritten.
 
-> **"Collective licensing through DAON earned me $2,400 from three AI companies who wanted to train on my fanfiction corpus. Fair compensation at last."**  
-> — AO3 Author
-
-> **"Platform implemented Liberation License detection automatically. Now my writers get protection by default and can opt into paid AI licensing."**  
-> — Platform Owner
+If DAON is useful to you and you are willing to be named, open an issue. One real
+account is worth more than the invented ones were.
 
 ---
 

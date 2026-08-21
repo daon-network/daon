@@ -181,7 +181,6 @@ For too long, Big Tech has extracted value from creator communities without givi
 
 ## 📞 **Questions?**
 
-- 💬 **Discord**: [discord.gg/daon](https://discord.gg/daon)
 - 🐦 **Twitter**: [@daonnetwork](https://twitter.com/daonnetwork)  
 - 📧 **Email**: hello@daon.network
 - 📖 **Docs**: [daon.network/docs](https://daon.network/docs)

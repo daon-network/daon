@@ -9,7 +9,7 @@
 
 ### 1. Web Upload Over Browser Extension
 
-**Decision:** Use web upload site (protect.daon.network) instead of browser extension
+**Decision:** Use web upload site (app.daon.network) instead of browser extension
 
 **Rationale:**
 - Browser extensions can be compromised, cloned, or updated maliciously

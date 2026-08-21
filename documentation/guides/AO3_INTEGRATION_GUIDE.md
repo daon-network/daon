@@ -522,9 +522,9 @@ end
 ## 📞 Support
 
 ### Technical Support
-- **Documentation:** https://docs.daon.network/ruby
+- **Documentation:** https://daon.network/
 - **GitHub:** https://github.com/daon-network/ruby-sdk
-- **API Status:** https://status.daon.network
+- **API Status:** https://api.daon.network/health
 
 ### Integration Help
 - **Email:** integration@daon.network

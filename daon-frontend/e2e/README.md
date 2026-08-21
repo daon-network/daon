@@ -279,5 +279,5 @@ npx playwright install --force
 ## Resources
 
 - [Playwright Documentation](https://playwright.dev)
-- [DAON API Documentation](https://docs.daon.network/api/)
+- [DAON API Documentation](https://daon.network/api/)
 - [MailHog Documentation](https://github.com/mailhog/MailHog)

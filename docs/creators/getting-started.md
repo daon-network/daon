@@ -162,7 +162,7 @@ It takes just 5 minutes to set up and protect your first work.
 
 ### **Need Help?**
 - **Email Support:** support@daon.network
-- **Documentation:** https://docs.daon.network
+- **Documentation:** https://daon.network
 - **GitHub Issues:** https://github.com/daon-network/daon/issues
 
 ### **For Developers**

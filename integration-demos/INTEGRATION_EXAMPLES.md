@@ -407,15 +407,6 @@ end
 
 ### **Integration Success Stories**
 
-> *"Added DAON protection to our writing platform in 30 minutes. Our creators love seeing the protection badges on their work."*  
-> — **Platform Developer**
-
-> *"The WordPress plugin was literally one click install. Now all my blog posts are automatically protected from AI scraping."*  
-> — **Content Creator**
-
-> *"DAON integration took 3 lines of code. Now we can offer our users real protection against exploitation."*  
-> — **Startup Founder**
-
 ---
 
 ## 📞 Get Started
@@ -426,7 +417,6 @@ end
 4. **Test with dry-run mode** first
 5. **Deploy and protect creators!**
 
-**Questions?** Join our Discord: https://discord.gg/daon  
 **Issues?** GitHub: https://github.com/daon-network/integration-examples
 
 ---
