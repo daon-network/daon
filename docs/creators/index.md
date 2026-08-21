@@ -222,14 +222,8 @@ Creator protection should be accessible to everyone. We believe fighting AI expl
 ## Getting Help
 
 ### **Documentation & Guides**
-- [WordPress Plugin Guide](/examples/wordpress/)
 - [Bulk Protection Tutorial](/creators/bulk-protection/)
 - [Embedding Your Verification Token](/creators/embedding-tokens/) — AO3, WordPress, images, PDF, plain text
-- [Frequently Asked Questions](/creators/faq/)
-
-### **Community Support**
-- [Creator Stories](/community/stories/) - Success stories and tips
-- [Best Practices](/creators/best-practices/) - Optimization guides
 
 ### **Direct Support**
 - **General Questions:** support@daon.network

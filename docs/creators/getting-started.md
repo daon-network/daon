@@ -86,7 +86,7 @@ description: "Complete guide to protecting your creative work with DAON"
    - **Images:** Use `exiftool -Comment="DAON:sha256:..."` to embed in EXIF data
    - **Plain text:** Add `[DAON: sha256:...]` as first or last line
 3. Share the link wherever you publish
-4. Direct readers to [verify.daon.network/verify](/verify) to confirm they're reading the registered version
+4. Direct readers to verify.daon.network/verify to confirm they're reading the registered version
 5. Use the verification record for legal purposes if needed
 
 **Full platform-specific embedding instructions:** [Embedding Your Verification Token →](./embedding-tokens.md)

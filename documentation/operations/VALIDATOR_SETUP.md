@@ -252,8 +252,10 @@ Most validators break even within 3-6 months depending on network activity and t
 - **Emergency:** emergency@daon.network
 
 ### Network Status
-- **Dashboard:** status.daon.network
-- **Explorer:** explorer.daon.network
+- **Health:** https://api.daon.network/health
+
+> `status.daon.network` and `explorer.daon.network` do not exist. They were
+> listed here as though they did.
 
 ## Next Steps
 

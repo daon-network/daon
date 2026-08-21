@@ -31,7 +31,7 @@ March 2026 and have not been re-run.
 ### **2. Basic Protection**
 ```javascript
 // Node.js/JavaScript
-import { protect } from '@daon/sdk';
+import { protect } from 'daon-sdk';
 
 const result = await protect(
     content,
@@ -337,7 +337,7 @@ For development and testing:
 ### **Mock Responses**
 SDK includes built-in mock responses for testing:
 ```javascript
-import { mockDAON } from '@daon/sdk/testing';
+import { mockDAON } from 'daon-sdk/testing';
 
 // Enable mocks for unit tests
 mockDAON.enable();
@@ -351,7 +351,6 @@ mockDAON.enable();
 - [Complete API Reference](/api/reference/)
 - [SDK Guides by Language](/api/)
 - [Integration Examples](/examples/)
-- [Error Reference](/api/errors/)
 
 ### **Community**
 - [GitHub Issues](https://github.com/daon-network/issues) - Bug reports

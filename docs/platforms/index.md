@@ -343,8 +343,6 @@ account is worth more than the invented ones were.
 - [Complete API Reference](/api/reference/)
 - [SDK Documentation by Language](/api/)
 - [Integration Examples](/examples/)
-- [Error Handling Guide](/api/errors/)
-- [Rate Limiting Guide](/api/rate-limits/)
 
 ### **Community Support**
 - [GitHub Issues](https://github.com/daon-network/issues) - Bug reports

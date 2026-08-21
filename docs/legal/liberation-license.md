@@ -202,12 +202,6 @@ def check_liberation_license(content):
 - **Enforcement:** enforcement@daon.network
 - **Emergency:** urgent-legal@daon.network
 
-### **Creator Resources:**
-- [License FAQ](/legal/liberation-license/faq/)
-- [Enforcement Guide](/legal/liberation-license/enforcement/)
-- [Compensation Calculator](/legal/liberation-license/calculator/)
-- [Legal Templates](/legal/liberation-license/templates/)
-
 ---
 
 ## Success Stories
