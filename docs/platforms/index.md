@@ -77,7 +77,6 @@ description: "Add DAON creator protection to your platform in 3 lines of code"
       <li>Works with any theme</li>
     </ul>
     <p><strong>Best For:</strong> WordPress blogs, news sites, content publishers</p>
-    <a href="/examples/wordpress/" class="md-feature__link">Download Plugin →</a>
   </div>
 
   <div class="md-feature">

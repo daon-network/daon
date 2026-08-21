@@ -219,11 +219,6 @@ they can be listed here then.
   <small>Core legal protection framework</small>
 </a>
 
-<a href="/legal/creator-rights/" class="cta-button secondary">
-  🛡️ **Creator Rights**<br>
-  <small>Understanding your legal standing</small>
-</a>
-
 <a href="/legal/war-preparation/" class="cta-button secondary">
   ⚔️ **War Preparation**<br>
   <small>Legal escalation strategies</small>

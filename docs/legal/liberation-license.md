@@ -224,16 +224,6 @@ account is worth more than the invented ones were.
   <small>Apply Liberation License now</small>
 </a>
 
-<a href="/legal/liberation-license/faq/" class="cta-button secondary">
-  ❓ **License FAQ**<br>
-  <small>Common questions answered</small>
-</a>
-
-<a href="/legal/liberation-license/enforcement/" class="cta-button secondary">
-  ⚖️ **Enforcement Guide**<br>
-  <small>How to fight violations</small>
-</a>
-
 <a href="mailto:licensing@daon.network" class="cta-button secondary">
   💼 **Commercial Licensing**<br>
   <small>Permission for AI training</small>

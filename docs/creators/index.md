@@ -258,7 +258,6 @@ account is worth more than the invented ones were.
     <div class="md-feature__icon"><svg class="icon" aria-hidden="true"><use href="#i-circle-question-mark"/></svg></div>
     <h3 class="md-feature__title">Read FAQ</h3>
     <p class="md-feature__description">Common questions answered</p>
-    <a href="/creators/faq/" class="md-feature__link">Read FAQ →</a>
   </div>
 
   <div class="md-feature">

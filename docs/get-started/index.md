@@ -237,11 +237,6 @@ account is worth more than the invented ones were.
   <small>Copy-paste code snippets</small>
 </a>
 
-<a href="/platforms/overview/" class="cta-button secondary">
-  🏢 **Platform Integration**<br>
-  <small>Add protection to your site</small>
-</a>
-
 <a href="/legal/liberation-license/" class="cta-button secondary">
   ⚖️ **Legal Framework**<br>
   <small>Understanding your rights</small>

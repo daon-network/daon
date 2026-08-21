@@ -45,7 +45,6 @@ Choose the right protection method for your creative work.
       <li>Academic institutions welcome</li>
       <li>Strengthen decentralization</li>
     </ul>
-    <a href="/get-started/validator/" class="md-feature__link">Setup Guide →</a>
   </div>
 
   <div class="md-feature">
