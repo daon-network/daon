@@ -92,9 +92,15 @@ describe('API Endpoints', () => {
       assert.strictEqual(second.body.contentHash, first.body.contentHash);
     });
 
-    test('should generate correct SHA-256 hash', async () => {
+    test('should commit content with content_commit, not a bare sha256', async () => {
       const testContent = 'Test content for hash verification';
-      const expectedHash = crypto.createHash('sha256').update(testContent, 'utf8').digest('hex');
+      // Registration commits with content_commit (wire-format.md §6). Under
+      // 1 KiB that reduces to sha256(0x03 || bytes), reproduced here by hand so
+      // the test would catch the server silently reverting to the old rule.
+      const expectedHash = crypto
+        .createHash('sha256')
+        .update(Buffer.concat([Buffer.from([0x03]), Buffer.from(testContent, 'utf8')]))
+        .digest('hex');
       
       const response = await request(app)
         .post('/api/v1/protect')

@@ -282,18 +282,73 @@ function page(title: string, body: string, actions = ''): string {
       does not decide between competing claims.</p>`;
 }
 
+/**
+ * The identity of a piece of text.
+ *
+ * Canonicalise, then commit with `content_commit` -- the same rule the
+ * provenance agent and file registration use. Canonicalisation stays: it is what
+ * makes the same words registered through WordPress, an SDK and this API agree.
+ * What changed is how the canonical text is hashed.
+ *
+ * Before this, text was `sha256(canonical)` while everything else in the system
+ * used `content_commit`. One work could therefore hold two identities depending
+ * on which door it came through, and neither lookup found the other.
+ */
 function generateContentHash(content) {
   const { text } = toPlainText(content);
-  const hash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
 
-  // Backstop. toPlainText already refuses content that strips to nothing, but
-  // this is the value every such input collapses to, so it is checked at the
-  // point of hashing as well -- a future path that skips canonicalisation must
-  // not be able to register the hash of no content.
-  if (hash === EMPTY_SHA256) {
+  // Backstop, checked before committing. toPlainText already refuses content
+  // that strips to nothing, but this is the value every such input collapses
+  // to, so a future path that skips canonicalisation still cannot register the
+  // hash of no content.
+  if (crypto.createHash('sha256').update(text, 'utf8').digest('hex') === EMPTY_SHA256) {
     throw new EmptyAfterStrippingError();
   }
-  return hash;
+
+  const commit = contentCommit(Buffer.from(text, 'utf8'));
+  if (!commit) {
+    // Never silently fall back to the old rule: that would register content
+    // under an identity the rest of the system does not use, which is the
+    // problem this function exists to end.
+    throw new Error('the content verifier is not available on this server');
+  }
+  return commit.toString('hex');
+}
+
+/**
+ * What text used to hash to: `sha256(canonical)`.
+ *
+ * Every record registered before this change is stored under this value, and
+ * DAON does not keep content, so they cannot be recomputed -- deriving a
+ * `content_commit` from a SHA-256 output is a preimage problem. They are found
+ * by looking them up, not by migrating them.
+ */
+function generateCanonicalSha256Hash(content) {
+  const { text } = toPlainText(content);
+  return crypto.createHash('sha256').update(text, 'utf8').digest('hex');
+}
+
+/**
+ * Every identity a given piece of text could be stored under, newest first.
+ *
+ * Registration stores the first. Every lookup tries all of them, so records from
+ * each era of this codebase keep resolving. Order matters: the current rule is
+ * checked first so the common case costs one query.
+ */
+export function contentHashCandidates(content) {
+  const seen = new Set();
+  const out = [];
+  for (const h of [
+    generateContentHash(content),
+    generateCanonicalSha256Hash(content),
+    generateLegacyContentHash(content),
+  ]) {
+    if (h && !seen.has(h)) {
+      seen.add(h);
+      out.push(h);
+    }
+  }
+  return out;
 }
 
 /**
@@ -677,9 +732,17 @@ app.post("/api/v1/protect", [optionalAuth,
     let blockchainTx = null;
     let existing = false;
 
-    // Check if already exists in DB
+    // Check if already exists in DB, under any rule this codebase has used.
+    //
+    // Checking only the current hash would mean re-registering one of the
+    // records stored under an older rule creates a *second* record for the same
+    // work -- the exact split identity this change exists to remove.
     try {
-      const existingInDb = await db.content.findByHash(contentHash);
+      let existingInDb = null;
+      for (const candidate of contentHashCandidates(content)) {
+        existingInDb = await db.content.findByHash(candidate);
+        if (existingInDb) break;
+      }
       if (existingInDb) {
         logger.info(`Content already protected in DB: ${contentHash}`);
         contentProtectionsTotal.labels(license, 'existing').inc();
@@ -743,8 +806,14 @@ app.post("/api/v1/protect", [optionalAuth,
     // If blockchain enabled, use it as source of truth
     if (blockchainEnabled && blockchainClient.connected) {
       try {
-        // Check if already exists on blockchain
-        const existingOnChain = await blockchainClient.contentExists(contentHash);
+        // Same on chain: an older record is still that work's registration.
+        let existingOnChain = false;
+        for (const candidate of contentHashCandidates(content)) {
+          if (await blockchainClient.contentExists(candidate)) {
+            existingOnChain = true;
+            break;
+          }
+        }
 
         if (existingOnChain) {
           logger.info(`Content already protected on blockchain: ${contentHash}`);
@@ -1458,11 +1527,13 @@ app.post('/api/v1/verify-content', [
     const contentHash = generateContentHash(content);
 
     // Registrations predating canonicalisation committed to the raw bytes. Since
-    // content is not stored, they cannot be identified or migrated, so both are
-    // accepted here and the canonical one is tried first.
-    const legacyHash = generateLegacyContentHash(content);
-    const candidateHashes =
-      legacyHash === contentHash ? [contentHash] : [contentHash, legacyHash];
+    // content is not stored, they cannot be identified or migrated, so every
+    // rule this codebase has used is tried, current one first:
+    //
+    //   1. content_commit(canonical)  -- what is registered now
+    //   2. sha256(canonical)          -- the 109 production records
+    //   3. sha256(raw)                -- from before canonicalisation existed
+    const candidateHashes = contentHashCandidates(content);
 
     let record = null;
     let source = 'memory';
