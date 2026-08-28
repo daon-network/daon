@@ -141,7 +141,12 @@ describe('Integration Tests', () => {
   describe('API ↔ Database Integration', () => {
     test('Protected content persists in database', async () => {
       const content = `DB persist test ${Date.now()}`;
-      const expectedHash = crypto.createHash('sha256').update(content).digest('hex');
+      // content_commit, not a bare sha256 -- wire-format.md §6. Under 1 KiB it
+      // reduces to sha256(0x03 || bytes).
+      const expectedHash = crypto
+        .createHash('sha256')
+        .update(Buffer.concat([Buffer.from([0x03]), Buffer.from(content, 'utf8')]))
+        .digest('hex');
       
       // First protection
       const protect1 = await api
