@@ -1,6 +1,7 @@
 # What DAON actually does
 
-**Last verified:** 21 August 2026, against production and the test suites.
+**Last verified:** 1 September 2026, by tracing each claim to the code that
+implements it, against production and the test suites.
 
 This is the single source of truth for what exists. `documentation/project/`
 holds eighteen roadmap and status files, three of which describe the broker
@@ -18,7 +19,7 @@ as a testimonial from a person who does not exist.
 | API | `https://api.daon.network` |
 | App | `https://app.daon.network` |
 | Docs | `https://daon.network` (GitHub Pages) |
-| Chain | `daon-mainnet-1`, height 2,412,248 |
+| Chain | `daon-mainnet-1`, height 2,611,199 at time of check |
 | Content records | 109 |
 | Accounts | 3 |
 
@@ -60,7 +61,13 @@ drifts from its source.
 ### Accounts
 
 - Magic-link sign-in
-- **Mandatory TOTP 2FA** — required on every account, by decision
+- **Mandatory TOTP 2FA** — required on every account, by decision. Signing in
+  without it enrolled returns a `2fa_setup` session rather than tokens.
+- **Backup codes** — ten issued at setup, shown once, bcrypt-hashed at rest. The
+  sign-in screen has a "use a backup code" toggle, a used code is marked spent,
+  and they can be regenerated. Regeneration needs a working authenticator, and
+  plaintext is never shown twice, so losing both the authenticator and the codes
+  still locks the account.
 - Trusted devices
 - Apple's built-in verification codes documented first, because they need no
   install
@@ -88,16 +95,11 @@ Listed because someone will otherwise assume it does.
 - **Account deletion.** No endpoint, no UI, nothing in the database client. This
   matters more than it looks: the stated jurisdiction is Germany/EU and the site
   claims GDPR compliance, and the right to erasure is not optional there.
-- **2FA recovery / backup codes.** Lose the authenticator with no trusted device
-  and the account is unreachable.
 - **Status page.** `/health` reports build, chain height and memory; nothing
   presents it.
 - **Four of the five SDKs are unpublished.** Their workflows can publish now, but
-  no name has been claimed on PyPI, RubyGems or Packagist.
-- **Web text still uses the old hash.** Registration through the site hashes
-  canonicalised text with a bare SHA-256, while the agent and file registration
-  use `content_commit`. One work can therefore have two identities. Tracked in
-  #137.
+  no name has been claimed on PyPI, RubyGems or Packagist. Confirmed 1 Sep 2026:
+  `daon-sdk` resolves on npm; all three of the others 404.
 
 ## Deliberately not built
 
