@@ -2,6 +2,12 @@
  * Integration Tests for Broker Registration with Admin Auth
  * 
  * Tests POST /api/v1/broker/register endpoint security
+ *
+ * Grouped with the other database-backed integration tests and run by
+ * `npm run test:requires-db`. It happens to pass all 8 without a database —
+ * every case is an auth rejection that never reaches a query — but it exercises
+ * a registration path that does need one, so it belongs in that lane rather
+ * than looking unit-testable by accident.
  */
 
 import { test, describe, before, after } from 'node:test';

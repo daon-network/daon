@@ -119,12 +119,46 @@ jobs:
           npm run build
           echo "✅ API server built"
 
-      # Run database migrations (if any)
+      # Load the schema. This step used to be `echo "✅ Database ready"` with a
+      # comment reading "Add migration scripts here if you have them", so the
+      # job started an API server against an empty database and every query hit
+      # `relation "users" does not exist`. That is almost certainly why
+      # `test-integration` was stubbed out to echo and exit 0 -- with two stubs
+      # stacked the job passed for months while exercising nothing.
+      #
+      # `auth-e2e-tests.yml` already does this correctly; this mirrors it.
+      # psql is preinstalled on ubuntu-latest, and the service is published on
+      # localhost:5432.
       - name: Setup test database
+        working-directory: ./api-server
+        env:
+          PGPASSWORD: test_password
         run: |
-          cd api-server
-          # Add migration scripts here if you have them
-          echo "✅ Database ready"
+          psql -h localhost -U daon_test -d daon_test -f src/database/schema.sql
+          echo "✅ Schema loaded"
+
+      # broker-registration.integration.test.ts signs generateAccessToken(1) and
+      # asserts 400s on malformed payloads, which means it has to get *past*
+      # admin auth to reach validation. Without a user row it gets 401 instead.
+      #
+      # Admin is decided by ADMIN_USER_IDS or ADMIN_EMAIL_DOMAINS, which
+      # defaults to daon.io -- so seeding user 1 with a daon.io address is
+      # enough, and no env override is needed.
+      #
+      # setval keeps the SERIAL ahead of the explicit id, or the next real
+      # INSERT collides on the primary key.
+      - name: Seed test fixtures
+        working-directory: ./api-server
+        env:
+          PGPASSWORD: test_password
+        run: |
+          psql -h localhost -U daon_test -d daon_test -v ON_ERROR_STOP=1 <<'SQL'
+          INSERT INTO users (id, email, username, email_verified)
+          VALUES (1, 'admin@daon.io', 'ci-admin', true)
+          ON CONFLICT (id) DO NOTHING;
+          SELECT setval(pg_get_serial_sequence('users','id'), GREATEST((SELECT MAX(id) FROM users), 1));
+          SQL
+          echo "✅ Fixtures seeded"
 
       # Start API server in background
       - name: Start API server

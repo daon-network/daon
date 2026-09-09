@@ -1,4 +1,14 @@
 /**
+ * Transfer endpoint tests.
+ *
+ * **Needs a live Postgres.** Run with `npm run test:requires-db`.
+ *
+ * 8 of the 16 authenticate a broker, which reaches the database; without one
+ * they fail on ECONNREFUSED rather than the status they assert. They passed
+ * local review only because a developer machine happened to have postgres
+ * running -- CI, which has none in the unit lane, caught it.
+ */
+/**
  * Comprehensive Tests for Content Transfer Endpoint
  * 
  * Tests POST /api/v1/broker/transfer

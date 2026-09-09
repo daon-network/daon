@@ -1,6 +1,19 @@
 /**
  * Integration Tests for Broker API Endpoints
- * 
+ *
+ * **Needs a live Postgres and a seeded broker API key.** Run with
+ * `npm run test:requires-db`, not `npm test`.
+ *
+ * 27 of these pass without a database — the rejection paths, which never reach
+ * a query. The four that do not are the ones that authenticate `TEST_API_KEY`
+ * and read `/api/v1/broker/usage`; without a database those return 401 rather
+ * than the 200-or-404 they assert. That is the test being honest about needing
+ * a database, not a defect.
+ *
+ * Excluded from jest (imports the express app, which does not survive jest's
+ * transform) and from `test:node` (needs the database). It was excluded from
+ * *both* until 9 Sep 2026, which meant it ran nowhere at all.
+ *
  * Tests the full request/response cycle for broker endpoints
  * Covers positive and negative cases for:
  * - POST /api/v1/broker/protect - Protect content via broker

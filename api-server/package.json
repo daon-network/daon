@@ -13,15 +13,17 @@
     "pretest": "npm run build",
     "test": "npm run test:jest && npm run test:node",
     "test:jest": "jest --coverage",
-    "test:node": "SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/broker-auth-middleware.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/broker-service.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/duplicate-detection.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/file-registration.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/api.test.js && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/health.test.js && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/security.test.js && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/simple-health.test.js && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/content-identity.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/account-deletion.test.ts",
+    "test:node": "SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/broker-auth-middleware.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/broker-service.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/duplicate-detection.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/file-registration.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/api.test.js && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/health.test.js && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/security.test.js && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/simple-health.test.js && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/content-identity.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/account-deletion.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/admin-auth.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/webhook-delivery.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/setup.test.js",
     "test:unit": "jest src/test/broker-*.test.ts --coverage",
     "test:integration": "jest src/test/broker-integration-full.test.ts --runInBand --testPathIgnorePatterns=/node_modules/ --testPathIgnorePatterns=/dist/",
-    "test-integration": "echo 'Integration tests require full infrastructure. Skipping...' && exit 0",
+    "test-integration": "SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/broker-registration.integration.test.ts && SKIP_SERVER_START=true tsx --test src/test/full-stack.integration.test.js",
     "test:ci": "jest src/test/broker-endpoints-ci.test.ts --coverage --ci",
     "test:all": "npm run test:jest && npm run test:node",
     "test:watch": "jest --watch",
     "lint": "eslint src/",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "test:requires-db": "SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/usage-endpoint.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/transfer-endpoint.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/broker-endpoints.integration.test.ts && SKIP_SERVER_START=true NODE_ENV=test tsx --test src/test/broker-registration.integration.test.ts",
+    "comment:test-integration": "broker-endpoints.integration.test.ts is deliberately NOT here. It needs a seeded broker row and a matching API key, which no environment creates -- 20 of its 31 fail in CI even with postgres, redis, a chain and a running API. Add it once fixtures exist. Run it locally with test:requires-db."
   },
   "keywords": [
     "daon",
@@ -71,7 +73,7 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
-  "comment:overrides": "qs 6.15.3 is the last release on the 6.15 line and is vulnerable (GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g). The fix is 6.16.0, and express@4.22.2 — the newest express 4 — pins qs to ~6.15.1, so it cannot reach it. Remove this override once express releases a version that depends on qs >= 6.16.",
+  "comment:overrides": "qs 6.15.3 is the last release on the 6.15 line and is vulnerable (GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g). The fix is 6.16.0, and express@4.22.2 \u2014 the newest express 4 \u2014 pins qs to ~6.15.1, so it cannot reach it. Remove this override once express releases a version that depends on qs >= 6.16.",
   "overrides": {
     "qs": "^6.16.0"
   },
