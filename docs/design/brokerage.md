@@ -175,13 +175,40 @@ broker able to resolve disputes in its own favour, which is precisely the failur
 discipline exists to prevent. It is the same rule as everywhere else in this document: record the
 assertion, attribute it, endorse nothing.
 
+### Contact is a route, not an address
+
+What a record shows is **contact** — a way to reach the author — never the means of reaching them.
+The same move as § *What a reader is shown*: attribution and a route, nothing that reads as
+disclosure.
+
+**The broker's channel is preferred, not merely first available.** The right way to reach an
+Archive of Our Own author is through Archive of Our Own. The platform has moderation, blocking and
+norms the author already relies on, and routing around it would strip protections they chose, even
+where a direct address exists.
+
+### The durability fallback, and who may supply it
+
+Broker lifespan is a real argument for holding an address somewhere: if the platform disappears, so
+does every channel it brokered. But that reintroduces exactly the data whose absence is the property
+below, so the line is **who supplies it**:
+
+| Source | Verdict |
+| --- | --- |
+| The **author**, when claiming their identity (`claim_proof`) | **Fine.** Consented, theirs, under their control, and erasable through account deletion. |
+| The **broker**, in bulk for its users | **No.** DAON would accumulate contact data for people who never interacted with it, cannot honour an erasure request from someone unaware they are in the database, and would be receiving addresses those users gave to a platform for other purposes. |
+
+So the fallback is opt-in, author-supplied, and a consequence of claiming — not a condition of being
+brokered. An author who never claims stays reachable only through their platform, which is the
+correct default and the one that keeps them pseudonymous.
+
 ### A side effect worth having
 
 DAON stores no contact details for brokered authors — not an email, not a token, nothing. The channel
 is a `user@domain` handle and a webhook URL belonging to the platform.
 
 That is a real privacy property rather than an accident: there is no author contact data in the
-registry to leak, to subpoena, or to erase under Art. 17. See
+registry to leak, to subpoena, or to erase under Art. 17 — **unless the author chose to add one**,
+per the section above, in which case it is theirs and deletable with their account. See
 [`erasure-and-the-ledger.md`](../legal/erasure-and-the-ledger.md) — brokered identities hold nothing
 that a deletion request would need to reach.
 
