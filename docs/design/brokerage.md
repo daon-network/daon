@@ -196,7 +196,8 @@ expensive later.
 1. Get the broker tables into a schema the code loads.
 2. Fix or drop `brokers.api_key_hash` so registration can succeed.
 3. Write `content_ownership` on broker registration, with `registered_by_type = 'broker'`.
-4. Stop writing `verified = true`. Record identities as asserted, attributed, unverified.
+4. Stop writing `verified = true`. Record identities as asserted, attributed, and dated — the
+   broker's name is the whole signal a reader gets.
 5. Constrain `newDomain` on transfers.
 6. Require `public_key` at registration; drop `private_key_encrypted`.
 7. Replace `verifySignature` with RFC 9421 verification; demote the API key to an identifier.
@@ -210,11 +211,29 @@ the ladder real.
 
 ---
 
-## Open questions
+## What a reader is shown — decided
 
-- **Does a broker-asserted registration surface differently to a reader than an author's own?** It
-  must, or the distinction in `content_ownership` is bookkeeping nobody sees. Needs a decision
-  against § *Boundaries* before any UI ships.
+**The assertion lists the broker. That is all.**
+
+A broker-submitted registration shows the content hash, the date, and the platform that submitted
+it: *registered via archiveofourown.org*. No badge, no trust indicator, no verified/unverified
+distinction, no styling that reads as endorsement.
+
+This falls out of § *Boundaries* rather than being a separate choice. Any signal beyond the broker's
+name is DAON ranking a claim, and the reader is better placed to weigh a platform's reputation than
+the registry is. Naming the broker is attribution; anything more is assessment.
+
+It also disposes of the `verified` problem more cleanly than fixing the boolean would. **If nothing
+surfaces it, it has no reader-facing job**, and the question stops being *"how do we make this flag
+honest"* and becomes *"why is a display-shaped flag being written at all."* The honest record is: an
+identity exists, this broker asserted it, on this date.
+
+`verification_method` stays as internal bookkeeping — it is the difference between a platform's word
+and an author's own act, which matters for `platform_oauth` later. It is not a display field.
+
+---
+
+## Open questions
 - **What happens to a federated identity when its broker is decertified?** `ON DELETE RESTRICT`
   prevents deletion, which is right, but there is no defined state for "this platform is no longer
   trusted and here is what that means for what it already asserted."
