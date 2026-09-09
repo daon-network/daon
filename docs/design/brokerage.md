@@ -136,6 +136,65 @@ anything else — which is the correct amount for a registry that refuses to adj
 
 ---
 
+## Contested ownership runs over an API, not email
+
+DAON never holds an address for a pseudonymous brokered author, so it cannot email them. The channel
+is the broker's, which means reaching the author has to be a call to the broker rather than a message
+to the person.
+
+**Most of this exists.** `content.disputed` is already an enumerated webhook event, and the delivery
+machinery around it is built — signing, retries, delivery tracking, per-broker event subscriptions in
+`broker_webhooks.events`. It is simply never fired: only `content.protected` and
+`content.transferred` are triggered anywhere in the codebase.
+
+The shape:
+
+1. **Outbound.** DAON fires `content.disputed` to the broker — the dispute id, the content hash, the
+   identity concerned, what is contested, and a deadline.
+2. **The broker relays internally.** Their channel, their process, their recordkeeping. DAON does not
+   see it and should not.
+3. **Inbound.** The broker posts the answer back to an endpoint that does not yet exist.
+4. **Silence refuses.** No answer by the deadline is itself an outcome, and the unanswered dispute
+   stays on the record, dated.
+
+Step 4 is not a new invention: [`decisions.md`](./decisions.md) § *Silence refuses* already settled
+it for provenance associations — a pending association expires after five days and is refused,
+because *"if silence accepted, the winning move would be to assert against somebody on holiday and
+say nothing."* An expired row stays, because that the assertion was made is a fact. The same
+reasoning applies here unchanged.
+
+### The broker relays; it does not decide
+
+The load-bearing constraint. § *The gate is the owner of record, not the previous asserter* puts the
+gate on the owner — and here the owner is a pseudonymous identity reachable only through the
+platform. **The broker is the channel to the gate, not the gate.**
+
+So the record must say *"archiveofourown.org reported that `pseud@archiveofourown.org` responded X"*
+and never *"`pseud@archiveofourown.org` responded X."* Collapsing those would make a compromised
+broker able to resolve disputes in its own favour, which is precisely the failure the attribution
+discipline exists to prevent. It is the same rule as everywhere else in this document: record the
+assertion, attribute it, endorse nothing.
+
+### A side effect worth having
+
+DAON stores no contact details for brokered authors — not an email, not a token, nothing. The channel
+is a `user@domain` handle and a webhook URL belonging to the platform.
+
+That is a real privacy property rather than an accident: there is no author contact data in the
+registry to leak, to subpoena, or to erase under Art. 17. See
+[`erasure-and-the-ledger.md`](../legal/erasure-and-the-ledger.md) — brokered identities hold nothing
+that a deletion request would need to reach.
+
+### What is missing
+
+- `content.disputed` is never fired.
+- No inbound endpoint for a broker to relay a response.
+- No deadline or expiry on a dispute. `disputes.status` exists (`pending`, `investigating`,
+  `resolved`, `dismissed`) with no mechanism moving anything between those states, and
+  `content_ownership.disputed` is written by no code at all.
+
+---
+
 ## Nothing is marked verified that was not verified
 
 The rule, stated generally because the specific bug is less important than the pattern:
@@ -267,7 +326,8 @@ expensive later.
 9. Remove the phantom OAuth 2.0 `client_credentials` section from `docs/api/index.md`. It documents
    an endpoint that does not exist and should not be built.
 10. Build `platform_oauth` — the author demonstrating the contact channel themselves.
-11. Reconcile the three documents that describe this system as complete.
+11. Fire `content.disputed`, add the inbound response endpoint, and give disputes a deadline.
+12. Reconcile the three documents that describe this system as complete.
 
 Steps 1–5 are correctness and cost little. Step 7 is the security model. Step 9 is the one that makes
 the ladder real.
@@ -301,7 +361,14 @@ and an author's own act, which matters for `platform_oauth` later. It is not a d
   prevents deletion, which is right, but there is no defined state for "this platform is no longer
   trusted and here is what that means for what it already asserted."
 - **Can an author repudiate a registration made on their behalf?** The `claim_proof` path lets them
-  claim an identity; there is no path to disown one. Contactability is what makes this answerable at
-  all — the request would route through the broker, since that is where the channel is. Given that registrations are append-only and the
+  claim an identity; there is no path to disown one. The dispute API above is the mechanism —
+  repudiation is a contested-ownership case where the contest is with the broker rather than another
+  claimant. Registrations are append-only and the ledger cannot be withdrawn, so what is added is a
+  dated dispute record, not a deletion.
+- **What happens when a broker outlives its usefulness but its assertions do not?** Contactability
+  has the broker's lifespan. If a platform shuts down, is acquired, or is decertified, the channel
+  behind every identity it asserted goes with it, and nothing in the record reflects that. A
+  `claim_proof` from the author is the only channel that survives the platform, which makes it less
+  of a convenience than it looks. Given that registrations are append-only and the
   ledger cannot be withdrawn, this may be a dispute record rather than a deletion —
   `content_ownership.disputed` exists and is unused.
