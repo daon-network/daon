@@ -1,4 +1,16 @@
 /**
+ * GET /api/v1/broker/usage tests.
+ *
+ * **Needs a live Postgres.** Run with `npm run test:requires-db`.
+ *
+ * 11 of the 23 read usage rows for an authenticated broker and need the
+ * database; the rest are auth rejections that never reach a query.
+ *
+ * Worth knowing: this is the heaviest user of query-string parsing in the
+ * suite, so it is the closest thing there is to coverage of the `qs`
+ * dependency. That coverage lives in the database lane, not the unit lane.
+ */
+/**
  * Comprehensive Tests for API Usage Statistics Endpoint
  * 
  * Tests GET /api/v1/broker/usage
