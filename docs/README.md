@@ -24,8 +24,7 @@ This is the Jekyll-based documentation site for DAON (Digital Asset Ownership Ne
 
 The site automatically deploys to GitHub Pages when changes are pushed to the main branch.
 
-- **Production URL:** https://daon-network.github.io/docs/
-- **Custom Domain:** docs.daon.network (when configured)
+- **Production URL:** https://daon.network/ (the apex is the docs host)
 
 ## 📁 Site Structure
 
@@ -141,10 +140,15 @@ docs/
 - **Build Time:** ~1-2 minutes
 - **Cache:** CDN cache may take 5-10 minutes to update
 
-### Custom Domain Setup
-1. Add CNAME file: `echo "docs.daon.network" > CNAME`
-2. Configure DNS: `CNAME docs.daon.network daon-network.github.io`
-3. Enable HTTPS in GitHub Pages settings
+### Custom Domain
+
+**The docs live at the apex, `daon.network`.** There is no `docs.` subdomain — it does not resolve,
+and it never did. This section previously gave instructions for setting one up, which is how the
+hostname ended up hard-coded in the `/health` response, in outgoing email and in
+`api-server/package.json`. All three sent people to a domain that does not exist. Corrected
+9 September 2026.
+
+If a `docs.` subdomain is ever actually wanted, it needs the DNS record to exist *first*.
 
 ## 🔍 SEO & Analytics
 

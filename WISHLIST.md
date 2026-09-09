@@ -13,28 +13,38 @@ points for a grep, not facts.
 
 Things a real person hits today.
 
-### 1. `docs.daon.network` does not resolve, and we send people there
-
-**[verified 9 Sep 2026 — `dig` returns nothing]**
-
-It is shipped in at least three places:
-
-- `api-server/src/server.ts:514` — the `/health` response advertises it
-- `api-server/src/utils/email.ts:160` — the footer of outgoing email
-- `api-server/package.json` — `homepage`
-
-The live docs host is the apex, `daon.network`. Either point the three references there or configure
-the CNAME. Cheap, and it is a broken link in mail we send to strangers.
-
-*Note `docs/get-started/2fa-setup.md:425` already labels the link `docs.daon.network` while pointing
-at `daon.network` — the confusion is in the docs too.*
-
-### 2. `@vitest/mocker` — path traversal, dev dependency
+### 1. `liberation-ui` ships from a `dist/` that cannot be rebuilt
 
 **[verified 9 Sep 2026]**
 
-Open in `daon-frontend` and `daon-frontend/liberation-ui`. Needs vitest 5, a breaking major, so it
-was deliberately left out of the 9 Sep dependency sweep. Dev-only, hence Tier 1 bottom rather than top.
+The most dangerous thing on this list, and it is one command away from breaking the site.
+
+`daon-frontend/liberation-ui/src/` contains only `index.ts` and `utils/cn.ts`. `index.ts` exports
+`LibIcon`, `KofiButton`, `./icons/types`, `./support/types` and `./theme/liberation` — **none of
+which exist.** Six app pages import `LibIcon` from the package (`app/page.tsx`, `app/dashboard`,
+`app/assets`, `app/verify`, `app/verify/[hash]`, `app/auth/verify`).
+
+It works only because `dist/` is committed and resolves. **Running `npm run build` in
+`liberation-ui` runs `tsup`, which will fail on the missing source and can leave the site without
+`LibIcon`.** There is no recovery except `git checkout` of `dist/`.
+
+This was recorded honestly in `ae5c611` (17 Aug 2026) as *"restoring it is a separate job."* It is
+still that job. Either restore the source from wherever the package was vendored from, or inline the
+two components the frontend actually uses and delete the package.
+
+Its two test files (`tests/LibIcon.test.tsx`, `tests/KofiButton.test.tsx`) import that missing source
+and have therefore never run, at any vitest version. They are noise in every CI log until the source
+comes back or they go.
+
+~~**2. `@vitest/mocker` — path traversal, dev dependency**~~ — **done 9 Sep 2026.** vitest 3.2.7 → 5.0.0
+in `liberation-ui`. Both projects now report 0 vulnerabilities and the frontend builds unchanged. The
+orphaned tests still do not run; that is item 1, not a vitest problem.
+
+~~**`docs.daon.network` does not resolve**~~ — **done 9 Sep 2026.** All five references repointed to
+the apex `daon.network`, which is the real docs host: the `/health` response, the outgoing-email
+footer, `api-server/package.json`'s `homepage`, a mislabelled link in `docs/get-started/2fa-setup.md`,
+and the `docs/README.md` section that told people to set up the subdomain in the first place — which
+is where the hostname came from.
 
 ---
 

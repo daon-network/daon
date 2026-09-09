@@ -511,7 +511,7 @@ app.get('/health', async (req, res) => {
     },
     support: {
       funding: 'https://ko-fi.com/greenfieldoverride',
-      documentation: 'https://docs.daon.network'
+      documentation: 'https://daon.network'
     }
   });
 });
