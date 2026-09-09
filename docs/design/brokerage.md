@@ -96,8 +96,30 @@ identified anyone is.
 | `platform_oauth` | Someone with live account control acted. | **Demonstrated, with agency.** |
 
 `platform_oauth` is unbuilt, and it is where OAuth belongs in this system — the *author* proving
-control of their own platform account, not the broker proving it is the broker. It is the cheapest
-real evidence available, because the author is already logged in there.
+control of their own platform account, not the broker proving it is the broker.
+
+**It is optional, and DAON does not perform it.** Identity is optional on the direct registration
+path, so requiring it here would be inconsistent. The broker owns the recordkeeping: how they
+established that someone is there is their process, their policy and their liability.
+`verification_method` is therefore a **broker-supplied attribute** — what the platform says it did —
+recorded and attributed like any other assertion, never assessed.
+
+That is the same discipline [`c2pa-ingest.md`](./c2pa-ingest.md) arrives at from an unrelated
+direction: read assertions about people and rights, attribute them, endorse nothing. Two problems
+converging on one rule.
+
+### The same floor, reached two ways
+
+Worth naming because it makes the two registration paths consistent rather than parallel:
+
+| Path | How contactability is met |
+| --- | --- |
+| Direct | An email at registration — the decision of 1 Sep 2026, still unbuilt |
+| Broker | `user@broker`, a channel delegated to the platform |
+
+**Contactability is the floor on both. Identity is required on neither.** Closing anonymous
+registration on the direct path is not separate cleanup; it is this same principle applied where
+there is no broker to delegate to.
 
 **What it does not establish, and must not be read as establishing:** a real-world identity. It
 inherits the platform's account security as its ceiling, and AO3 accounts are email-and-invite. A
