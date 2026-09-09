@@ -22,7 +22,6 @@ jobs:
       sdk_php:    ${{ steps.filter.outputs.sdk_php }}
       provenance: ${{ steps.filter.outputs.provenance }}
       wordpress:  ${{ steps.filter.outputs.wordpress }}
-      ccc:        ${{ steps.filter.outputs.ccc }}
       docs:       ${{ steps.filter.outputs.docs }}
     steps:
       - uses: actions/checkout@v4
@@ -54,8 +53,6 @@ jobs:
               - 'scripts/provenance/**'
             wordpress:
               - 'wordpress-plugin/**'
-            ccc:
-              - 'creative-commons-chain/**'
             # The docs site deploys straight from main:/docs via GitHub Pages'
             # legacy Jekyll builder, so merge is publish and there is no staging
             # step. A build error would surface only after merge, with the live
@@ -388,22 +385,15 @@ jobs:
         run: composer test
 
   # ── creative-commons-chain ────────────────────────────────────────────────
-
-  ccc-build:
-    name: creative-commons-chain Build
-    timeout-minutes: 15
-    needs: changes
-    if: needs.changes.outputs.ccc == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: creative-commons-chain/go.mod
-      - name: Build
-        env:
-          GOTOOLCHAIN: local
-        run: cd creative-commons-chain && go build ./...
+  #
+  # Retired 9 Sep 2026. The module is not deployed anywhere — it appears in no
+  # compose file, and `daon-core` is the chain that actually runs — but building
+  # it here kept an unshipped Cosmos SDK toolchain in the dependency graph,
+  # which is where five Dependabot alerts (four docker/docker, one grpc) were
+  # coming from. Those are dismissed as `not_used` rather than patched.
+  #
+  # The code is still in the repo and in git history. Restore this job if it
+  # ever ships, and un-dismiss the alerts with it.
 
   test-go:
     name: Go SDK Tests
@@ -628,7 +618,6 @@ jobs:
       - provenance
       - provenance-keychain
       - wordpress
-      - ccc-build
       - docs
       - test-go
       - test-node-sdk
@@ -648,7 +637,6 @@ jobs:
           R_PROVENANCE:  ${{ needs.provenance.result }}
           R_PROVKEY:     ${{ needs.provenance-keychain.result }}
           R_WORDPRESS:   ${{ needs.wordpress.result }}
-          R_CCC:         ${{ needs.ccc-build.result }}
           R_DOCS:        ${{ needs.docs.result }}
           R_GO:          ${{ needs.test-go.result }}
           R_NODE:        ${{ needs.test-node-sdk.result }}
@@ -678,7 +666,6 @@ jobs:
           render "Blockchain Build"        "$R_BLOCKCHAIN"
           render "Blockchain Docker Build" "$R_BCDOCKER"
           render "Frontend & E2E"          "$R_FRONTEND"
-          render "creative-commons-chain"  "$R_CCC"
 
           echo ""                              >> "$GITHUB_STEP_SUMMARY"
           echo "### Provenance"                >> "$GITHUB_STEP_SUMMARY"
@@ -704,7 +691,7 @@ jobs:
           # Fail the summary job if any non-skipped job failed
           all_ok=true
           for result in "$R_SECURITY" "$R_TEST" "$R_BUILD" "$R_BLOCKCHAIN" "$R_BCDOCKER" \
-                        "$R_FRONTEND" "$R_PROVENANCE" "$R_PROVKEY" "$R_WORDPRESS" "$R_CCC" "$R_DOCS" \
+                        "$R_FRONTEND" "$R_PROVENANCE" "$R_PROVKEY" "$R_WORDPRESS" "$R_DOCS" \
                         "$R_GO" "$R_NODE" "$R_PYTHON" "$R_RUBY" "$R_PHP"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               all_ok=false
