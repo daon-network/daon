@@ -112,10 +112,10 @@ converging on one rule.
 
 Worth naming because it makes the two registration paths consistent rather than parallel:
 
-| Path | How contactability is met |
-| --- | --- |
-| Direct | An email at registration — the decision of 1 Sep 2026, still unbuilt |
-| Broker | `user@broker`, a channel delegated to the platform |
+| Path | Live channel | Recovery |
+| --- | --- | --- |
+| Direct | The account itself | The account's own email |
+| Broker | `user@broker`, delegated to the platform | An email supplied by the broker with the author's consent |
 
 **Contactability is the floor on both. Identity is required on neither.** Closing anonymous
 registration on the direct path is not separate cleanup; it is this same principle applied where
@@ -138,9 +138,11 @@ anything else — which is the correct amount for a registry that refuses to adj
 
 ## Contested ownership runs over an API, not email
 
-DAON never holds an address for a pseudonymous brokered author, so it cannot email them. The channel
-is the broker's, which means reaching the author has to be a call to the broker rather than a message
-to the person.
+DAON holds an author's address for recovery, but that is not the channel for reaching them about a
+live dispute — the address is for the author walking up to DAON, not for DAON walking up to the
+author. The right way to reach an Archive of Our Own author is through Archive of Our Own, which has
+the moderation, blocking and norms they already rely on. So reaching the author is a call to the
+broker rather than a message to the person.
 
 **Most of this exists.** `content.disputed` is already an enumerated webhook event, and the delivery
 machinery around it is built — signing, retries, delivery tracking, per-broker event subscriptions in
@@ -156,6 +158,11 @@ The shape:
 3. **Inbound.** The broker posts the answer back to an endpoint that does not yet exist.
 4. **Silence refuses.** No answer by the deadline is itself an outcome, and the unanswered dispute
    stays on the record, dated.
+
+**Pull as well as push.** A broker can also list open disputes: `GET /api/v1/broker/disputes`,
+defaulting to the last **24 hours**, with `since` and `until` date parameters for a wider window.
+Webhooks fail, brokers go offline, and retries expire — a delivery that never landed must not become
+a dispute nobody knew about. Push is the notification; pull is the record.
 
 Step 4 is not a new invention: [`decisions.md`](./decisions.md) § *Silence refuses* already settled
 it for provenance associations — a pending association expires after five days and is refused,
@@ -186,29 +193,65 @@ Archive of Our Own author is through Archive of Our Own. The platform has modera
 norms the author already relies on, and routing around it would strip protections they chose, even
 where a direct address exists.
 
-### The durability fallback, and who may supply it
+### The broker is a convenience, not a gate — decided
 
-Broker lifespan is a real argument for holding an address somewhere: if the platform disappears, so
-does every channel it brokered. But that reintroduces exactly the data whose absence is the property
-below, so the line is **who supplies it**:
+The consequence of contactability having the broker's lifespan is not that ownership is fragile. It
+is that **ownership must not depend on the broker continuing to exist.**
 
-| Source | Verdict |
-| --- | --- |
-| The **author**, when claiming their identity (`claim_proof`) | **Fine.** Consented, theirs, under their control, and erasable through account deletion. |
-| The **broker**, in bulk for its users | **No.** DAON would accumulate contact data for people who never interacted with it, cannot honour an erasure request from someone unaware they are in the database, and would be receiving addresses those users gave to a platform for other purposes. |
+So: **the broker supplies the author's email address, and it is required.** Without it, ownership is
+only guaranteed for as long as the platform is around, which is not a guarantee.
 
-So the fallback is opt-in, author-supplied, and a consequence of claiming — not a condition of being
-brokered. An author who never claims stays reachable only through their platform, which is the
-correct default and the one that keeps them pseudonymous.
+What that buys is recovery as a *default* rather than an opt-in. An author signs in to DAON at any
+point — years later, after the platform is gone — verifies their email, and the works registered
+against it are theirs to claim. They never needed a DAON account at registration time, and they do
+not need the broker's cooperation to recover. The broker made it convenient. It was never the thing
+holding the ownership.
+
+**The address is never displayed.** Not on a verification page, not in an API response, not to
+another broker. It exists for recovery and for nothing else.
+
+### Consent is obtained at source, and that is a condition of certification
+
+A bulk transfer of a platform's user table would be its own problem. GDPR Art. 14 governs personal
+data obtained from a third party and requires the data subject to be *informed*, generally within a
+month — so "we never display it" would not settle it, and DAON would owe unsolicited mail to every
+fan creator on the platform explaining that their address had been handed over.
+
+**The broker asks at registration time instead.** *"Register this work with DAON? Your email is
+shared for ownership recovery."* That makes it per-work consent, obtained by the party that actually
+has the relationship with the author, rather than a bulk disclosure by a party the author never
+dealt with.
+
+This is a **condition of being a certified broker**, not a technical detail — an obligation on the
+platform alongside the rate limits and the signing key. A broker that will not ask cannot be a
+broker, for the same reason one that cannot generate a keypair cannot: it is a capability and
+conduct bar for infrastructure partners.
+
+It also fits the framing above. The author chose. The broker is still a convenience.
+
+### Matching offers a claim; it does not grant one
+
+A verified email match must **not** silently reveal or transfer works.
+
+Whoever controls a mailbox would otherwise collect them, and mailboxes are recycled, resold and taken
+over. For a pseudonymous author the damage is worse than losing the works: the match is the link
+between a DAON account and an `@archiveofourown.org` pseud, so a mailbox takeover exposes the
+pseudonym itself.
+
+So a match surfaces an *offer to claim*, and a claim fires `content.disputed` to the broker — the
+same channel described above. The platform tells the author someone is claiming their works, and the
+author can object. **Silence refuses**, per [`decisions.md`](./decisions.md).
 
 ### A side effect worth having
 
 DAON stores no contact details for brokered authors — not an email, not a token, nothing. The channel
 is a `user@domain` handle and a webhook URL belonging to the platform.
 
-That is a real privacy property rather than an accident: there is no author contact data in the
-registry to leak, to subpoena, or to erase under Art. 17 — **unless the author chose to add one**,
-per the section above, in which case it is theirs and deletable with their account. See
+~~That is a real privacy property rather than an accident.~~ **Superseded** by the decision above:
+DAON does hold an author email, supplied by the broker with the author's consent, for recovery. It is
+never displayed, and it is subject to Art. 17 like any other personal data — with the consequence,
+which should be said plainly to anyone who asks for erasure, that deleting it removes the only route
+by which their works could be recovered if the platform disappears. See
 [`erasure-and-the-ledger.md`](../legal/erasure-and-the-ledger.md) — brokered identities hold nothing
 that a deletion request would need to reach.
 
@@ -353,8 +396,11 @@ expensive later.
 9. Remove the phantom OAuth 2.0 `client_credentials` section from `docs/api/index.md`. It documents
    an endpoint that does not exist and should not be built.
 10. Build `platform_oauth` — the author demonstrating the contact channel themselves.
-11. Fire `content.disputed`, add the inbound response endpoint, and give disputes a deadline.
-12. Reconcile the three documents that describe this system as complete.
+11. Fire `content.disputed`, add the inbound response endpoint and the `GET /broker/disputes` pull,
+    and give disputes a deadline.
+12. Require the author's email at broker registration, store it undisplayed, and build recovery by
+    verified email match — offering a claim rather than granting one.
+13. Reconcile the three documents that describe this system as complete.
 
 Steps 1–5 are correctness and cost little. Step 7 is the security model. Step 9 is the one that makes
 the ladder real.
