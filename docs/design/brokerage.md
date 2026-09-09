@@ -407,25 +407,44 @@ the ladder real.
 
 ---
 
-## What a reader is shown — decided
+## What a reader is shown — decided ↺
 
-**The assertion lists the broker. That is all.**
+A brokered registration shows **the owner of record and the fact that a broker handled it, naming
+the broker**:
 
-A broker-submitted registration shows the content hash, the date, and the platform that submitted
-it: *registered via archiveofourown.org*. No badge, no trust indicator, no verified/unverified
-distinction, no styling that reads as endorsement.
+> `pseud@archiveofourown.org` — registered via **archiveofourown.org**
 
-This falls out of § *Boundaries* rather than being a separate choice. Any signal beyond the broker's
-name is DAON ranking a claim, and the reader is better placed to weigh a platform's reputation than
-the registry is. Naming the broker is attribution; anything more is assessment.
+Both halves, because `content_ownership` separates them and they can differ: a work may be owned by
+one identity and registered by a platform, and ownership can later move. Showing only the broker
+would hide who the claim is about; showing only the identity would hide that nobody but a platform
+ever asserted it.
 
-It also disposes of the `verified` problem more cleanly than fixing the boolean would. **If nothing
-surfaces it, it has no reader-facing job**, and the question stops being *"how do we make this flag
-honest"* and becomes *"why is a display-shaped flag being written at all."* The honest record is: an
-identity exists, this broker asserted it, on this date.
+**Reversed.** The first version of this decision was *"the assertion lists the broker, that is
+all"* — withholding the identity on the grounds that anything beyond attribution reads as
+assessment. That was over-cautious for a reason that only became clear once the recovery email
+landed: **the pseud is already public on the platform.** `pseud@archiveofourown.org` is the handle
+the author publishes under. Repeating it discloses nothing, while the thing that genuinely is
+private — the recovery address — stays hidden either way. Suppressing it bought no privacy and cost
+the record its usefulness, since two different authors' works became indistinguishable.
 
-`verification_method` stays as internal bookkeeping — it is the difference between a platform's word
-and an author's own act, which matters for `platform_oauth` later. It is not a display field.
+What stays excluded is unchanged and is the part that matters:
+
+- **No badge, no trust indicator, no verified/unverified distinction.** Naming the broker is
+  attribution; scoring it is assessment, and § *Boundaries* forbids the second.
+- **Never the recovery email.** Not on a verification page, not in an API response, not to another
+  broker.
+
+The reader gets the claim, who made it, and who it is about — and weighs Archive of Our Own's
+reputation themselves, which they are better placed to do than the registry is. They can also go and
+check the pseud against the platform, which is the whole point of a finding aid.
+
+This also disposes of the hardcoded `verified = true` more cleanly than fixing the boolean would. It
+has no reader-facing job, so the question stops being *"how do we make this flag honest"* and becomes
+*"why is a display-shaped flag being written at all."* The honest record is: an identity exists, this
+broker asserted it, on this date.
+
+`verification_method` stays internal bookkeeping — the difference between a platform's word and an
+author's own act, which matters when `platform_oauth` exists. It is not a display field.
 
 ---
 
