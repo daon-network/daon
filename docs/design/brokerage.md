@@ -54,23 +54,63 @@ expressible.
 
 ---
 
-## The verification ladder
+## The minimum is contactability, not identity
 
-`verification_method` is already an ordered scale. It needs to mean something.
+The thing being established is **that a real entity stands behind the authorship** — not who it is.
 
-| Method | What actually happened | Worth |
+DAON does not identify people; [`decisions.md`](./decisions.md) says it "does not decide who owns
+anything." And for the population brokerage serves first, pseudonymity is protective rather than
+incidental: fan creators have concrete reasons not to be linkable to a legal name, and a registry
+that pushed platforms toward stronger identity assurance would be working against the creators it
+exists for.
+
+So the bar is lower and more useful: **is there someone there, and can they be reached?**
+
+### Which is why the identifier is `user@broker`
+
+`federated_identities.full_identity` is `username || '@' || domain` — `pseud@archiveofourown.org` —
+and deliberately **not an email address.**
+
+It is a routable handle with a delegated delivery path. DAON cannot contact the author. The platform
+can. The identifier therefore carries the claim *"someone is here and this platform can reach them"*
+while exposing no address, no legal name, and nothing that links across sites.
+
+This is the same move the main registry already makes: `ai_training_policy: contact_required`
+demands a `licensing_email` or `licensing_uri` — a channel, not an identity. Brokerage supplies the
+channel indirectly, through the platform, which is what lets it be pseudonymous and reachable at
+once.
+
+Contactability is also load-bearing rather than decorative. Disputes need a reachable party
+(`content_ownership.disputed`); so does any future path for an author to repudiate a registration
+made in their name. Both route through the broker, because that is where the channel is.
+
+### The ladder
+
+`verification_method` is an ordered scale of **how well demonstrated that channel is** — not how
+identified anyone is.
+
+| Method | What was established | Contactability |
 | --- | --- | --- |
-| `broker_signature` | The platform asserted it. The author did nothing. | An **assertion**, not a verification |
-| `email_verification` | The author answered a message. | The author was reachable and did not object |
-| `platform_oauth` | The author proved control of the platform account. | The author acted |
+| `broker_signature` | The platform asserts an entity exists. | **Claimed.** Nothing demonstrated. |
+| `email_verification` | Someone answered a message. | **Demonstrated.** The channel works. |
+| `platform_oauth` | Someone with live account control acted. | **Demonstrated, with agency.** |
 
-**Only the bottom two are verification.** The top one is a platform vouching for someone, which is
-useful and worth recording and is not the same kind of fact.
+`platform_oauth` is unbuilt, and it is where OAuth belongs in this system — the *author* proving
+control of their own platform account, not the broker proving it is the broker. It is the cheapest
+real evidence available, because the author is already logged in there.
 
-`platform_oauth` is the interesting one and it is unbuilt. It is also where OAuth belongs in this
-system — **the author proving they control the account, not the broker proving it is the broker.**
-An OAuth handshake between the author and their own platform is the cheapest real evidence available,
-because the author is already logged in there.
+**What it does not establish, and must not be read as establishing:** a real-world identity. It
+inherits the platform's account security as its ceiling, and AO3 accounts are email-and-invite. A
+successful OAuth handshake means *someone controls this account*, which is exactly as strong as that
+platform's signup, and no stronger. That is sufficient for contactability and insufficient for
+anything else — which is the correct amount for a registry that refuses to adjudicate ownership.
+
+> **Not to be confused with the OAuth in `docs/api/index.md`.** That documents an OAuth 2.0
+> `client_credentials` flow at `POST /oauth/token` "for platforms" — machine-to-machine *broker*
+> authentication, with no author involved. **No such endpoint exists.** It should be removed from the
+> docs rather than built: `client_credentials` issues a bearer token from a client secret, which is
+> the leaked-credential problem with an extra round trip, and strictly worse than signing each
+> request.
 
 ---
 
@@ -202,9 +242,10 @@ expensive later.
 6. Require `public_key` at registration; drop `private_key_encrypted`.
 7. Replace `verifySignature` with RFC 9421 verification; demote the API key to an identifier.
 8. Ship a signer in the Node SDK plus a worked `openssl` example.
-9. Build `platform_oauth` — the author's own proof, and the only thing that makes `verified` mean
-   anything.
-10. Reconcile the three documents that describe this system as complete.
+9. Remove the phantom OAuth 2.0 `client_credentials` section from `docs/api/index.md`. It documents
+   an endpoint that does not exist and should not be built.
+10. Build `platform_oauth` — the author demonstrating the contact channel themselves.
+11. Reconcile the three documents that describe this system as complete.
 
 Steps 1–5 are correctness and cost little. Step 7 is the security model. Step 9 is the one that makes
 the ladder real.
@@ -238,6 +279,7 @@ and an author's own act, which matters for `platform_oauth` later. It is not a d
   prevents deletion, which is right, but there is no defined state for "this platform is no longer
   trusted and here is what that means for what it already asserted."
 - **Can an author repudiate a registration made on their behalf?** The `claim_proof` path lets them
-  claim an identity; there is no path to disown one. Given that registrations are append-only and the
+  claim an identity; there is no path to disown one. Contactability is what makes this answerable at
+  all — the request would route through the broker, since that is where the channel is. Given that registrations are append-only and the
   ledger cannot be withdrawn, this may be a dispute record rather than a deletion —
   `content_ownership.disputed` exists and is unused.
