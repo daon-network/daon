@@ -201,7 +201,7 @@ describe('Webhook Delivery System', () => {
       }) as any;
 
       const db = createMockDb(new Map([
-        ['SELECT * FROM broker_webhooks', {
+        ['FROM broker_webhooks', {
           rows: [{
             id: 1,
             broker_id: 1,
@@ -211,7 +211,7 @@ describe('Webhook Delivery System', () => {
             enabled: true
           }]
         }],
-        ['INSERT INTO webhook_deliveries', { rows: [{ id: 1 }] }]
+        ['INSERT INTO broker_webhook_deliveries', { rows: [{ id: 1 }] }]
       ]));
 
       const service = new WebhookService(db);
@@ -239,7 +239,7 @@ describe('Webhook Delivery System', () => {
       }) as any;
 
       const db = createMockDb(new Map([
-        ['SELECT * FROM broker_webhooks', {
+        ['FROM broker_webhooks', {
           rows: [{
             id: 1,
             broker_id: 1,
@@ -249,7 +249,7 @@ describe('Webhook Delivery System', () => {
             enabled: true
           }]
         }],
-        ['INSERT INTO webhook_deliveries', { rows: [{ id: 1 }] }]
+        ['INSERT INTO broker_webhook_deliveries', { rows: [{ id: 1 }] }]
       ]));
 
       const service = new WebhookService(db);
@@ -257,8 +257,8 @@ describe('Webhook Delivery System', () => {
       await service.triggerWebhook(1, 'content.protected', { test: 'data' });
 
       assert.ok(capturedHeaders);
-      assert.ok(capturedHeaders['X-DAON-Signature']);
-      assert.ok(capturedHeaders['X-DAON-Signature'].startsWith('sha256='));
+      assert.ok(capturedHeaders['X-DAON-Webhook-Signature']);
+      assert.ok(capturedHeaders['X-DAON-Webhook-Signature'].startsWith('sha256='));
     });
 
     test('should include event type and timestamp', async () => {
@@ -274,7 +274,7 @@ describe('Webhook Delivery System', () => {
       }) as any;
 
       const db = createMockDb(new Map([
-        ['SELECT * FROM broker_webhooks', {
+        ['FROM broker_webhooks', {
           rows: [{
             id: 1,
             broker_id: 1,
@@ -284,7 +284,7 @@ describe('Webhook Delivery System', () => {
             enabled: true
           }]
         }],
-        ['INSERT INTO webhook_deliveries', { rows: [{ id: 1 }] }]
+        ['INSERT INTO broker_webhook_deliveries', { rows: [{ id: 1 }] }]
       ]));
 
       const service = new WebhookService(db);
@@ -311,7 +311,7 @@ describe('Webhook Delivery System', () => {
       }) as any;
 
       const db = createMockDb(new Map([
-        ['SELECT * FROM broker_webhooks', {
+        ['FROM broker_webhooks', {
           rows: [{
             id: 1,
             broker_id: 1,
@@ -321,7 +321,7 @@ describe('Webhook Delivery System', () => {
             enabled: true
           }]
         }],
-        ['INSERT INTO webhook_deliveries', { rows: [{ id: 1 }] }]
+        ['INSERT INTO broker_webhook_deliveries', { rows: [{ id: 1 }] }]
       ]));
 
       const service = new WebhookService(db);
@@ -349,7 +349,7 @@ describe('Webhook Delivery System', () => {
       }) as any;
 
       const db = createMockDb(new Map([
-        ['SELECT * FROM broker_webhooks', {
+        ['FROM broker_webhooks', {
           rows: [{
             id: 1,
             broker_id: 1,
@@ -359,8 +359,8 @@ describe('Webhook Delivery System', () => {
             enabled: true
           }]
         }],
-        ['INSERT INTO webhook_deliveries', { rows: [{ id: 1 }] }],
-        ['UPDATE webhook_deliveries', { rows: [] }]
+        ['INSERT INTO broker_webhook_deliveries', { rows: [{ id: 1 }] }],
+        ['UPDATE broker_webhook_deliveries', { rows: [] }]
       ]));
 
       const service = new WebhookService(db);
@@ -417,7 +417,7 @@ describe('Webhook Delivery System', () => {
       }) as any;
 
       const db = createMockDb(new Map([
-        ['SELECT * FROM broker_webhooks', {
+        ['FROM broker_webhooks', {
           rows: [{
             id: 1,
             broker_id: 1,
@@ -427,8 +427,8 @@ describe('Webhook Delivery System', () => {
             enabled: true
           }]
         }],
-        ['INSERT INTO webhook_deliveries', { rows: [{ id: 1 }] }],
-        ['UPDATE webhook_deliveries', { rows: [] }]
+        ['INSERT INTO broker_webhook_deliveries', { rows: [{ id: 1 }] }],
+        ['UPDATE broker_webhook_deliveries', { rows: [] }]
       ]));
 
       const service = new WebhookService(db);
@@ -450,7 +450,7 @@ describe('Webhook Delivery System', () => {
       }) as any;
 
       const db = createMockDb(new Map([
-        ['SELECT * FROM broker_webhooks', {
+        ['FROM broker_webhooks', {
           rows: [{
             id: 1,
             broker_id: 1,
@@ -460,8 +460,8 @@ describe('Webhook Delivery System', () => {
             enabled: true
           }]
         }],
-        ['INSERT INTO webhook_deliveries', { rows: [{ id: 1 }] }],
-        ['UPDATE webhook_deliveries', { rows: [] }]
+        ['INSERT INTO broker_webhook_deliveries', { rows: [{ id: 1 }] }],
+        ['UPDATE broker_webhook_deliveries', { rows: [] }]
       ]));
 
       const service = new WebhookService(db);
@@ -479,7 +479,7 @@ describe('Webhook Delivery System', () => {
       }) as any;
 
       const db = createMockDb(new Map([
-        ['SELECT * FROM broker_webhooks', {
+        ['FROM broker_webhooks', {
           rows: [{
             id: 1,
             broker_id: 1,
@@ -489,8 +489,8 @@ describe('Webhook Delivery System', () => {
             enabled: true
           }]
         }],
-        ['INSERT INTO webhook_deliveries', { rows: [{ id: 1 }] }],
-        ['UPDATE webhook_deliveries', { rows: [] }]
+        ['INSERT INTO broker_webhook_deliveries', { rows: [{ id: 1 }] }],
+        ['UPDATE broker_webhook_deliveries', { rows: [] }]
       ]));
 
       const service = new WebhookService(db);
@@ -514,7 +514,7 @@ describe('Webhook Delivery System', () => {
 
       const db = {
         query: mock.fn(async (sql: string) => {
-          if (sql.includes('SELECT * FROM broker_webhooks')) {
+          if (sql.includes('FROM broker_webhooks')) {
             return {
               rows: [{
                 id: 1,
@@ -526,7 +526,7 @@ describe('Webhook Delivery System', () => {
               }]
             };
           }
-          if (sql.includes('INSERT INTO webhook_deliveries') || sql.includes('UPDATE webhook_deliveries')) {
+          if (sql.includes('INSERT INTO broker_webhook_deliveries') || sql.includes('UPDATE broker_webhook_deliveries')) {
             deliveryLogged = true;
             return { rows: [{ id: 1 }] };
           }
@@ -557,7 +557,7 @@ describe('Webhook Delivery System', () => {
       }) as any;
 
       const db = createMockDb(new Map([
-        ['SELECT * FROM broker_webhooks', {
+        ['FROM broker_webhooks', {
           rows: [{
             id: 1,
             broker_id: 1,
@@ -567,7 +567,7 @@ describe('Webhook Delivery System', () => {
             enabled: true
           }]
         }],
-        ['INSERT INTO webhook_deliveries', { rows: [{ id: 1 }] }]
+        ['INSERT INTO broker_webhook_deliveries', { rows: [{ id: 1 }] }]
       ]));
 
       const service = new WebhookService(db);
