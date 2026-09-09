@@ -36,7 +36,19 @@ Its two test files (`tests/LibIcon.test.tsx`, `tests/KofiButton.test.tsx`) impor
 and have therefore never run, at any vitest version. They are noise in every CI log until the source
 comes back or they go.
 
-~~**2. `@vitest/mocker` — path traversal, dev dependency**~~ — **done 9 Sep 2026.** vitest 3.2.7 → 5.0.0
+### 2. Integration tests need broker fixtures
+
+**[verified 9 Sep 2026]**
+
+`broker-endpoints.integration.test.ts` fails 20 of 31 **with the full stack running** — Postgres,
+Redis, a chain and an API server all up. It needs a seeded broker row and a matching API key, which
+no environment creates. Seeding an admin user (one row) was enough to get
+`broker-registration.integration.test.ts` green; this one needs the broker half.
+
+Until then it is excluded from the Integration Tests job, with the reason recorded in
+`api-server/package.json`. Run it locally against a database with `npm run test:requires-db`.
+
+~~**`@vitest/mocker` — path traversal, dev dependency**~~ — **done 9 Sep 2026.** vitest 3.2.7 → 5.0.0
 in `liberation-ui`. Both projects now report 0 vulnerabilities and the frontend builds unchanged. The
 orphaned tests still do not run; that is item 1, not a vitest problem.
 
@@ -197,3 +209,15 @@ Not engineering, tracked here so it does not get lost.
   module, 1 dev-only deferred (item 2 above). 9 Sep 2026.
 - **2FA backup codes** — these were never missing. Verified working end to end 1 Sep 2026. Recorded
   here because the claim that they were absent kept coming back.
+
+- **Test lanes and the integration job** — 9 Sep 2026, PR #156. Eight test files ran in neither
+  runner; five are wired in and three have a real lane. `webhook-delivery` had six failures from
+  tests drifting off the code. `test-integration` was `echo && exit 0`, and the job it runs in never
+  loaded a schema or seeded a user — two stubs stacked, passing for months while standing up
+  postgres, redis, a chain and an API to test nothing. Unit lane is now 188 node:test across 13
+  files, up from 153 across 10, verified with no database reachable.
+- **`creative-commons-chain` deleted** — 9 Sep 2026. A full Ignite scaffold with no `x/` modules and
+  no DAON logic, superseded by `daon-core` before anything was written into it, deployed nowhere.
+  Dismissing its alerts did not hold: five were dismissed and two more arrived the same day, because
+  dismissal is per-advisory and the dependency graph reads `go.mod` regardless of CI. Recoverable
+  from git history.
