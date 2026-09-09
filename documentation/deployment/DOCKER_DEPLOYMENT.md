@@ -1,3 +1,8 @@
+> **Historical.** This describes `creativecommonschain/ccc-core`, a Docker organisation and
+> GitHub org from an earlier phase of the project. Neither is in use. The chain that runs is
+> `daon-core` (`daon-mainnet-1`); the local `creative-commons-chain/` scaffold it grew out of
+> was deleted on 9 September 2026. Kept for history — do not follow these instructions.
+
 # Creative Commons Chain - Docker Deployment Strategy
 
 ## 🐳 **Docker Hub Publication Plan**
