@@ -6,7 +6,7 @@ permalink: /design/brokerage/
 ---
 # Brokerage — What a Platform May Say on an Author's Behalf
 
-**Status:** design, no decision taken · **Companion to:** [`decisions.md`](./decisions.md),
+**Status:** design · decisions recorded 9 Sep 2026, two reversed · **Companion to:** [`decisions.md`](./decisions.md),
 [`registry-and-provenance.md`](./registry-and-provenance.md)
 
 Brokerage lets a platform perform registration for its authors. The model is Archive of Our Own: a
@@ -15,6 +15,8 @@ touches DAON.
 
 That convenience is the entire point, and it is also the entire problem. **A broker registration is
 a claim by the platform about a person who was not present.**
+
+---
 
 ---
 
@@ -145,6 +147,171 @@ anything else — which is the correct amount for a registry that refuses to adj
 
 ---
 
+## What a reader is shown — decided ↺
+
+A brokered registration shows **the owner of record and the fact that a broker handled it, naming
+the broker**:
+
+> `pseud@archiveofourown.org` — registered via **archiveofourown.org**
+
+Both halves, because `content_ownership` separates them and they can differ: a work may be owned by
+one identity and registered by a platform, and ownership can later move. Showing only the broker
+would hide who the claim is about; showing only the identity would hide that nobody but a platform
+ever asserted it.
+
+**Reversed.** The first version of this decision was *"the assertion lists the broker, that is
+all"* — withholding the identity on the grounds that anything beyond attribution reads as
+assessment. That was over-cautious for a reason that only became clear once the recovery email
+landed: **the pseud is already public on the platform.** `pseud@archiveofourown.org` is the handle
+the author publishes under. Repeating it discloses nothing, while the thing that genuinely is
+private — the recovery address — stays hidden either way. Suppressing it bought no privacy and cost
+the record its usefulness, since two different authors' works became indistinguishable.
+
+What stays excluded is unchanged and is the part that matters:
+
+- **No badge, no trust indicator, no verified/unverified distinction.** Naming the broker is
+  attribution; scoring it is assessment, and § *Boundaries* forbids the second.
+- **Never the recovery email.** Not on a verification page, not in an API response, not to another
+  broker.
+
+The reader gets the claim, who made it, and who it is about — and weighs Archive of Our Own's
+reputation themselves, which they are better placed to do than the registry is. They can also go and
+check the pseud against the platform, which is the whole point of a finding aid.
+
+This also disposes of the hardcoded `verified = true` more cleanly than fixing the boolean would. It
+has no reader-facing job, so the question stops being *"how do we make this flag honest"* and becomes
+*"why is a display-shaped flag being written at all."* The honest record is: an identity exists, this
+broker asserted it, on this date.
+
+`verification_method` stays internal bookkeeping — the difference between a platform's word and an
+author's own act, which matters when `platform_oauth` exists. It is not a display field.
+
+### Contact is a route, not an address
+
+What a record shows is **contact** — a way to reach the author — never the means of reaching them.
+The same move as the decision above: attribution and a route, nothing that reads as disclosure.
+
+**The broker's channel is preferred, not merely first available.** The right way to reach an
+Archive of Our Own author is through Archive of Our Own. The platform has moderation, blocking and
+norms the author already relies on, and routing around it would strip protections they chose, even
+where a direct address exists.
+
+---
+
+## Nothing is marked verified that was not verified
+
+The rule, stated generally because the specific bug is less important than the pattern:
+
+> **A boolean asserting a fact must be written by the code that established the fact.**
+
+Today `getFederatedIdentity` does this:
+
+```sql
+INSERT INTO federated_identities (..., verified, verified_at, verification_method)
+VALUES ($1, $2, $3, true, NOW(), 'broker_signature')
+ON CONFLICT (username, domain) DO UPDATE SET verified = true, ...
+```
+
+`verified` is hardcoded true and the method is hardcoded `'broker_signature'` — while
+`require_signature` is only set for the enterprise tier, so for community and standard brokers **no
+signature was checked at all.** The `ON CONFLICT` clause then re-affirms verification on every
+subsequent call, so an identity cannot decay back to unverified even if it should.
+
+That is an unearned ranking carrying a label for a check that did not happen. It is exactly what the
+boundary above forbids.
+
+**The fix is not to set it false — it is to let the writer be the checker.** An identity created
+through a broker is recorded as existing, attributed to that broker, with no verification claim.
+`verified` is written only by the code path that verified something, and `verification_method` names
+what that path actually did.
+
+### Audited: every other hardcoded truth
+
+Checked 9 Sep 2026, because one instance of this is a bug and a habit of it is a design fault.
+
+- **`verifySignature` returns `true` when `broker.require_signature` is false.** A function of that
+  name returning "valid" for a check it declined to perform is a trap for the next caller, even
+  though present callers only invoke it when a signature is required. It should return a tri-state,
+  or the branch should live at the call site.
+- **Broker registration writes `enabled = true` beside `certification_status = 'pending'`.**
+  Contradictory on its face. Not exploitable: `authenticateBroker` independently rejects any broker
+  whose `certification_status !== 'active'`, so the certification gate holds. Worth resolving anyway,
+  because the two fields disagree about what the row means.
+- **`isUserAdmin`, `verifyTotpCode`, `isValidTotpSecret`** all return true only after a real check.
+  Correct as written; listed so the next audit does not re-examine them.
+
+---
+
+## Ownership outlives the broker
+
+**The broker is a convenience, not a gate.**
+
+The consequence of contactability having the broker's lifespan is not that ownership is fragile. It
+is that **ownership must not depend on the broker continuing to exist.**
+
+So: **the broker supplies the author's email address, and it is required.** Without it, ownership is
+only guaranteed for as long as the platform is around, which is not a guarantee.
+
+What that buys is recovery as a *default* rather than an opt-in. An author signs in to DAON at any
+point — years later, after the platform is gone — verifies their email, and the works registered
+against it are theirs to claim. They never needed a DAON account at registration time, and they do
+not need the broker's cooperation to recover. The broker made it convenient. It was never the thing
+holding the ownership.
+
+**The address is never displayed.** Not on a verification page, not in an API response, not to
+another broker. It exists for recovery and for nothing else.
+
+### Consent is obtained at source, and that is a condition of certification
+
+A bulk transfer of a platform's user table would be its own problem. GDPR Art. 14 governs personal
+data obtained from a third party and requires the data subject to be *informed*, generally within a
+month — so "we never display it" would not settle it, and DAON would owe unsolicited mail to every
+fan creator on the platform explaining that their address had been handed over.
+
+**The broker asks at registration time instead.** *"Register this work with DAON? Your email is
+shared for ownership recovery."* That makes it per-work consent, obtained by the party that actually
+has the relationship with the author, rather than a bulk disclosure by a party the author never
+dealt with.
+
+This is a **condition of being a certified broker**, not a technical detail — an obligation on the
+platform alongside the rate limits and the signing key. A broker that will not ask cannot be a
+broker, for the same reason one that cannot generate a keypair cannot: it is a capability and
+conduct bar for infrastructure partners.
+
+It also fits the framing above. The author chose. The broker is still a convenience.
+
+### Matching offers a claim; it does not grant one
+
+A verified email match must **not** silently reveal or transfer works.
+
+Whoever controls a mailbox would otherwise collect them, and mailboxes are recycled, resold and taken
+over. For a pseudonymous author the damage is worse than losing the works: the match is the link
+between a DAON account and an `@archiveofourown.org` pseud, so a mailbox takeover exposes the
+pseudonym itself.
+
+So a match surfaces an *offer to claim*, and a claim fires `content.disputed` to the broker — the
+same channel described in § *Contested ownership* below. The platform tells the author someone is claiming their works, and the
+author can object. **Silence refuses**, per [`decisions.md`](./decisions.md).
+
+### What DAON now holds, and what that costs
+
+Worth stating plainly, because an earlier draft of this document claimed the opposite.
+
+DAON holds **one** piece of author contact data for a brokered identity: the recovery address, given
+by the broker with the author's consent. Not a token, not a platform password, nothing that grants
+access to anything. Everything else about the channel belongs to the platform — a `user@domain`
+handle and a webhook URL.
+
+That address is personal data and is treated as such: never displayed, and erasable under Art. 17
+like anything else. See [`erasure-and-the-ledger.md`](../legal/erasure-and-the-ledger.md).
+
+The cost has to be said to anyone who asks for erasure rather than discovered afterwards: **deleting
+the recovery address removes the only route by which their works could be recovered if the platform
+disappears.** That is their call to make, and it is not a reason to withhold the option — but it is a
+consequence they are owed in advance.
+
+---
+
 ## The author can always see what was said about them
 
 DAON assumes the broker did what it reports. It has to — the author is behind the platform's wall and
@@ -162,7 +329,7 @@ registers anything directly can still sign in, look, and leave.
 This is the accountability half of *assume the broker*. Without it, a platform could assert anything
 in a creator's name and the creator would have no way of finding out — which would make every other
 protection in this document ornamental. With it, a false assertion is visible to the one person
-motivated to notice, and the path from noticing to contesting is the dispute API above.
+motivated to notice, and the path from noticing to contesting is the dispute API below.
 
 It is also GDPR Art. 15, the right of access, satisfied by design rather than by a support inbox: the
 data subject sees what is held about them, on request, without asking anyone.
@@ -220,79 +387,6 @@ broker able to resolve disputes in its own favour, which is precisely the failur
 discipline exists to prevent. It is the same rule as everywhere else in this document: record the
 assertion, attribute it, endorse nothing.
 
-### Contact is a route, not an address
-
-What a record shows is **contact** — a way to reach the author — never the means of reaching them.
-The same move as § *What a reader is shown*: attribution and a route, nothing that reads as
-disclosure.
-
-**The broker's channel is preferred, not merely first available.** The right way to reach an
-Archive of Our Own author is through Archive of Our Own. The platform has moderation, blocking and
-norms the author already relies on, and routing around it would strip protections they chose, even
-where a direct address exists.
-
-### The broker is a convenience, not a gate — decided
-
-The consequence of contactability having the broker's lifespan is not that ownership is fragile. It
-is that **ownership must not depend on the broker continuing to exist.**
-
-So: **the broker supplies the author's email address, and it is required.** Without it, ownership is
-only guaranteed for as long as the platform is around, which is not a guarantee.
-
-What that buys is recovery as a *default* rather than an opt-in. An author signs in to DAON at any
-point — years later, after the platform is gone — verifies their email, and the works registered
-against it are theirs to claim. They never needed a DAON account at registration time, and they do
-not need the broker's cooperation to recover. The broker made it convenient. It was never the thing
-holding the ownership.
-
-**The address is never displayed.** Not on a verification page, not in an API response, not to
-another broker. It exists for recovery and for nothing else.
-
-### Consent is obtained at source, and that is a condition of certification
-
-A bulk transfer of a platform's user table would be its own problem. GDPR Art. 14 governs personal
-data obtained from a third party and requires the data subject to be *informed*, generally within a
-month — so "we never display it" would not settle it, and DAON would owe unsolicited mail to every
-fan creator on the platform explaining that their address had been handed over.
-
-**The broker asks at registration time instead.** *"Register this work with DAON? Your email is
-shared for ownership recovery."* That makes it per-work consent, obtained by the party that actually
-has the relationship with the author, rather than a bulk disclosure by a party the author never
-dealt with.
-
-This is a **condition of being a certified broker**, not a technical detail — an obligation on the
-platform alongside the rate limits and the signing key. A broker that will not ask cannot be a
-broker, for the same reason one that cannot generate a keypair cannot: it is a capability and
-conduct bar for infrastructure partners.
-
-It also fits the framing above. The author chose. The broker is still a convenience.
-
-### Matching offers a claim; it does not grant one
-
-A verified email match must **not** silently reveal or transfer works.
-
-Whoever controls a mailbox would otherwise collect them, and mailboxes are recycled, resold and taken
-over. For a pseudonymous author the damage is worse than losing the works: the match is the link
-between a DAON account and an `@archiveofourown.org` pseud, so a mailbox takeover exposes the
-pseudonym itself.
-
-So a match surfaces an *offer to claim*, and a claim fires `content.disputed` to the broker — the
-same channel described above. The platform tells the author someone is claiming their works, and the
-author can object. **Silence refuses**, per [`decisions.md`](./decisions.md).
-
-### A side effect worth having
-
-DAON stores no contact details for brokered authors — not an email, not a token, nothing. The channel
-is a `user@domain` handle and a webhook URL belonging to the platform.
-
-~~That is a real privacy property rather than an accident.~~ **Superseded** by the decision above:
-DAON does hold an author email, supplied by the broker with the author's consent, for recovery. It is
-never displayed, and it is subject to Art. 17 like any other personal data — with the consequence,
-which should be said plainly to anyone who asks for erasure, that deleting it removes the only route
-by which their works could be recovered if the platform disappears. See
-[`erasure-and-the-ledger.md`](../legal/erasure-and-the-ledger.md) — brokered identities hold nothing
-that a deletion request would need to reach.
-
 ### What is missing
 
 - `content.disputed` is never fired.
@@ -300,50 +394,6 @@ that a deletion request would need to reach.
 - No deadline or expiry on a dispute. `disputes.status` exists (`pending`, `investigating`,
   `resolved`, `dismissed`) with no mechanism moving anything between those states, and
   `content_ownership.disputed` is written by no code at all.
-
----
-
-## Nothing is marked verified that was not verified
-
-The rule, stated generally because the specific bug is less important than the pattern:
-
-> **A boolean asserting a fact must be written by the code that established the fact.**
-
-Today `getFederatedIdentity` does this:
-
-```sql
-INSERT INTO federated_identities (..., verified, verified_at, verification_method)
-VALUES ($1, $2, $3, true, NOW(), 'broker_signature')
-ON CONFLICT (username, domain) DO UPDATE SET verified = true, ...
-```
-
-`verified` is hardcoded true and the method is hardcoded `'broker_signature'` — while
-`require_signature` is only set for the enterprise tier, so for community and standard brokers **no
-signature was checked at all.** The `ON CONFLICT` clause then re-affirms verification on every
-subsequent call, so an identity cannot decay back to unverified even if it should.
-
-That is an unearned ranking carrying a label for a check that did not happen. It is exactly what the
-boundary above forbids.
-
-**The fix is not to set it false — it is to let the writer be the checker.** An identity created
-through a broker is recorded as existing, attributed to that broker, with no verification claim.
-`verified` is written only by the code path that verified something, and `verification_method` names
-what that path actually did.
-
-### Audited: every other hardcoded truth
-
-Checked 9 Sep 2026, because one instance of this is a bug and a habit of it is a design fault.
-
-- **`verifySignature` returns `true` when `broker.require_signature` is false.** A function of that
-  name returning "valid" for a check it declined to perform is a trap for the next caller, even
-  though present callers only invoke it when a signature is required. It should return a tri-state,
-  or the branch should live at the call site.
-- **Broker registration writes `enabled = true` beside `certification_status = 'pending'`.**
-  Contradictory on its face. Not exploitable: `authenticateBroker` independently rejects any broker
-  whose `certification_status !== 'active'`, so the certification gate holds. Worth resolving anyway,
-  because the two fields disagree about what the row means.
-- **`isUserAdmin`, `verifyTotpCode`, `isValidTotpSecret`** all return true only after a real check.
-  Correct as written; listed so the next audit does not re-examine them.
 
 ---
 
@@ -444,47 +494,6 @@ expensive later.
 
 Steps 1–5 are correctness and cost little. Step 7 is the security model. Step 9 is the one that makes
 the ladder real.
-
----
-
-## What a reader is shown — decided ↺
-
-A brokered registration shows **the owner of record and the fact that a broker handled it, naming
-the broker**:
-
-> `pseud@archiveofourown.org` — registered via **archiveofourown.org**
-
-Both halves, because `content_ownership` separates them and they can differ: a work may be owned by
-one identity and registered by a platform, and ownership can later move. Showing only the broker
-would hide who the claim is about; showing only the identity would hide that nobody but a platform
-ever asserted it.
-
-**Reversed.** The first version of this decision was *"the assertion lists the broker, that is
-all"* — withholding the identity on the grounds that anything beyond attribution reads as
-assessment. That was over-cautious for a reason that only became clear once the recovery email
-landed: **the pseud is already public on the platform.** `pseud@archiveofourown.org` is the handle
-the author publishes under. Repeating it discloses nothing, while the thing that genuinely is
-private — the recovery address — stays hidden either way. Suppressing it bought no privacy and cost
-the record its usefulness, since two different authors' works became indistinguishable.
-
-What stays excluded is unchanged and is the part that matters:
-
-- **No badge, no trust indicator, no verified/unverified distinction.** Naming the broker is
-  attribution; scoring it is assessment, and § *Boundaries* forbids the second.
-- **Never the recovery email.** Not on a verification page, not in an API response, not to another
-  broker.
-
-The reader gets the claim, who made it, and who it is about — and weighs Archive of Our Own's
-reputation themselves, which they are better placed to do than the registry is. They can also go and
-check the pseud against the platform, which is the whole point of a finding aid.
-
-This also disposes of the hardcoded `verified = true` more cleanly than fixing the boolean would. It
-has no reader-facing job, so the question stops being *"how do we make this flag honest"* and becomes
-*"why is a display-shaped flag being written at all."* The honest record is: an identity exists, this
-broker asserted it, on this date.
-
-`verification_method` stays internal bookkeeping — the difference between a platform's word and an
-author's own act, which matters when `platform_oauth` exists. It is not a display field.
 
 ---
 
