@@ -94,6 +94,24 @@ reach of Art. 17 the moment it is wired up.
 
 ---
 
+### 6. Brokerage — nothing works, and one thing lies
+
+**[verified 9 Sep 2026]** Full analysis: [`docs/design/brokerage.md`](docs/design/brokerage.md).
+
+The broker tables exist in no schema the code loads — `002_add_broker_system.sql` only, while
+`init-db.ts` and `client.ts` load `schema.sql` and nothing applies migrations. Registration would
+also violate a not-null constraint on `brokers.api_key_hash`, which the INSERT never supplies. So no
+broker can be created at all, which is why `broker-endpoints.integration.test.ts` fails 20 of 31
+with the full stack running.
+
+Above that: `getFederatedIdentity` hardcodes `verified = true` with
+`verification_method = 'broker_signature'` regardless of whether a signature was checked — and for
+community and standard tiers none is required. Transfers validate the source domain but not the
+destination, so a broker can mint a "verified" identity on a domain it does not control.
+`content_ownership`, the table that would record broker-versus-author, is written by no code at all.
+
+Free to fix now and expensive later: there are no brokers.
+
 ## Tier 3 — Honesty debt
 
 Claims that are ahead of the code. The project treats this as a first-class defect, so it is not the
