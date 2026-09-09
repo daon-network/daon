@@ -137,6 +137,29 @@ jobs:
           psql -h localhost -U daon_test -d daon_test -f src/database/schema.sql
           echo "✅ Schema loaded"
 
+      # broker-registration.integration.test.ts signs generateAccessToken(1) and
+      # asserts 400s on malformed payloads, which means it has to get *past*
+      # admin auth to reach validation. Without a user row it gets 401 instead.
+      #
+      # Admin is decided by ADMIN_USER_IDS or ADMIN_EMAIL_DOMAINS, which
+      # defaults to daon.io -- so seeding user 1 with a daon.io address is
+      # enough, and no env override is needed.
+      #
+      # setval keeps the SERIAL ahead of the explicit id, or the next real
+      # INSERT collides on the primary key.
+      - name: Seed test fixtures
+        working-directory: ./api-server
+        env:
+          PGPASSWORD: test_password
+        run: |
+          psql -h localhost -U daon_test -d daon_test -v ON_ERROR_STOP=1 <<'SQL'
+          INSERT INTO users (id, email, username, email_verified)
+          VALUES (1, 'admin@daon.io', 'ci-admin', true)
+          ON CONFLICT (id) DO NOTHING;
+          SELECT setval(pg_get_serial_sequence('users','id'), GREATEST((SELECT MAX(id) FROM users), 1));
+          SQL
+          echo "✅ Fixtures seeded"
+
       # Start API server in background
       - name: Start API server
         run: |
