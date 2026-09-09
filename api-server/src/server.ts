@@ -439,6 +439,16 @@ function generateVerificationUrl(contentHash) {
 const blockchainEnabled = process.env.BLOCKCHAIN_ENABLED === 'true' && process.env.LOAD_TEST_MODE !== 'true';
 
 // Fallback in-memory storage (used when blockchain is disabled)
+//
+// Records here deliberately carry **no `ip` or `userAgent`.** They used to, and
+// nothing ever read them back — so the only thing those fields achieved was an
+// unbounded, in-process store of IP addresses with no retention limit and no way
+// to erase from it. A person deleting their account can be removed from Postgres;
+// there was no equivalent for this Map, which made it the one place their
+// personal data would outlive the erasure, until the process happened to restart.
+//
+// If something here ever does need request provenance, it belongs in a table with
+// a `user_id` and a retention policy, not in a process-lifetime cache.
 const protectedContent = new Map();
 
 // Initialize blockchain connection
@@ -622,9 +632,7 @@ app.post('/api/v1/protect', optionalAuth, async (req, res, next) => {
         byteLength: bytes.length
       },
       verificationUrl,
-      blockchainTx,
-      ip: req.ip,
-      userAgent: req.get('User-Agent')
+      blockchainTx
     };
     protectedContent.set(contentHash, protectionRecord);
 
@@ -865,9 +873,7 @@ app.post("/api/v1/protect", [optionalAuth,
         ...metadata
       },
       verificationUrl,
-      blockchainTx,
-      ip: req.ip,
-      userAgent: req.get('User-Agent')
+      blockchainTx
     };
 
     protectedContent.set(contentHash, protectionRecord);
@@ -976,8 +982,7 @@ app.post('/api/v1/protect/bulk', [
         timestamp,
         license,
         metadata: work.metadata || {},
-        verificationUrl,
-        ip: req.ip
+        verificationUrl
       };
       
       protectedContent.set(contentHash, protectionRecord);
@@ -1744,7 +1749,6 @@ app.post('/api/v1/broker/protect',
         certificationTier: broker.certification_tier,
       },
       verificationUrl,
-      ip: req.ip,
       blockchain: false
     };
     

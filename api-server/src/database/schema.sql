@@ -240,6 +240,17 @@ CREATE TABLE IF NOT EXISTS content_associations (
 CREATE INDEX IF NOT EXISTS idx_assoc_content ON content_associations(content_hash);
 CREATE INDEX IF NOT EXISTS idx_assoc_entity  ON content_associations(entity_id);
 
+-- NOT CURRENTLY WRITTEN TO. `db.duplicates.logDetection` exists in the client and
+-- nothing calls it, so this table is empty in every deployment.
+--
+-- Read that as a warning rather than dead weight: it collects `ip_address` and
+-- `user_agent` and has **no `user_id`**, so there is no query that could find one
+-- person's rows and therefore no way for account deletion to erase them. Wiring it
+-- up as it stands would create personal data outside the reach of GDPR Art. 17.
+--
+-- Before anything calls logDetection: add `user_id INTEGER REFERENCES users(id) ON
+-- DELETE SET NULL`, scrub the two columns in `users.deleteAccount`, or drop the two
+-- columns entirely — the detection statistics do not need them.
 CREATE TABLE IF NOT EXISTS duplicate_detections (
     id SERIAL PRIMARY KEY,
     content_hash VARCHAR(64) NOT NULL,
@@ -320,7 +331,7 @@ CREATE TABLE IF NOT EXISTS activity_log (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON COLUMN activity_log.action IS 'Actions: register_content, verify_content, login, 2fa_setup_started, 2fa_setup_completed, 2fa_verified, 2fa_failed, 2fa_disabled, backup_code_used, backup_codes_regenerated, device_trusted, device_trust_revoked, refresh_token_issued, refresh_token_revoked, access_token_refreshed, email_change_requested, email_change_completed';
+COMMENT ON COLUMN activity_log.action IS 'Actions: register_content, verify_content, login, 2fa_setup_started, 2fa_setup_completed, 2fa_verified, 2fa_failed, 2fa_disabled, backup_code_used, backup_codes_regenerated, device_trusted, device_trust_revoked, refresh_token_issued, refresh_token_revoked, access_token_refreshed, email_change_requested, email_change_completed, account_deleted';
 
 CREATE INDEX idx_activity_user ON activity_log(user_id);
 CREATE INDEX idx_activity_action ON activity_log(action);

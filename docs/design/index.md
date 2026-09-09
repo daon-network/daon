@@ -49,6 +49,7 @@ evidence. Anyone should be able to read what we decided, see the reasoning, and 
 | --- | --- |
 | [Document formats]({{ '/design/document-formats/' \| relative_url }}) | Why the same manuscript hashes differently as .docx, .epub and a Google Doc — and what to register |
 | [Publication and versions]({{ '/design/publication-and-versions/' \| relative_url }}) | When a registration happens, how a work already registered gains a history, and which version mechanism wins |
+| [C2PA ingest]({{ '/design/c2pa-ingest/' \| relative_url }}) | Which provenance assertions DAON carries, which it refuses to relay, and why Apple Reference Image is out of scope |
 
 ## Keys
 

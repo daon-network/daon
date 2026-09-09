@@ -21,6 +21,7 @@ export default {
     // jest's transform. Run by `test:node` under tsx instead.
     'file-registration\\.test\\.ts$',
     'content-identity\\.test\\.ts$',
+    'account-deletion\\.test\\.ts$',
     '\\.integration\\.test\\.ts$',
     'broker-integration-full\\.test\\.ts$',
     'broker-auth-middleware\\.test\\.ts$',

@@ -9,7 +9,7 @@
  */
 
 import crypto from 'crypto';
-import { DatabaseClient } from '../database/client.js';
+import { DatabaseClient, db } from '../database/client.js';
 import { generateAccessToken, generateRefreshToken, getAccessTokenLifetime, getRefreshTokenLifetime } from '../utils/jwt.js';
 import { generateTotpSecret, verifyTotpCode, generateTotpUrl, formatTotpSecret } from '../utils/totp.js';
 import { generateQRCodeUrl } from '../utils/qr-code.js';
@@ -912,6 +912,61 @@ export class AuthService {
     await this.logActivity(userId, 'email_change_cancelled', 'user', userId);
   }
   
+  /**
+   * Delete the account and erase the personal data attached to it.
+   *
+   * # Why this does not require 2FA the way its neighbours do
+   *
+   * Every other sensitive operation here opens with
+   * `SELECT ... WHERE id = $1 AND totp_enabled = TRUE` and throws
+   * *"2FA not enabled"* when that returns nothing. Copying the pattern would
+   * make erasure the one right a creator can only exercise if they happened to
+   * turn on two-factor auth — and someone who wants their data gone is
+   * precisely the person least likely to have set it up. GDPR Art. 17 is not
+   * conditional on a security preference.
+   *
+   * So the rule is: **2FA raises the bar when it exists and never becomes the
+   * bar.** A code is demanded from accounts that have one, because for those
+   * accounts a stolen session should not be enough to destroy the record. The
+   * typed confirmation at the route is what stands in for accounts that don't.
+   */
+  async deleteAccount(userId: number, totpCode?: string): Promise<{
+    registrationsOrphaned: number;
+    activityRowsScrubbed: number;
+    usageRowsScrubbed: number;
+  }> {
+    const user = await this.db.query(
+      'SELECT totp_secret, totp_enabled FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (user.rows.length === 0) {
+      throw new Error('User not found');
+    }
+
+    if (user.rows[0].totp_enabled) {
+      if (!totpCode) {
+        throw new Error('Verification code is required');
+      }
+      const secret = decryptTotpSecret(user.rows[0].totp_secret);
+      if (!verifyTotpCode(secret, totpCode)) {
+        throw new Error('Invalid verification code');
+      }
+    }
+
+    // Logged before the delete, so the scrub inside the transaction reaches this
+    // row too. What is left afterwards is a dated entry saying *an* account was
+    // deleted, with no user, no IP and no metadata — enough to show the erasure
+    // ran, and nothing that would defeat the point of having run it.
+    await this.logActivity(userId, 'account_deleted', 'user', userId);
+
+    const result = await db.users.deleteAccount(userId);
+    if (!result) {
+      throw new Error('User not found');
+    }
+    return result;
+  }
+
   /**
    * Log activity
    */
