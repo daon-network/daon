@@ -45,6 +45,9 @@ Documentation of creator rights in the digital age and how DAON supports enforce
 
 How DAON maintains creator privacy while providing legal protection.
 
+[**Erasure and the ledger**]({{ '/legal/erasure-and-the-ledger/' | relative_url }}) — what deleting
+your account removes, what it cannot, and why an append-only chain is compatible with Art. 17.
+
 
 </div>
 

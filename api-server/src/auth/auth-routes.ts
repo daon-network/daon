@@ -635,6 +635,75 @@ export function createAuthRoutes(db: DatabaseClient): Router {
     }
   });
   
+  /**
+   * DELETE /api/v1/auth/account
+   * Delete the account and erase the personal data attached to it.
+   *
+   * Requires the caller to type the confirmation phrase, and a TOTP code as
+   * well if the account has 2FA. See `AuthService.deleteAccount` for why the
+   * code cannot be the only gate.
+   *
+   * The response reports what happened rather than a bare success, because the
+   * one thing a person exercising this right cannot do afterwards is log in and
+   * check.
+   */
+  router.delete('/account', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = (req as any).userId;
+      const { code, confirm } = req.body ?? {};
+
+      // A typed phrase, not a boolean. `{"confirm": true}` is a thing a
+      // mis-wired client sends by accident; this is not.
+      if (confirm !== 'DELETE MY ACCOUNT') {
+        return res.status(400).json({
+          success: false,
+          error: 'confirmation_required',
+          message: 'Send confirm: "DELETE MY ACCOUNT" to proceed. This cannot be undone.'
+        });
+      }
+
+      const result = await authService.deleteAccount(userId, code);
+
+      res.json({
+        success: true,
+        message: 'Your account and personal data have been deleted.',
+        deleted: {
+          registrations_orphaned: result.registrationsOrphaned,
+          activity_rows_scrubbed: result.activityRowsScrubbed,
+          usage_rows_scrubbed: result.usageRowsScrubbed,
+        },
+        // Said plainly and up front rather than buried in a policy page: the
+        // ledger is append-only and nobody, including DAON, can withdraw from
+        // it. A creator deciding whether to delete deserves to know that before
+        // they do, not after.
+        note: result.registrationsOrphaned > 0
+          ? `Your ${result.registrationsOrphaned} registration(s) remain on the public ledger, ` +
+            'no longer linked to any account. Blockchain records cannot be withdrawn by anyone. ' +
+            'See https://daon.network/legal/erasure-and-the-ledger/'
+          : undefined,
+      });
+    } catch (error: any) {
+      console.error('Delete account error:', error);
+
+      // "User not found" after requireAuth means a valid token for a row that
+      // is already gone — a repeat of a delete that worked, not a client error
+      // worth a 400.
+      if (error.message === 'User not found') {
+        return res.status(410).json({
+          success: false,
+          error: 'already_deleted',
+          message: 'This account no longer exists.'
+        });
+      }
+
+      res.status(400).json({
+        success: false,
+        error: 'invalid_code',
+        message: error.message || 'Invalid verification code'
+      });
+    }
+  });
+
   return router;
 }
 

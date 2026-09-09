@@ -175,6 +175,72 @@ export const db = {
         [userId]
       );
     },
+
+    /**
+     * Erase an account — GDPR Art. 17, the right to erasure.
+     *
+     * Most of this is already expressed in the schema's foreign keys and is not
+     * repeated here. Six tables carrying nothing but session state cascade away
+     * with the row (`magic_links`, `oauth_sessions`, `refresh_tokens`,
+     * `trusted_devices`, `temp_sessions`, `email_change_requests`); the tables
+     * holding records that must outlive the account are `ON DELETE SET NULL`.
+     *
+     * What the foreign keys do **not** handle is personal data sitting in
+     * columns other than `user_id`. `SET NULL` unlinks a row; it does not empty
+     * it, so an IP address in `activity_log` or `api_usage` would survive the
+     * deletion perfectly intact, merely detached from the name it belonged to.
+     * An IP address is personal data in its own right, so those columns are
+     * scrubbed explicitly below.
+     *
+     * # Order is load-bearing
+     *
+     * The scrubs must run **before** the delete. Afterwards `user_id` is already
+     * NULL on every one of those rows and there is no longer any way to tell
+     * which of them were this person's — the erasure would silently do nothing
+     * and still report success.
+     *
+     * # What deliberately survives
+     *
+     * Registrations are kept, orphaned rather than removed: `user_id` goes NULL
+     * and the hash, title, description and date stay. A registration is a dated
+     * claim that a work existed, the corresponding record is on an append-only
+     * ledger and cannot be withdrawn regardless, and destroying the row here
+     * would leave a hash on-chain that the registry could no longer explain.
+     * See `docs/legal/erasure-and-the-ledger.md` for the position this takes and
+     * what it means for anyone who wrote their own name into a title.
+     */
+    async deleteAccount(userId: number) {
+      return db.transaction(async (client) => {
+        // Nothing to do, and saying so is better than reporting a successful
+        // erasure of an account that was already gone.
+        const found = await client.query('SELECT id FROM users WHERE id = $1', [userId]);
+        if (found.rowCount === 0) return null;
+
+        const activity = await client.query(
+          'UPDATE activity_log SET ip_address = NULL, metadata = NULL WHERE user_id = $1',
+          [userId]
+        );
+        const usage = await client.query(
+          'UPDATE api_usage SET ip_address = NULL, user_agent = NULL WHERE user_id = $1',
+          [userId]
+        );
+
+        // Counted before the delete, for the same reason the scrubs run first:
+        // once `user_id` is NULL these are indistinguishable from the rest.
+        const registrations = await client.query<{ n: number }>(
+          'SELECT COUNT(*)::int AS n FROM protected_content WHERE user_id = $1',
+          [userId]
+        );
+
+        await client.query('DELETE FROM users WHERE id = $1', [userId]);
+
+        return {
+          registrationsOrphaned: registrations.rows[0].n,
+          activityRowsScrubbed: activity.rowCount ?? 0,
+          usageRowsScrubbed: usage.rowCount ?? 0,
+        };
+      });
+    },
   },
 
   // Magic link operations

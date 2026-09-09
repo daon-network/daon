@@ -283,6 +283,32 @@ class ApiClient {
   // ==========================================================================
 
   /**
+   * Delete the account and erase the personal data attached to it.
+   *
+   * `code` is only required when the account has 2FA enabled — erasure is a
+   * right, not a security feature, and cannot be gated behind having turned on
+   * two-factor auth. The typed confirmation is always required.
+   */
+  async deleteAccount(
+    accessToken: string,
+    data: { confirm: string; code?: string }
+  ): Promise<
+    ApiResponse & {
+      deleted?: {
+        registrations_orphaned: number;
+        activity_rows_scrubbed: number;
+        usage_rows_scrubbed: number;
+      };
+      note?: string;
+    }
+  > {
+    return this.authenticatedRequest('/auth/account', accessToken, {
+      method: 'DELETE',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
    * Request email change
    */
   async requestEmailChange(

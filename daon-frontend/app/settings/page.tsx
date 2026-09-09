@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import AccountSettings from '../../components/settings/AccountSettings';
 import SecuritySettings from '../../components/settings/SecuritySettings';
 import SessionSettings from '../../components/settings/SessionSettings';
+import DeleteAccount from '../../components/settings/DeleteAccount';
 
 export default function SettingsPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -74,6 +75,14 @@ export default function SettingsPage() {
               Sessions
             </h2>
             <SessionSettings />
+          </div>
+
+          {/* Danger Zone — last, and visually separated */}
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Danger Zone
+            </h2>
+            <DeleteAccount user={user} />
           </div>
         </div>
       </div>
