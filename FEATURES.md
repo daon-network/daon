@@ -3,6 +3,12 @@
 **Last verified:** 1 September 2026, by tracing each claim to the code that
 implements it, against production and the test suites.
 
+**Amended 9 September 2026** for account deletion only — that one entry moved
+from *Does not exist* to *Works* because it was built. Nothing else on this page
+was re-checked that day, and the September 1 date still governs the rest. A
+partial amendment is not a re-verification, and this page has been wrong before
+by being trusted past its date.
+
 This is the single source of truth for what exists. `documentation/project/`
 holds eighteen roadmap and status files, three of which describe the broker
 system as complete; where any of them disagrees with this page, this page is
@@ -60,6 +66,16 @@ drifts from its source.
 
 ### Accounts
 
+- **Account deletion**, self-service at Settings → Danger Zone and
+  `DELETE /api/v1/auth/account`. Requires a typed confirmation phrase, and a TOTP
+  code as well where 2FA is enabled — never *only* a TOTP code, since erasure is
+  a right and cannot be gated behind a security setting the person may not have
+  turned on. Session tables cascade; IP addresses in `activity_log` and
+  `api_usage` are scrubbed explicitly, before the delete, because `SET NULL`
+  unlinks a row without emptying it. Registrations survive, orphaned. What the
+  chain holds and why that is compatible with Art. 17:
+  [`docs/legal/erasure-and-the-ledger.md`](docs/legal/erasure-and-the-ledger.md).
+
 - Magic-link sign-in
 - **Mandatory TOTP 2FA** — required on every account, by decision. Signing in
   without it enrolled returns a `2fa_setup` session rather than tokens.
@@ -92,9 +108,6 @@ drifts from its source.
 
 Listed because someone will otherwise assume it does.
 
-- **Account deletion.** No endpoint, no UI, nothing in the database client. This
-  matters more than it looks: the stated jurisdiction is Germany/EU and the site
-  claims GDPR compliance, and the right to erasure is not optional there.
 - **Status page.** `/health` reports build, chain height and memory; nothing
   presents it.
 - **Four of the five SDKs are unpublished.** Their workflows can publish now, but
