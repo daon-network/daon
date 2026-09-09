@@ -86,14 +86,23 @@ made in their name. Both route through the broker, because that is where the cha
 
 ### The ladder
 
-`verification_method` is an ordered scale of **how well demonstrated that channel is** — not how
-identified anyone is.
+`verification_method` records **what the broker says it did.** DAON performs none of these and
+cannot: the author is behind the platform's wall, and checking would mean going around a boundary
+the author relies on. So DAON assumes the broker did what it reports, because there is no
+alternative — and records it as a report rather than a finding.
 
-| Method | What was established | Contactability |
+The rungs are an ordered scale of **how well the platform says the channel was demonstrated** — not
+of how identified anyone is, and not of anything DAON established.
+
+| Method | What the broker reports | Contactability, as reported |
 | --- | --- | --- |
-| `broker_signature` | The platform asserts an entity exists. | **Claimed.** Nothing demonstrated. |
-| `email_verification` | Someone answered a message. | **Demonstrated.** The channel works. |
-| `platform_oauth` | Someone with live account control acted. | **Demonstrated, with agency.** |
+| `broker_signature` | It asserts an entity exists. | **Claimed.** Nothing demonstrated. |
+| `email_verification` | It verified an address for that account. | **Demonstrated** to the platform. |
+| `platform_oauth` | The account holder acted, with live control. | **Demonstrated, with agency.** |
+
+Not to be confused with DAON verifying an email at sign-in. That authenticates a *DAON account* and
+says nothing about a federated identity — a different check, on a different subject, for a different
+purpose. See § *The author can always see what was said about them*.
 
 `platform_oauth` is unbuilt, and it is where OAuth belongs in this system — the *author* proving
 control of their own platform account, not the broker proving it is the broker.
@@ -133,6 +142,35 @@ anything else — which is the correct amount for a registry that refuses to adj
 > docs rather than built: `client_credentials` issues a bearer token from a client secret, which is
 > the leaked-credential problem with an extra round trip, and strictly worse than signing each
 > request.
+
+---
+
+## The author can always see what was said about them
+
+DAON assumes the broker did what it reports. It has to — the author is behind the platform's wall and
+checking would mean going around a boundary they rely on. **That assumption is only tolerable
+because the author can inspect the result.**
+
+Any author may sign in to DAON — by OAuth, or by verifying the address the broker supplied — and see
+the full record of what has been attested in their name: every registration, which broker made it,
+when, what `verification_method` was claimed, and every ownership transfer.
+
+**No claim is required.** Seeing what was asserted about you is weaker than taking control of it and
+must be easier. An author who never wants a DAON account, never claims an identity and never
+registers anything directly can still sign in, look, and leave.
+
+This is the accountability half of *assume the broker*. Without it, a platform could assert anything
+in a creator's name and the creator would have no way of finding out — which would make every other
+protection in this document ornamental. With it, a false assertion is visible to the one person
+motivated to notice, and the path from noticing to contesting is the dispute API above.
+
+It is also GDPR Art. 15, the right of access, satisfied by design rather than by a support inbox: the
+data subject sees what is held about them, on request, without asking anyone.
+
+**What sign-in does not do is grant anything.** It shows the record. Claiming ownership is the
+separate, stronger action described in § *Matching offers a claim; it does not grant one*, and it
+still fires `content.disputed` to the broker so the platform can tell the author someone is claiming
+their work.
 
 ---
 
@@ -400,7 +438,9 @@ expensive later.
     and give disputes a deadline.
 12. Require the author's email at broker registration, store it undisplayed, and build recovery by
     verified email match — offering a claim rather than granting one.
-13. Reconcile the three documents that describe this system as complete.
+13. Build the author's view: sign in, see everything attested in your name, claim nothing. The
+    accountability half of assuming the broker, and Art. 15 by design.
+14. Reconcile the three documents that describe this system as complete.
 
 Steps 1–5 are correctness and cost little. Step 7 is the security model. Step 9 is the one that makes
 the ladder real.
