@@ -157,7 +157,7 @@ export async function sendMagicLinkEmail(email: string, token: string, magicLink
       <div class="footer">
         <p>If you didn't request this email, you can safely ignore it.</p>
         <p>
-          <a href="https://docs.daon.network">Documentation</a> •
+          <a href="https://daon.network">Documentation</a> •
             <a href="https://github.com/daon-network/daon/issues">Community</a> &bull;
           <a href="https://ko-fi.com/greenfieldoverride">Support DAON</a>
         </p>
