@@ -94,6 +94,34 @@ reach of Art. 17 the moment it is wired up.
 
 ---
 
+### 7. Registrations are exclusive; associations deliberately are not
+
+**[verified 9 Sep 2026]**
+
+`protected_content.content_hash` is `UNIQUE`, so the first account to register a hash blocks every
+other. Eleven rows below it in the same file, `content_associations` is **deliberately not unique**,
+with the reasoning attached:
+
+> *"A unique constraint would let whoever asserted first squat the hash, and the person best placed
+> to do that is not the creator."*
+
+That reasoning was worked out for associations and never carried back to registrations, where it
+matters more. Surfaced by a question about public domain works, which is where it is most obvious: a
+public domain hash is computable by anyone from a file anyone can download, so squatting *Pride and
+Prejudice* costs one request. It applies to any work, though — the public domain case is just the
+one with an unambiguous right answer.
+
+Two smaller things in the same area:
+
+- **The defaults assert restrictions the registrant may have no standing to assert.** `license`
+  defaults to `liberation_v1` and `ai_training_policy` to `prohibited`, so registering a work you did
+  not write stamps a restrictive licence and an AI-training prohibition on it, neither of them chosen.
+- **`cc0` is the only public-domain-ish option and it is the wrong instrument.** CC0 is a *waiver by a
+  rights holder*. There is no way to express "nobody holds rights to this," only "I decline mine."
+
+Not a similarity problem, and explicitly not an argument for perceptual matching — see the
+*Deliberately not built* section of `FEATURES.md` and PR #148. Non-exclusivity is the fix.
+
 ## Tier 3 — Honesty debt
 
 Claims that are ahead of the code. The project treats this as a first-class defect, so it is not the
