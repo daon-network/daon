@@ -107,14 +107,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
           cache-dependency-path: api-server/package-lock.json
       - run: cd api-server && npm ci
+      # Production dependencies only, matching the deploy gate. Dev tooling is still
+      # reported by Dependabot; it is not gated here because some advisories have
+      # no fix at all (braces <= 3.0.3, GHSA-vfj7-8cjw-p6xm, reached through
+      # jest and nodemon), which would fail every API PR with nothing to do.
       - name: Run security audit
         run: |
           cd api-server
-          npm audit --audit-level moderate
+          npm audit --audit-level moderate --omit=dev
           if [ $? -ne 0 ]; then
             echo "Security vulnerabilities found - check details above"
             echo "High/Critical vulnerabilities will block deployment"
@@ -128,7 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20]
+        node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

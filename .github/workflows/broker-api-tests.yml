@@ -175,9 +175,13 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
     
+    # Production dependencies only, matching the deploy gate. Dev tooling is still
+    # reported by Dependabot; it is not gated here because some advisories have
+    # no fix at all (braces <= 3.0.3, GHSA-vfj7-8cjw-p6xm, reached through
+    # jest and nodemon), which would fail every API PR with nothing to do.
     - name: Run npm audit
       working-directory: ./api-server
-      run: npm audit --audit-level=moderate
+      run: npm audit --audit-level=moderate --omit=dev
 
   lint:
     name: Lint & Type Check
