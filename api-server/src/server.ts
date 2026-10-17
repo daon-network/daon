@@ -1598,6 +1598,17 @@ app.post('/api/v1/verify-content', [
 // These endpoints enable platform integrations for mass adoption
 // ============================================================================
 
+// The broker API is not in service: no broker has ever been certified, and
+// its design is unsettled (docs/design/brokerage.md). In production every
+// /api/v1/broker route answers 404 unless BROKER_ENABLED=true, so nothing
+// half-built is reachable. Development and tests keep it on.
+const brokerEnabled =
+  process.env.BROKER_ENABLED === 'true' || process.env.NODE_ENV !== 'production';
+app.use('/api/v1/broker', (_req, res, next) => {
+  if (brokerEnabled) return next();
+  res.status(404).json({ success: false, error: 'not_found' });
+});
+
 /**
  * Broker Content Protection Endpoint
  * 
