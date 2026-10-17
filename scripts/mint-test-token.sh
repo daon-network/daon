@@ -41,8 +41,10 @@ SQL
 )
 [[ "$id" =~ ^[0-9]+$ ]] || { echo "could not find or create the test account" >&2; exit 1; }
 
-docker exec -e ACCESS_TOKEN_LIFETIME="$lifetime" daon-api-1 \
-  node --input-type=module -e \
-  "const m = await import('/app/dist/utils/jwt.js'); console.log(m.generateAccessToken(Number(process.argv[1])));" \
-  "$id"
+# The API image runs its TypeScript source with tsx (api-server/Dockerfile,
+# `npx tsx src/server.ts`); there is no compiled dist/ in it.
+docker exec -e ACCESS_TOKEN_LIFETIME="$lifetime" -e DAON_E2E_USER_ID="$id" daon-api-1 \
+  npx tsx -e \
+  "import('/app/src/utils/jwt.ts').then(m => console.log(m.generateAccessToken(Number(process.env.DAON_E2E_USER_ID))))" \
+  | tail -n 1
 REMOTE
