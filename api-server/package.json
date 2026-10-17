@@ -52,7 +52,7 @@
     "express-validator": "^7.3.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^9.0.5",
+    "nodemailer": "^10.1.2",
     "pg": "^8.16.3",
     "prom-client": "^15.1.3",
     "qrcode": "^1.5.4",
@@ -73,12 +73,12 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
-  "comment:overrides": "qs 6.15.3 is the last release on the 6.15 line and is vulnerable (GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g). The fix is 6.16.0, and express@4.22.2 \u2014 the newest express 4 \u2014 pins qs to ~6.15.1, so it cannot reach it. Remove this override once express releases a version that depends on qs >= 6.16.",
+  "comment:overrides": "qs 6.15.3 is the last release on the 6.15 line and is vulnerable (GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g). The fix is 6.16.0, and express@4.22.2 — the newest express 4 — pins qs to ~6.15.1, so it cannot reach it. Remove this override once express releases a version that depends on qs >= 6.16.",
   "overrides": {
     "qs": "^6.16.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "repository": {
     "type": "git",
