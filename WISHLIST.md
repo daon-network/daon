@@ -96,12 +96,47 @@ reach of Art. 17 the moment it is wired up.
 
 ---
 
+### 6. Registrations are exclusive; associations deliberately are not
+
+**[verified 9 Sep 2026, re-checked 17 Oct 2026]**
+
+`protected_content.content_hash` is `UNIQUE`, so the first account to register a hash blocks every
+other. A few lines below it in the same file, `content_associations` is **deliberately not unique**,
+with the reasoning attached:
+
+> *"A unique constraint would let whoever asserted first squat the hash, and the person best placed
+> to do that is not the creator."*
+
+That reasoning was worked out for associations and never carried back to registrations, where it
+matters more. Surfaced by a question about public domain works, which is where it is most obvious: a
+public domain hash is computable by anyone from a file anyone can download, so squatting *Pride and Prejudice* costs one request. Since 16 Oct 2026 (#163) that request needs an
+account, which makes a squatter attributable and their registration erasable — but does not stop it. It applies to any work, though — the public domain case is just the
+one with an unambiguous right answer.
+
+Two smaller things in the same area:
+
+- **The defaults assert restrictions the registrant may have no standing to assert.** `license`
+  defaults to `liberation_v1` and `ai_training_policy` to `prohibited`, so registering a work you did
+  not write stamps a restrictive licence and an AI-training prohibition on it, neither of them chosen.
+- **`cc0` is the only public-domain-ish option and it is the wrong instrument.** CC0 is a *waiver by a
+  rights holder*. There is no way to express "nobody holds rights to this," only "I decline mine."
+
+Not a similarity problem, and explicitly not an argument for perceptual matching — see the
+*Deliberately not built* section of `FEATURES.md` and PR #148. Non-exclusivity is the fix.
+
+**Open — decide before building.** Non-exclusive registration leaves a question this entry does not
+answer: **who is the owner of record when several accounts register the same hash?** The association
+gate in `decisions.md` (*The gate is the owner of record*), PR #148's refusal tiers and the brokerage
+dispute flow all assume exactly one. PR #148 also currently proposes the opposite direction — refusing
+a second account's registration across a wider radius than exact bytes — so the two need reconciling,
+and this decision should come first.
+
 ## Tier 3 — Honesty debt
 
 Claims that are ahead of the code. The project treats this as a first-class defect, so it is not the
 bottom of the list.
 
-### 6. Three documents call the broker complete
+### 7. Three documents call the broker complete
 
 **[carried — FEATURES.md]**
 
@@ -109,14 +144,14 @@ Endpoints, auth, webhooks and rate limiting exist and are tested. It is still pa
 it or correct the three documents; the current state is the same failure as a testimonial from
 someone who does not exist.
 
-### 7. Eighteen stale files in `documentation/project/`
+### 8. Eighteen stale files in `documentation/project/`
 
 **[carried]**
 
 FEATURES.md warns about them. Every one is a trap for a future reader — and for anyone using an
 assistant that reads them as current. Archive, date, or delete.
 
-### 8. Four of five SDKs are unpublished
+### 9. Four of five SDKs are unpublished
 
 **[carried, confirmed 1 Sep 2026]**
 
@@ -129,7 +164,7 @@ has been claimed, which is also a squatting risk.
 
 Not work items. Questions that block work items.
 
-### 9. PR #148 against "no similarity, ever"
+### 10. PR #148 against "no similarity, ever"
 
 **[verified 9 Sep 2026 — open, not draft]**
 
@@ -137,7 +172,7 @@ Not work items. Questions that block work items.
 boundary before merge. The permitted phrasing is that canonical text *corresponds*, with its limits
 attached — never that two artifacts are the same work.
 
-### 10. C2PA ingest
+### 11. C2PA ingest
 
 **[design written 9 Sep 2026, unverified in two places]**
 
@@ -151,7 +186,7 @@ ignores assertions about process. Before any of it is built:
 - Decide the two open questions in that doc: whether DAON validates a manifest's signature chain at
   ingest (which means carrying a trust list), and what the presentation surface may show.
 
-### 11. C2PA `ingredients` / derivation lineage
+### 12. C2PA `ingredients` / derivation lineage
 
 **[deferred by name, 9 Sep 2026]**
 
@@ -159,7 +194,7 @@ Passes the people-and-rights rule, is already a P2 item in `provenance-data-mode
 with *"DAON never asserts two artifacts are the same work."* Deserves its own argued decision rather
 than arriving inside another change.
 
-### 12. Registry ownership is not key-backed
+### 13. Registry ownership is not key-backed
 
 **[carried]**
 
@@ -177,16 +212,16 @@ proposal to key-back the registry has to answer what it does to that.
 
 Real features, none of them urgent.
 
-### 13. Status page
+### 14. Status page
 
 **[carried — FEATURES.md]** `/health` reports build, chain height and memory. Nothing presents it.
 
-### 14. Blockchain beacon
+### 15. Blockchain beacon
 
 **[carried — FEATURES.md]** Leaves carry a zero beacon until the daemon has a block source. Honest
 rather than wrong, but it is a stub.
 
-### 15. CD pipeline consolidation
+### 16. CD pipeline consolidation
 
 **[carried]** The dual-project issue needs a proper fix rather than another workaround.
 
