@@ -184,6 +184,14 @@ jobs:
     needs: [test-api, build-validator]
     if: github.ref == 'refs/heads/main'
     environment: production
+    # One deploy at a time. Merging several PRs at once starts one run each,
+    # and without this their deploy jobs ran in parallel, each stopping and
+    # recreating the same containers (17 Oct 2026: three at once). A newer
+    # waiting deploy replaces an older waiting one, so the latest main wins;
+    # one already running is never cancelled halfway.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
