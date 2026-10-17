@@ -36,7 +36,7 @@ sudo apt-get install k6
 **Run**:
 ```bash
 # Against production
-k6 run --env DAON_TEST_TOKEN=$DAON_TEST_TOKEN --env API_URL=https://api.daon.network load-test.js
+k6 run --env DAON_TEST_TOKEN=$(../scripts/mint-test-token.sh 3600) --env API_URL=https://api.daon.network load-test.js
 
 # Against local
 k6 run load-test.js
@@ -64,7 +64,7 @@ k6 run --out json=load-results.json load-test.js
 
 **Run**:
 ```bash
-k6 run --env DAON_TEST_TOKEN=$DAON_TEST_TOKEN --env API_URL=https://api.daon.network stress-test.js
+k6 run --env DAON_TEST_TOKEN=$(../scripts/mint-test-token.sh 3600) --env API_URL=https://api.daon.network stress-test.js
 ```
 
 **Monitor**:
@@ -186,12 +186,12 @@ ssh USER@SERVER 'docker stats'  # In separate terminal
 
 ```bash
 # 1. Load test (25 minutes)
-k6 run --env DAON_TEST_TOKEN=$DAON_TEST_TOKEN --env API_URL=https://api.daon.network load-test.js
+k6 run --env DAON_TEST_TOKEN=$(../scripts/mint-test-token.sh 3600) --env API_URL=https://api.daon.network load-test.js
 
 # Wait 10 minutes for system to stabilize
 
 # 3. Stress test (25 minutes)
-k6 run --env DAON_TEST_TOKEN=$DAON_TEST_TOKEN --env API_URL=https://api.daon.network stress-test.js
+k6 run --env DAON_TEST_TOKEN=$(../scripts/mint-test-token.sh 3600) --env API_URL=https://api.daon.network stress-test.js
 ```
 
 ### Post-test Analysis
