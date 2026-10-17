@@ -140,8 +140,18 @@ echo -e "${BLUE}[4/4]${NC} Running k6 load test..."
 echo -e "  Results: ${RESULTS_FILE}"
 echo ""
 
+# Registration requires an account: sign in as the e2e test account. The run is
+# about 25 minutes, so the token lasts an hour rather than the usual 15.
+if [ -z "${DAON_TEST_TOKEN:-}" ]; then
+    DAON_TEST_TOKEN=$("$(dirname "${BASH_SOURCE[0]}")/mint-test-token.sh" 3600) || {
+        echo -e "${RED}✗ Could not get a token for the e2e test account — aborting${NC}"
+        exit 1
+    }
+fi
+
 k6 run \
     --env API_URL="${API_URL}" \
+    --env DAON_TEST_TOKEN="${DAON_TEST_TOKEN}" \
     --out "json=${RESULTS_FILE}" \
     load-tests/load-test.js
 K6_EXIT=$?

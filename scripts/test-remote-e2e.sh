@@ -13,7 +13,9 @@ set -e
 # SSH alias for production server (override with DAON_SERVER env var)
 DAON_SERVER="${DAON_SERVER:-daon}"
 API_URL="https://api.daon.network"
-FRONTEND_URL="https://daon.network"
+# The app, not the apex: daon.network is the docs site on GitHub Pages.
+FRONTEND_URL="https://app.daon.network"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -82,10 +84,14 @@ fi
 # Test 5: Content protection via HTTPS
 echo -e "${YELLOW}[5/8]${NC} Testing content protection via HTTPS..."
 TIMESTAMP=$(date +%s)
-# Registration requires an account. DAON_TEST_TOKEN is an access token for a
-# test account, so what this registers is owned -- and can be erased.
+# Registration requires an account. Sign in as the e2e test account, so what
+# this registers is owned by it -- findable, erasable, and not mixed in with
+# real people's works. DAON_TEST_TOKEN overrides.
 if [ -z "${DAON_TEST_TOKEN:-}" ]; then
-    fail "DAON_TEST_TOKEN not set -- registration requires an account"
+    DAON_TEST_TOKEN=$("${SCRIPT_DIR}/mint-test-token.sh" 2>/dev/null) || DAON_TEST_TOKEN=""
+fi
+if [[ ! "${DAON_TEST_TOKEN}" =~ ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$ ]]; then
+    fail "Could not get a token for the e2e test account (run scripts/mint-test-token.sh to see why)"
     RESPONSE=""; HASH=""
 else
 RESPONSE=$(curl -sf -X POST "${API_URL}/api/v1/protect" \
@@ -159,7 +165,7 @@ fi
 
 # Summary
 echo -e "${YELLOW}════════════════════════════════════════${NC}"
-echo "Results: ${GREEN}${PASS} passed${NC}  ${RED}${FAIL} failed${NC}"
+echo -e "Results: ${GREEN}${PASS} passed${NC}  ${RED}${FAIL} failed${NC}"
 echo ""
 
 if [ "$FAIL" -eq 0 ]; then
