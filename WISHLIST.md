@@ -64,16 +64,11 @@ is where the hostname came from.
 
 The reasoning is already done. These are just unbuilt.
 
-### 3. Anonymous registration should require an email
-
-**[verified 9 Sep 2026 — both handlers still `optionalAuth`]**
-
-`server.ts:586` and `server.ts:671` both use `optionalAuth` and store `user_id: req.userId || null`.
-The decision on 1 Sep 2026 was to require an email at minimum. Not done.
-
-This is now entangled with account deletion in a way worth thinking about before building: an
-ownerless registration cannot be erased on request, because there is nobody to authenticate as its
-owner. Requiring an email is what makes Art. 17 answerable for future registrations.
+~~**3. Anonymous registration should require an email**~~ — **done 16 Oct 2026.** Both `/protect`
+handlers now use `requireAuth`. Two things the 9 Sep entry missed: `POST /protect/bulk` had no auth
+at all and wrote only to the process cache that `/verify` falls back to (now `410`), and the app's
+Bulk Register tab sent no token, so logged-in users registered ownerless works through it.
+Registrations made before this date may still be ownerless.
 
 ### 4. The dead perceptual code — seed or delete
 

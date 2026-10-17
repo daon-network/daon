@@ -17,6 +17,8 @@ import { test, describe, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { createRequire } from 'module';
 import crypto from 'crypto';
+import { generateToken } from '../auth/auth.js';
+import { contentHashCandidates } from '../server.js';
 
 const require = createRequire(import.meta.url);
 const request = require('supertest');
@@ -26,9 +28,11 @@ const API_URL = process.env.API_URL || 'http://localhost:3000';
 const BLOCKCHAIN_RPC = process.env.BLOCKCHAIN_RPC || 'http://localhost:26657';
 
 // Helper to make API requests
+// Registration requires an account; user 1 is seeded by the workflow.
+const AUTH = `Bearer ${generateToken(1, 'admin@daon.io')}`;
 const api = {
   get: (path) => request(API_URL).get(path),
-  post: (path) => request(API_URL).post(path),
+  post: (path) => request(API_URL).post(path).set('Authorization', AUTH),
 };
 
 // Helper to query blockchain directly
@@ -257,53 +261,16 @@ describe('Integration Tests', () => {
   });
 
   describe('Bulk Operations', () => {
-    test('Bulk protection handles multiple works correctly', async () => {
-      const works = Array(5).fill().map((_, i) => ({
-        content: `Bulk test work ${i} ${Date.now()}`,
-        metadata: { title: `Work ${i}` }
-      }));
-      
-      const response = await api
+    test('Bulk registration is retired and records nothing', async () => {
+      const content = `Bulk test work ${Date.now()}`;
+      await api
         .post('/api/v1/protect/bulk')
-        .send({
-          works,
-          license: 'liberation_v1'
-        })
-        .expect(200);
-      
-      assert.strictEqual(response.body.protected, 5);
-      assert.strictEqual(response.body.results.length, 5);
-      
-      // Verify each work
-      for (const result of response.body.results) {
-        assert.ok(result.contentHash);
-        assert.ok(result.verificationUrl);
-        
-        // Verify each hash is valid
-        const verify = await api.get(`/api/v1/verify/${result.contentHash}`).expect(200);
-        assert.strictEqual(verify.body.isValid, true);
-      }
-    });
+        .send({ works: [{ content }] })
+        .expect(410);
 
-    test('Bulk protection with duplicate content', async () => {
-      const duplicateContent = `Duplicate ${Date.now()}`;
-      
-      const works = [
-        { content: duplicateContent, metadata: { title: 'First' } },
-        { content: duplicateContent, metadata: { title: 'Second (duplicate)' } },
-        { content: `Unique ${Date.now()}`, metadata: { title: 'Third (unique)' } }
-      ];
-      
-      const response = await api
-        .post('/api/v1/protect/bulk')
-        .send({ works })
-        .expect(200);
-      
-      assert.strictEqual(response.body.protected, 3);
-      
-      // Check that duplicate was detected
-      const existingCount = response.body.results.filter(r => r.existing).length;
-      assert.strictEqual(existingCount, 1, 'Should detect 1 duplicate');
+      for (const hash of contentHashCandidates(content)) {
+        await api.get(`/api/v1/verify/${hash}`).expect(404);
+      }
     });
   });
 

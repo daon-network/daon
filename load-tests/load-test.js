@@ -75,8 +75,10 @@ export default function() {
   // 1. Protect content
   const protectStart = new Date().getTime();
   const protectRes = http.post(`${baseUrl}/api/v1/protect`, protectPayload, {
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
+      // Registration requires an account.
+      'Authorization': `Bearer ${__ENV.DAON_TEST_TOKEN}`,
     },
     tags: { name: 'ProtectContent' },
   });

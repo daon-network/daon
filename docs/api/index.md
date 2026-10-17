@@ -143,9 +143,12 @@ console.log('Verified:', verification.isValid);
 ## Core API Methods
 
 ### **Protect Content**
-Register content with cryptographic protection
+Register content with cryptographic protection. **Requires an account:** send the
+access token you get from signing in. Anonymous registration is refused with `401`,
+because a registration nobody owns can never be corrected or erased.
 ```http
 POST /api/v1/protect
+Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
@@ -187,27 +190,6 @@ GET /api/v1/verify/{contentHash}
     "title": "Work Title",
     "author": "Creator Name"
   }
-}
-```
-
-### **Bulk Protect**
-Protect multiple works in a single request
-```http
-POST /api/v1/protect/bulk
-Content-Type: application/json
-
-{
-  "works": [
-    {
-      "content": "First work...",
-      "metadata": {"title": "Work 1"}
-    },
-    {
-      "content": "Second work...", 
-      "metadata": {"title": "Work 2"}
-    }
-  ],
-  "license": "liberation_v1"
 }
 ```
 
@@ -253,7 +235,6 @@ daon.configure({
 
 ### **Request Limits**
 - **Individual:** 100 requests/minute
-- **Bulk:** 10 requests/minute (up to 100 works each)
 - **Verification:** 1,000 requests/minute
 
 ### **Content Limits**

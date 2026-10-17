@@ -1,8 +1,12 @@
 import { test, describe, beforeEach } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { createRequire } from 'module';
-import app from '../server.js';
+import app, { contentHashCandidates } from '../server.js';
 import { TEST_CONFIG } from './setup.test.js';
+import { generateToken } from '../auth/auth.js';
+
+// Registration requires an account.
+const AUTH = `Bearer ${generateToken(1, 'test@daon.network')}`;
 
 const require = createRequire(import.meta.url);
 const request = require('supertest');
@@ -28,7 +32,7 @@ describe('API Endpoints', () => {
     test('should protect valid content', async () => {
       const testContent = TEST_CONFIG.validContent;
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({
           content: testContent,
           metadata: TEST_CONFIG.validMetadata,
@@ -47,7 +51,7 @@ describe('API Endpoints', () => {
 
     test('should reject empty content', async () => {
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({
           content: '',
           metadata: TEST_CONFIG.validMetadata
@@ -62,7 +66,7 @@ describe('API Endpoints', () => {
 
     test('should reject invalid license', async () => {
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({
           content: TEST_CONFIG.validContent,
           license: 'invalid_license'
@@ -78,13 +82,13 @@ describe('API Endpoints', () => {
       
       // First protection
       const first = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: testContent })
         .expect(201);
 
       // Second protection (duplicate)
       const second = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: testContent })
         .expect(200);
 
@@ -103,7 +107,7 @@ describe('API Endpoints', () => {
         .digest('hex');
       
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: testContent })
         .expect(201);
 
@@ -111,60 +115,37 @@ describe('API Endpoints', () => {
     });
   });
 
-  describe('POST /api/v1/protect/bulk - Bulk Protection', () => {
-    test('should protect multiple works', async () => {
-      const works = [
-        { content: 'First work', metadata: { title: 'Work 1' } },
-        { content: 'Second work', metadata: { title: 'Work 2' } },
-        { content: 'Third work', metadata: { title: 'Work 3' } }
-      ];
-
+  describe('POST /api/v1/protect - Authentication', () => {
+    test('rejects an anonymous registration', async () => {
       const response = await request(app)
-        .post('/api/v1/protect/bulk')
-        .send({
-          works,
-          license: 'liberation_v1'
-        })
-        .expect(200);
-
-      assert.strictEqual(response.body.success, true);
-      assert.strictEqual(response.body.protected, 3);
-      assert.strictEqual(response.body.results.length, 3);
-      
-      // Verify each result has required fields
-      response.body.results.forEach(result => {
-        assert.ok(result.contentHash);
-        assert.ok(result.verificationUrl);
-        assert.ok(result.timestamp);
-        assert.strictEqual(typeof result.existing, 'boolean');
-      });
+        .post('/api/v1/protect')
+        .send({ content: `anonymous ${crypto.randomUUID()}` })
+        .expect(401);
+      assert.strictEqual(response.body.success, false);
     });
 
-    test('should reject empty works array', async () => {
-      const response = await request(app)
-        .post('/api/v1/protect/bulk')
-        .send({
-          works: [],
-          license: 'liberation_v1'
-        })
-        .expect(400);
-
-      assert.strictEqual(response.body.success, false);
-      assert.strictEqual(response.body.error, 'Validation failed');
+    test('rejects an anonymous file registration', async () => {
+      await request(app)
+        .post('/api/v1/protect')
+        .set('Content-Type', 'application/octet-stream')
+        .send(Buffer.from(`anonymous file ${crypto.randomUUID()}`))
+        .expect(401);
     });
+  });
 
-    test('should reject too many works (>100)', async () => {
-      const works = Array(101).fill().map((_, i) => ({
-        content: `Work ${i}`,
-        metadata: { title: `Work ${i}` }
-      }));
-
-      const response = await request(app)
+  describe('POST /api/v1/protect/bulk - retired', () => {
+    // Bulk wrote only to the process cache, which /verify and the duplicate
+    // check both read. It must not be able to put anything there.
+    test('is gone, and leaves nothing behind to verify', async () => {
+      const content = `bulk ${crypto.randomUUID()}`;
+      await request(app)
         .post('/api/v1/protect/bulk')
-        .send({ works })
-        .expect(400);
+        .send({ works: [{ content }] })
+        .expect(410);
 
-      assert.strictEqual(response.body.success, false);
+      for (const hash of contentHashCandidates(content)) {
+        await request(app).get(`/api/v1/verify/${hash}`).expect(404);
+      }
     });
   });
 
@@ -174,7 +155,7 @@ describe('API Endpoints', () => {
       
       // First protect the content
       const protectResponse = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: testContent })
         .expect(201);
 
@@ -264,7 +245,7 @@ describe('API Endpoints', () => {
 
     test('should handle malformed JSON', async () => {
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .set('Content-Type', 'application/json')
         .send('invalid json{');
 

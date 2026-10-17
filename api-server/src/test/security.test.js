@@ -2,6 +2,10 @@ import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { createRequire } from 'module';
 import app from '../server.js';
+import { generateToken } from '../auth/auth.js';
+
+// Registration requires an account.
+const AUTH = `Bearer ${generateToken(1, 'test@daon.network')}`;
 
 const require = createRequire(import.meta.url);
 const request = require('supertest');
@@ -45,7 +49,7 @@ describe('Security Tests', () => {
       const sqlInjection = "'; DROP TABLE users; --";
       
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: sqlInjection })
         .expect(201); // Should succeed but not execute SQL
 
@@ -58,7 +62,7 @@ describe('Security Tests', () => {
       const xssPayload = '<script>alert("xss")</script>';
       
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({
           content: 'Prototype pollution probe, distinct from other cases',
           metadata: {
@@ -76,7 +80,7 @@ describe('Security Tests', () => {
       const oversizedContent = 'A'.repeat(11 * 1024 * 1024); // 11MB > 10MB limit
       
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: oversizedContent })
         .expect(413);
 
@@ -123,7 +127,7 @@ describe('Security Tests', () => {
 
       for (const license of invalidLicenses) {
         const response = await request(app)
-          .post('/api/v1/protect')
+          .post('/api/v1/protect').set('Authorization', AUTH)
           .send({
             // Distinct per case: duplicate detection correctly answers 200
             // for content already registered, so reusing one string here made
@@ -154,7 +158,7 @@ describe('Security Tests', () => {
       };
 
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({
           content: 'Test content',
           ...pollutionPayload
@@ -184,7 +188,7 @@ describe('Security Tests', () => {
     test('should enforce stricter limits on protection endpoint', async () => {
       // Test that protection endpoint has rate limiting configured
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: 'Rate limit test' })
         .expect(201);
 
@@ -198,12 +202,12 @@ describe('Security Tests', () => {
       const content = 'Deterministic hash test';
       
       const response1 = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content })
         .expect(201);
 
       const response2 = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content })
         .expect(200); // Should return existing
 
@@ -215,12 +219,12 @@ describe('Security Tests', () => {
       const content2 = 'Content two';
       
       const response1 = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: content1 })
         .expect(201);
 
       const response2 = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: content2 })
         .expect(201);
 
@@ -231,7 +235,7 @@ describe('Security Tests', () => {
       const content = 'Hash algorithm test';
       
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content })
         .expect(201);
 
@@ -250,7 +254,7 @@ describe('Security Tests', () => {
       try {
         // This should trigger an error handler
         const response = await request(app)
-          .post('/api/v1/protect')
+          .post('/api/v1/protect').set('Authorization', AUTH)
           .send(null) // Invalid JSON
           .expect(400);
 
@@ -285,7 +289,7 @@ describe('Security Tests', () => {
   describe('HTTP Security', () => {
     test('should reject non-HTTPS in production verification URLs', async () => {
       const response = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: 'HTTPS test' })
         .expect(201);
 
