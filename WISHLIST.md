@@ -41,9 +41,10 @@ comes back or they go.
 **[verified 9 Sep 2026]**
 
 `broker-endpoints.integration.test.ts` fails 20 of 31 **with the full stack running** — Postgres,
-Redis, a chain and an API server all up. It needs a seeded broker row and a matching API key, which
-no environment creates. Seeding an admin user (one row) was enough to get
-`broker-registration.integration.test.ts` green; this one needs the broker half.
+Redis, a chain and an API server all up. It was thought to need a seeded broker row and a matching
+API key; the brokerage analysis (item 6) found the real cause is that the broker tables are in no
+schema the code loads, so there is nothing to seed into. Seeding an admin user (one row) was enough
+to get `broker-registration.integration.test.ts` green; this one needs the broker half.
 
 Until then it is excluded from the Integration Tests job, with the reason recorded in
 `api-server/package.json`. Run it locally against a database with `npm run test:requires-db`.
@@ -106,20 +107,19 @@ also violate a not-null constraint on `brokers.api_key_hash`, which the INSERT n
 broker can be created at all, which is why `broker-endpoints.integration.test.ts` fails 20 of 31
 with the full stack running.
 
-Above that: `getFederatedIdentity` hardcodes `verified = true` with
-`verification_method = 'broker_signature'` regardless of whether a signature was checked — and for
-community and standard tiers none is required. Transfers validate the source domain but not the
-destination, so a broker can mint a "verified" identity on a domain it does not control.
+Above that: identities are recorded as verified whether or not anything was verified, and transfers
+are not bound to the broker's own domain the way registration is.
 `content_ownership`, the table that would record broker-versus-author, is written by no code at all.
 
-Free to fix now and expensive later: there are no brokers.
+Free to fix now and expensive later: there are no brokers. Until it is fixed the broker API answers
+404 in production (#169).
 
 ## Tier 3 — Honesty debt
 
 Claims that are ahead of the code. The project treats this as a first-class defect, so it is not the
 bottom of the list.
 
-### 6. Three documents call the broker complete
+### 7. Three documents call the broker complete
 
 **[carried — FEATURES.md]**
 
@@ -127,14 +127,14 @@ Endpoints, auth, webhooks and rate limiting exist and are tested. It is still pa
 it or correct the three documents; the current state is the same failure as a testimonial from
 someone who does not exist.
 
-### 7. Eighteen stale files in `documentation/project/`
+### 8. Eighteen stale files in `documentation/project/`
 
 **[carried]**
 
 FEATURES.md warns about them. Every one is a trap for a future reader — and for anyone using an
 assistant that reads them as current. Archive, date, or delete.
 
-### 8. Four of five SDKs are unpublished
+### 9. Four of five SDKs are unpublished
 
 **[carried, confirmed 1 Sep 2026]**
 
@@ -147,7 +147,7 @@ has been claimed, which is also a squatting risk.
 
 Not work items. Questions that block work items.
 
-### 9. PR #148 against "no similarity, ever"
+### 10. PR #148 against "no similarity, ever"
 
 **[verified 9 Sep 2026 — open, not draft]**
 
@@ -155,7 +155,7 @@ Not work items. Questions that block work items.
 boundary before merge. The permitted phrasing is that canonical text *corresponds*, with its limits
 attached — never that two artifacts are the same work.
 
-### 10. C2PA ingest
+### 11. C2PA ingest
 
 **[design written 9 Sep 2026, unverified in two places]**
 
@@ -169,7 +169,7 @@ ignores assertions about process. Before any of it is built:
 - Decide the two open questions in that doc: whether DAON validates a manifest's signature chain at
   ingest (which means carrying a trust list), and what the presentation surface may show.
 
-### 11. C2PA `ingredients` / derivation lineage
+### 12. C2PA `ingredients` / derivation lineage
 
 **[deferred by name, 9 Sep 2026]**
 
@@ -177,7 +177,7 @@ Passes the people-and-rights rule, is already a P2 item in `provenance-data-mode
 with *"DAON never asserts two artifacts are the same work."* Deserves its own argued decision rather
 than arriving inside another change.
 
-### 12. Registry ownership is not key-backed
+### 13. Registry ownership is not key-backed
 
 **[carried]**
 
@@ -195,16 +195,16 @@ proposal to key-back the registry has to answer what it does to that.
 
 Real features, none of them urgent.
 
-### 13. Status page
+### 14. Status page
 
 **[carried — FEATURES.md]** `/health` reports build, chain height and memory. Nothing presents it.
 
-### 14. Blockchain beacon
+### 15. Blockchain beacon
 
 **[carried — FEATURES.md]** Leaves carry a zero beacon until the daemon has a block source. Honest
 rather than wrong, but it is a stub.
 
-### 15. CD pipeline consolidation
+### 16. CD pipeline consolidation
 
 **[carried]** The dual-project issue needs a proper fix rather than another workaround.
 

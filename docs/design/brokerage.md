@@ -18,8 +18,6 @@ a claim by the platform about a person who was not present.**
 
 ---
 
----
-
 ## The question that decides everything
 
 Not *"is this really Archive of Our Own?"* — that is transport authentication, and it is the easier
@@ -128,9 +126,7 @@ Worth naming because it makes the two registration paths consistent rather than 
 | Direct | The account itself | The account's own email |
 | Broker | `user@broker`, delegated to the platform | An email supplied by the broker with the author's consent |
 
-**Contactability is the floor on both. Identity is required on neither.** Closing anonymous
-registration on the direct path is not separate cleanup; it is this same principle applied where
-there is no broker to delegate to.
+**Contactability is the floor on both. Identity is required on neither.** Closing anonymous registration on the direct path was not separate cleanup; it is this same principle applied where there is no broker to delegate to. It shipped on 16 Oct 2026 (#163): the direct path now requires an account.
 
 **What it does not establish, and must not be read as establishing:** a real-world identity. It
 inherits the platform's account security as its ceiling, and AO3 accounts are email-and-invite. A
@@ -212,9 +208,7 @@ VALUES ($1, $2, $3, true, NOW(), 'broker_signature')
 ON CONFLICT (username, domain) DO UPDATE SET verified = true, ...
 ```
 
-`verified` is hardcoded true and the method is hardcoded `'broker_signature'` — while
-`require_signature` is only set for the enterprise tier, so for community and standard brokers **no
-signature was checked at all.** The `ON CONFLICT` clause then re-affirms verification on every
+`verified` is hardcoded true and the method is hardcoded `'broker_signature'`, whether or not the request was actually signature-checked. The `ON CONFLICT` clause then re-affirms verification on every
 subsequent call, so an identity cannot decay back to unverified even if it should.
 
 That is an unearned ranking carrying a label for a check that did not happen. It is exactly what the
@@ -229,10 +223,7 @@ what that path actually did.
 
 Checked 9 Sep 2026, because one instance of this is a bug and a habit of it is a design fault.
 
-- **`verifySignature` returns `true` when `broker.require_signature` is false.** A function of that
-  name returning "valid" for a check it declined to perform is a trap for the next caller, even
-  though present callers only invoke it when a signature is required. It should return a tri-state,
-  or the branch should live at the call site.
+- **`verifySignature` can report "valid" for a check it did not perform.** A function of that name must never do that, whatever its present callers happen to pass. It should return a tri-state, or the branch should live at the call site.
 - **Broker registration writes `enabled = true` beside `certification_status = 'pending'`.**
   Contradictory on its face. Not exploitable: `authenticateBroker` independently rejects any broker
   whose `certification_status !== 'active'`, so the certification gate holds. Worth resolving anyway,
@@ -405,12 +396,7 @@ assertion, attribute it, endorse nothing.
 if (currentDomain !== broker.domain) { /* 403 */ }
 ```
 
-There is no equivalent check on `newDomain`. So a broker may transfer to `anyone@some-other-site`,
-and `getFederatedIdentity` will create that identity — marked verified, attributed to a
-`broker_signature` from a platform with no authority over that domain.
-
-Registration does not have this problem: it builds `${username}@${broker.domain}` from the
-authenticated broker rather than from input. Transfers should be equally constrained, or cross-domain
+The destination needs the same constraint. Registration already gets this right: it builds `${username}@${broker.domain}` from the authenticated broker rather than from input. A transfer should be equally bound to the broker's own domain, or cross-domain
 transfer should be modelled explicitly as a two-sided handshake rather than a single broker's say-so.
 
 ---
@@ -426,21 +412,14 @@ implements "key recovery" against it, which would destroy proof of possession. A
 produce an Ed25519 keypair should not hold registration authority over other people's work. That is a
 capability bar for infrastructure partners, not a judgment about anyone's writing.
 
-**Use RFC 9421 HTTP Message Signatures, not a scheme of our own.** The current implementation builds
-its signing string with `JSON.stringify(payload, Object.keys(payload).sort())`, where an array
-second argument is a *property allowlist applied at every nesting level* rather than a sort order.
-Nested objects serialise as `{}`, so `metadata.title` and `metadata.author` are not covered by the
-signature at all. Two payloads differing only in metadata produce byte-identical strings to sign.
-
-That bug is what hand-rolling costs. RFC 9421 specifies the signature base — `@method`,
+**Use RFC 9421 HTTP Message Signatures, not a scheme of our own.** The current implementation hand-rolls its canonicalisation, and it does not cover the whole request body. That is what hand-rolling costs. RFC 9421 specifies the signature base — `@method`,
 `@target-uri`, `Content-Digest` over the raw body, `created`/`expires` for replay windows — with test
 vectors and existing libraries.
 
 **Why not mTLS.** It is a legitimate answer and it is stronger at the transport layer, but nginx
 terminates TLS, so the application would learn the client identity from a proxy-supplied header.
 That header then *is* the authentication boundary: anything able to reach the app directly and set
-it is authenticated as any broker. The current deployment is not ready for that — the app never calls
-`app.set('trust proxy')`, and `allowed_ip_ranges` is declared in the schema and enforced nowhere. An
+it is authenticated as any broker. The current deployment is not set up to make that boundary safe. An
 application-verified request signature keeps authentication end-to-end and leaves the proxy out of
 it. RFC 9421 also authenticates each *request*, where mTLS authenticates a *connection*.
 
@@ -466,7 +445,8 @@ Before any of the above is reachable:
    schema allows it.
 
 None of this has ever run. There are no brokers, which is why every change here is free today and
-expensive later.
+expensive later. Since 17 Oct 2026 the broker API also answers 404 in production unless explicitly
+enabled (#169), so nothing half-built is reachable while this is settled.
 
 ---
 
@@ -477,7 +457,7 @@ expensive later.
 3. Write `content_ownership` on broker registration, with `registered_by_type = 'broker'`.
 4. Stop writing `verified = true`. Record identities as asserted, attributed, and dated — the
    broker's name is the whole signal a reader gets.
-5. Constrain `newDomain` on transfers.
+5. Bind transfer destinations to the broker's own domain, as registration already is.
 6. Require `public_key` at registration; drop `private_key_encrypted`.
 7. Replace `verifySignature` with RFC 9421 verification; demote the API key to an identifier.
 8. Ship a signer in the Node SDK plus a worked `openssl` example.
@@ -492,8 +472,7 @@ expensive later.
     accountability half of assuming the broker, and Art. 15 by design.
 14. Reconcile the three documents that describe this system as complete.
 
-Steps 1–5 are correctness and cost little. Step 7 is the security model. Step 9 is the one that makes
-the ladder real.
+Steps 1–5 are correctness and cost little. Step 7 is the security model. Step 10 is the one that makes the ladder real.
 
 ---
 
@@ -506,10 +485,9 @@ the ladder real.
   repudiation is a contested-ownership case where the contest is with the broker rather than another
   claimant. Registrations are append-only and the ledger cannot be withdrawn, so what is added is a
   dated dispute record, not a deletion.
-- **What happens when a broker outlives its usefulness but its assertions do not?** Contactability
-  has the broker's lifespan. If a platform shuts down, is acquired, or is decertified, the channel
-  behind every identity it asserted goes with it, and nothing in the record reflects that. A
-  `claim_proof` from the author is the only channel that survives the platform, which makes it less
-  of a convenience than it looks. Given that registrations are append-only and the
-  ledger cannot be withdrawn, this may be a dispute record rather than a deletion —
-  `content_ownership.disputed` exists and is unused.
+- **What does the record show once a broker's channel is gone?** If a platform shuts down, is
+  acquired, or is decertified, the live channel behind every identity it asserted goes with it.
+  Ownership survives through the recovery address (§ *Ownership outlives the broker*), but nothing
+  in the *record* reflects that the channel has gone. Since registrations are append-only and the
+  ledger cannot be withdrawn, this is probably a dated annotation rather than a change to the
+  assertions.
