@@ -101,8 +101,8 @@ their own leaves. A claim on this path is cryptographically attributable to a ke
 registration ever made. The chain does not record that a person registered something; it records
 that *the DAON API* registered a hash at a time. Ownership lives off-chain, as
 `protected_content.user_id → users.id`, where a user is an email address from a magic link or an
-OAuth identity. `/protect` currently uses optional auth, so a registration may carry no owner at
-all.
+OAuth identity. Since 16 Oct 2026 (#163) `/protect` requires an account, so every new registration has an owner —
+but that owner is still a row in a table, not a key.
 
 `decisions.md` already names what that means: **the database association is a finding aid, not
 evidence.**
@@ -117,9 +117,10 @@ This is the single strongest argument for restricting refusal to computations. *
 reduce to an identical buffer"* is checkable by anyone, from the content, regardless of who holds
 which key or whether any account exists. It does not depend on the finding aid at all.
 
-> **Related decision, out of scope for this page but adjacent.** Anonymous registration should
-> require an email at minimum. It interacts with #145 — an append-only chain cannot support
-> erasure — and belongs in its own issue.
+> **Related decision, since shipped.** Anonymous registration now requires an account (#163,
+> 16 Oct 2026). Erasure turned out to be tractable for the opposite reason this note once gave:
+> ownership is a database row, not a chain entry, so an account can be deleted without touching the
+> ledger. See [`erasure-and-the-ledger.md`](../legal/erasure-and-the-ledger.md).
 
 ---
 
@@ -436,6 +437,14 @@ The most common case is a creator re-registering their own work, and it must sta
 
 ### Different account, tiers 0–2 — declines to mint a second record
 
+> **Open — conflicts with the registration-exclusivity proposal (PR #159). Decide that first.**
+> This section refuses a second account's registration at tiers 0–2, which *widens* what a first
+> registrant can block beyond exact bytes. The door it offers is an association — but associations
+> are gated by the owner of record, and if the first registrant is a squatter, the squatter *is* the
+> owner of record and simply never attests. That is the veto `decisions.md` removed when it moved
+> the gate off the previous asserter. #159 proposes the opposite: registrations stop being
+> exclusive. Until that is decided, treat this section as unsettled.
+
 Where two submissions correspond under a reduction anyone can recompute, DAON declines to issue a
 second independent certificate. This is defensible precisely because it rests on a computation and
 not on the finding aid.
@@ -654,7 +663,7 @@ Tiled renditions compose through the existing `content_commit_parts`. No new tre
 | **False rendition** — pair a rendition with a work it did not come from | B0 makes it dated; B1 exposes it on disclosure | Undetected until challenged. B2 closes it. |
 | **Corpus reconstruction** — harvest renditions to rebuild works | Renditions are never published; only their commitments are | A disclosed rendition leaks 1 KiB to that counterparty, by the holder's choice |
 | **Note as scarlet letter** — mine correspondence notes for guilt | Only a fixed-width commitment is public, present on every record whether or not a note exists | Requires the empty-commitment rule to be enforced, not documented |
-| **Refusal as denial-of-service** — register first to block a creator | Refusal is confined to tiers 0–2 and routes to the association path rather than terminating | A bad-faith first registration still costs the creator a five-day association cycle |
+| **Refusal as denial-of-service** — register first to block a creator | Refusal is confined to tiers 0–2 and routes to the association path rather than terminating | **Unresolved.** If the first registrant is the squatter, they are the owner of record who must attest, so the association expires and the creator stays blocked. See the open note under *Refusal*. |
 | **False identifier** — claim an identifier belonging to someone else's work | Dated and refutable on disclosure; the ledger never asserted it was checked | Real. A false claim is evidence against the claimant, not something prevented. |
 | **Determinism drift** — two implementations disagree on `R` | Pinned filters, published cross-language vectors | The most likely real failure. Vectors are mandatory. |
 
@@ -724,8 +733,7 @@ Tiled renditions compose through the existing `content_commit_parts`. No new tre
 - **Chromaprint / AcoustID**, and the Shazam landmark paper — audio fingerprinting, including
   excerpts.
 - **MinHash (Broder), SimHash (Charikar)** — text near-duplicate detection. Note that a SimHash
-  implementation already exists in this repo, unwired, as a fossil of a superseded architecture; see
-  *What this changes*.
+  implementation already exists in this repo, unwired, as a fossil of a superseded architecture; see the end of *What to build first*.
 - **"Learning to Break Deep Perceptual Hashing" (FAccT 2022)** and the NeuralHash collision work.
 - **Multi-index hashing, HNSW/FAISS** — the search layer, if we build an index at all.
 
@@ -742,7 +750,8 @@ Tiled renditions compose through the existing `content_commit_parts`. No new tre
    is pinned today. If determinism fails, it fails here, cheaply.
 4. **Anchor the ISCC rendition** — `iscc:image-norm:v1`, and the Chromaprint vector for audio.
    Tier 2, opt-in. In parallel, draft the IEP pinning ISCC's pre-processing.
-5. **Refusal at tiers 0–2**, routed to the existing association path.
+5. **Refusal at tiers 0–2**, routed to the existing association path. *Blocked on the
+   registration-exclusivity decision (PR #159) — see the open note under* Refusal.
 6. **Tiled renditions for crop resistance.**
 7. **Only then:** an off-chain tier-3 index — opt-in, replaceable, rendering candidates rather than
    verdicts — and with it the correspondence note and `0x06`, which have nothing to record until
