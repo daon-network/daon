@@ -26,7 +26,7 @@ import { DatabaseClient, db } from './database/client.js';
 import { contentCommit } from './verifier/index.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
-import { verifyAccessToken } from './utils/jwt.js';
+import { verifyAccessToken, validateJwtConfig } from './utils/jwt.js';
 import { verifyClaim } from './verifier/index.js';
 import { sendKeyEventNotification } from './utils/email.js';
 import healthRoutes from './routes/health.js';
@@ -2714,6 +2714,12 @@ const shouldStartServer = process.env.START_SERVER === 'true' ||
                          (process.env.NODE_ENV !== 'test' && !process.env.SKIP_SERVER_START);
 
 if (shouldStartServer) {
+  // Fail closed: never sign or verify sessions with a missing, default or
+  // short secret. Refusing to start is the safer outage.
+  if (!validateJwtConfig() && process.env.NODE_ENV === 'production') {
+    logger.error('JWT_SECRET is missing, default or shorter than 32 characters -- refusing to start');
+    process.exit(1);
+  }
   app.listen(PORT, () => {
     logger.info(`🚀 DAON API Server running on port ${PORT}`);
     logger.info(`📊 Health check: http://localhost:${PORT}/health`);

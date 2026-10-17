@@ -188,6 +188,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Refuse before touching the server. The API refuses to start in
+      # production without a valid JWT_SECRET; failing here instead means a
+      # missing secret stops the deploy rather than taking the site down.
+      - name: Require JWT_SECRET
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          if [ "${#JWT_SECRET}" -lt 32 ]; then
+            echo "::error::secrets.JWT_SECRET is missing or shorter than 32 characters"
+            exit 1
+          fi
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -221,6 +233,7 @@ jobs:
           API_KEY_SECRET=${{ secrets.API_KEY_SECRET }}
           API_MNEMONIC=${{ secrets.API_MNEMONIC }}
           TOTP_ENCRYPTION_KEY=${{ secrets.TOTP_ENCRYPTION_KEY }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
           CHAIN_ID=daon-mainnet-1
           MONIKER=daon-validator-1
           LOG_LEVEL=info
