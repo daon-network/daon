@@ -26,6 +26,10 @@ import request from 'supertest';
 import app, { contentHashCandidates } from '../server.js';
 import { contentCommit } from '../verifier/index.js';
 import { toPlainText } from '../utils/content-canonical.js';
+import { generateAccessToken } from '../utils/jwt.js';
+
+// Registration requires an account.
+const AUTH = `Bearer ${generateAccessToken(1)}`;
 
 /** What the server should now store for a piece of text. */
 function expectedIdentity(content: string): string {
@@ -51,7 +55,7 @@ describe('content identity', () => {
   describe('the rule itself', () => {
     test('registration commits with content_commit, not a bare sha256', async () => {
       const content = unique('register');
-      const res = await request(app).post('/api/v1/protect').send({ content });
+      const res = await request(app).post('/api/v1/protect').set('Authorization', AUTH).send({ content });
 
       assert.equal(res.status, 201, JSON.stringify(res.body));
       assert.equal(res.body.contentHash, expectedIdentity(content));
@@ -90,7 +94,7 @@ describe('content identity', () => {
 
     test('content that strips to nothing is still refused', async () => {
       const res = await request(app)
-        .post('/api/v1/protect')
+        .post('/api/v1/protect').set('Authorization', AUTH)
         .send({ content: '<img src="only-an-image.png">' });
       assert.equal(res.status, 400, JSON.stringify(res.body));
     });
@@ -144,7 +148,7 @@ describe('content identity', () => {
 
     test('a work registered now verifies immediately by content', async () => {
       const content = unique('roundtrip');
-      const reg = await request(app).post('/api/v1/protect').send({ content });
+      const reg = await request(app).post('/api/v1/protect').set('Authorization', AUTH).send({ content });
       assert.equal(reg.status, 201, JSON.stringify(reg.body));
 
       const ver = await request(app).post('/api/v1/verify-content').send({ content });
@@ -155,10 +159,10 @@ describe('content identity', () => {
 
     test('re-registering does not create a second record', async () => {
       const content = unique('duplicate');
-      const first = await request(app).post('/api/v1/protect').send({ content });
+      const first = await request(app).post('/api/v1/protect').set('Authorization', AUTH).send({ content });
       assert.equal(first.status, 201);
 
-      const second = await request(app).post('/api/v1/protect').send({ content });
+      const second = await request(app).post('/api/v1/protect').set('Authorization', AUTH).send({ content });
       assert.equal(second.status, 200, JSON.stringify(second.body));
       assert.equal(second.body.existing, true);
       assert.equal(second.body.contentHash, first.body.contentHash);

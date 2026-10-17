@@ -26,7 +26,7 @@ import { DatabaseClient, db } from './database/client.js';
 import { contentCommit } from './verifier/index.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
-import { verifyToken } from './auth/auth.js';
+import { verifyAccessToken } from './utils/jwt.js';
 import { verifyClaim } from './verifier/index.js';
 import { sendKeyEventNotification } from './utils/email.js';
 import healthRoutes from './routes/health.js';
@@ -202,29 +202,30 @@ app.use((req, res, next) => {
   next();
 });
 
-// Validation middleware helper
-// Optional auth: attaches req.userId if a valid Bearer token is present, otherwise continues anonymously
-const optionalAuth = (req: any, _res: any, next: any) => {
-  const authHeader = req.headers['authorization'];
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const decoded = verifyToken(authHeader.substring(7));
-    if (decoded) req.userId = decoded.userId;
-  }
-  next();
-};
-
-// Association requires an account, because an assertion nobody can be held to
-// is not worth recording. Attribution is the accountability mechanism -- DAON
-// never ranks competing assertions, so knowing who made one is all it has.
+// Registration and association both require an account. An assertion nobody
+// can be held to is not worth recording: attribution is the accountability
+// mechanism -- DAON never ranks competing assertions, so knowing who made one is
+// all it has. It is also what makes erasure answerable: a registration with no
+// owner can never be deleted on request, because nobody can authenticate as it.
+//
+// Tokens are the ones /api/v1/auth issues (utils/jwt.ts: `user_id`, type
+// `access`). This used to check them with auth/auth.ts's legacy verifier, which
+// reads `userId` -- so a real login's token verified and the caller's id came
+// out undefined, and their registrations were stored with no owner.
 const requireAuth = (req: any, res: any, next: any) => {
   const authHeader = req.headers['authorization'];
-  const decoded = authHeader?.startsWith('Bearer ')
-    ? verifyToken(authHeader.substring(7))
-    : null;
-  if (!decoded) {
+  let userId: unknown;
+  try {
+    userId = authHeader?.startsWith('Bearer ')
+      ? verifyAccessToken(authHeader.substring(7)).user_id
+      : undefined;
+  } catch {
+    userId = undefined;
+  }
+  if (!Number.isInteger(userId) || (userId as number) <= 0) {
     return res.status(401).json({ success: false, error: 'authentication required' });
   }
-  req.userId = decoded.userId;
+  req.userId = userId;
   next();
 };
 
@@ -545,7 +546,6 @@ app.get('/api/v1', (req, res) => {
     description: 'Creator protection API for blockchain-verified content ownership',
     endpoints: {
       'POST /api/v1/protect': 'Protect content with Liberation License',
-      'POST /api/v1/protect/bulk': 'Protect multiple works at once',
       'GET /api/v1/verify/:hash': 'Verify content protection status by hash',
       'POST /api/v1/verify-content': 'Verify by submitting content — returns who registered it',
       'GET /api/v1/stats': 'Get protection statistics',
@@ -583,7 +583,7 @@ app.get('/api/v1', (req, res) => {
  * A multipart parser would let them share the body, at the cost of a parser
  * handling attacker-shaped input for the sake of two scalars.
  */
-app.post('/api/v1/protect', optionalAuth, async (req, res, next) => {
+app.post('/api/v1/protect', requireAuth, async (req, res, next) => {
   const bytes = fileBodyOrNull(req, res);
   if (bytes === null) return next();
   if (bytes === undefined) return;
@@ -638,7 +638,7 @@ app.post('/api/v1/protect', optionalAuth, async (req, res, next) => {
 
     try {
       await db.content.create({
-        user_id: (req as any).userId || null,
+        user_id: (req as any).userId,
         content_hash: contentHash,
         title: title || 'Untitled File',
         description: null,
@@ -668,7 +668,7 @@ app.post('/api/v1/protect', optionalAuth, async (req, res, next) => {
   }
 });
 
-app.post("/api/v1/protect", [optionalAuth,
+app.post("/api/v1/protect", [requireAuth,
   body('content')
     .notEmpty()
     .withMessage('Content is required')
@@ -881,7 +881,7 @@ app.post("/api/v1/protect", [optionalAuth,
     // Persist to database so all instances and restarts can verify
     try {
       await db.content.create({
-        user_id: req.userId || null,
+        user_id: req.userId,
         content_hash: contentHash,
         title: metadata.title || 'Untitled Work',
         description: metadata.description,
@@ -940,81 +940,18 @@ app.post("/api/v1/protect", [optionalAuth,
   }
 });
 
-// Bulk content protection endpoint
-app.post('/api/v1/protect/bulk', [
-  body('works')
-    .isArray({ min: 1, max: 100 })
-    .withMessage('Works must be an array (1-100 items)'),
-  body('works.*.content')
-    .notEmpty()
-    .withMessage('Each work must have content'),
-  body('license')
-    .optional()
-    .isIn(['liberation_v1', 'cc0', 'cc-by', 'cc-by-sa'])
-    .withMessage('Invalid license type'),
-  handleValidationErrors
-], async (req, res) => {
-  try {
-    const { works, license = 'liberation_v1' } = req.body;
-    const results = [];
-    const timestamp = new Date().toISOString();
-    
-    for (const work of works) {
-      const contentHash = generateContentHash(work.content);
-      const verificationUrl = generateVerificationUrl(contentHash);
-      
-      // Check if already protected
-      if (protectedContent.has(contentHash)) {
-        const existing = protectedContent.get(contentHash);
-        results.push({
-          contentHash,
-          verificationUrl,
-          timestamp: existing.timestamp,
-          license: existing.license,
-          existing: true
-        });
-        continue;
-      }
-      
-      // Store new protection
-      const protectionRecord = {
-        contentHash,
-        timestamp,
-        license,
-        metadata: work.metadata || {},
-        verificationUrl
-      };
-      
-      protectedContent.set(contentHash, protectionRecord);
-      
-      results.push({
-        contentHash,
-        verificationUrl,
-        timestamp,
-        license,
-        existing: false
-      });
-    }
-    
-    logger.info(`Bulk protection completed: ${results.length} works`);
-    
-    res.json({
-      success: true,
-      protected: results.length,
-      license,
-      timestamp,
-      results
-    });
-    
-  } catch (error) {
-    if (handleEmptyContent(error, res)) return;
-    logger.error('Bulk protection failed:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Bulk protection failed',
-      message: error.message
-    });
-  }
+// Bulk registration is retired. It wrote only to the in-process cache -- never
+// the database or the chain -- yet answered `protected: N`, so its records
+// vanished on restart. Worse, that cache is consulted by /verify and by the
+// duplicate check in /protect, so an anonymous bulk call could make an
+// unregistered work verify, or stop its real author registering it. Register
+// works one at a time through POST /api/v1/protect, which requires an account.
+app.post('/api/v1/protect/bulk', (_req, res) => {
+  res.status(410).json({
+    success: false,
+    error: 'gone',
+    message: 'Bulk registration has been removed. Register each work with POST /api/v1/protect.',
+  });
 });
 
 // Content verification endpoint

@@ -39,7 +39,8 @@ export default function() {
     content: content,
     metadata: { title: `Stress ${__VU}-${__ITER}` }
   }), {
-    headers: { 'Content-Type': 'application/json' },
+    // Registration requires an account.
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${__ENV.DAON_TEST_TOKEN}` },
   });
   
   const success = check(res, {

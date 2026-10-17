@@ -19,9 +19,13 @@ description: "Complete REST API reference for DAON creator protection"
 
 ### **Authentication**
 ```http
-Authorization: Bearer your-api-key-here
+Authorization: Bearer <access-token>
 Content-Type: application/json
 ```
+
+Registering content requires an account: `POST /protect` without a valid token
+returns `401`. Bulk registration (`POST /protect/bulk`) has been removed and
+returns `410`; register works one at a time.
 
 ### **Rate Limits**
 - **Free Tier:** 1,000 protections/month, 100 requests/minute
@@ -191,67 +195,6 @@ Authorization: Bearer api_key_here
 
 ---
 
-### **POST /protect/bulk**
-Protect multiple works in a single request.
-
-**Request:**
-```http
-POST /v1/protect/bulk
-Authorization: Bearer api_key_here
-Content-Type: application/json
-
-{
-  "works": [
-    {
-      "content": "First work content...",
-      "metadata": {
-        "title": "First Work",
-        "author": "Creator Name"
-      }
-    },
-    {
-      "content": "Second work content...",
-      "metadata": {
-        "title": "Second Work", 
-        "author": "Creator Name"
-      }
-    }
-  ],
-  "license": "liberation_v1",
-  "platform": "wordpress"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "totalWorks": 2,
-    "protected": 2,
-    "failed": 0,
-    "results": [
-      {
-        "index": 0,
-        "status": "protected",
-        "contentHash": "7f8b9c2d4a1e3f5a...",
-        "verificationUrl": "https://verify.daon.network/...",
-        "protectionId": "prot_1234567890"
-      },
-      {
-        "index": 1,
-        "status": "protected", 
-        "contentHash": "9a8b7c6d5e4f3a2b...",
-        "verificationUrl": "https://verify.daon.network/...",
-        "protectionId": "prot_0987654321"
-      }
-    ]
-  }
-}
-```
-
----
-
 ### **API Key Authentication**
 ```http
 Authorization: Bearer sk_live_1234567890abcdef
@@ -336,7 +279,6 @@ if (response.status === 429) {
 ```
 
 ### **Best Practices**
-- **Batch requests** using `/protect/bulk` endpoint
 - **Implement exponential backoff** for retries
 - **Cache verification results** to reduce API calls
 - **Use webhooks** for async processing

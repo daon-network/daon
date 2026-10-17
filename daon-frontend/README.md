@@ -202,7 +202,6 @@ The frontend integrates with the DAON API server for all backend operations:
 
 - `POST /api/v1/protect` - Register content on blockchain
 - `GET /api/v1/verify/:hash` - Verify content registration
-- `POST /api/v1/protect/bulk` - Bulk protection (1-100 items)
 
 ### User Management Endpoints
 

@@ -46,7 +46,6 @@ GET /api/v1               # API documentation
 ### 🛡️ **Content Protection**
 ```http
 POST /api/v1/protect      # Protect single content
-POST /api/v1/protect/bulk # Protect multiple works
 ```
 
 ### ✅ **Verification**
@@ -90,32 +89,6 @@ if (verification.isValid) {
 }
 ```
 
-### Bulk Protection
-```javascript
-const response = await fetch('http://localhost:3000/api/v1/protect/bulk', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    works: [
-      {
-        content: 'First work content...',
-        metadata: { title: 'Work 1' }
-      },
-      {
-        content: 'Second work content...',
-        metadata: { title: 'Work 2' }
-      }
-    ],
-    license: 'liberation_v1'
-  })
-});
-
-const result = await response.json();
-console.log(`Protected ${result.protected} works`);
-```
-
-## ⚙️ Configuration
-
 ### Environment Variables
 
 | Variable | Description | Default |
@@ -134,7 +107,6 @@ console.log(`Protected ${result.protected} works`);
 - ✅ **Rate Limiting** - Protection against abuse
 - ✅ **CORS Support** - Cross-origin requests for web apps
 - ✅ **Input Validation** - Secure request validation
-- ✅ **Bulk Operations** - Protect multiple works at once
 - ✅ **Demo Mode** - Works without blockchain connection
 - ⏳ **Blockchain Integration** - Connect to DAON blockchain
 - ⏳ **Database Storage** - Persistent storage
@@ -392,7 +364,6 @@ Report security vulnerabilities to: security@daon.network
 ### Phase 1: Core API ✅
 - [x] Content protection endpoints
 - [x] Content verification  
-- [x] Bulk operations
 - [x] Rate limiting and security
 - [x] Demo mode for immediate use
 

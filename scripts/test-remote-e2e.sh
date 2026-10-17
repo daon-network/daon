@@ -82,7 +82,14 @@ fi
 # Test 5: Content protection via HTTPS
 echo -e "${YELLOW}[5/8]${NC} Testing content protection via HTTPS..."
 TIMESTAMP=$(date +%s)
+# Registration requires an account. DAON_TEST_TOKEN is an access token for a
+# test account, so what this registers is owned -- and can be erased.
+if [ -z "${DAON_TEST_TOKEN:-}" ]; then
+    fail "DAON_TEST_TOKEN not set -- registration requires an account"
+    RESPONSE=""; HASH=""
+else
 RESPONSE=$(curl -sf -X POST "${API_URL}/api/v1/protect" \
+    -H "Authorization: Bearer ${DAON_TEST_TOKEN}" \
     -H "Content-Type: application/json" \
     -d "{
         \"content\": \"Remote E2E Test Content - Timestamp: ${TIMESTAMP}\",
@@ -91,6 +98,7 @@ RESPONSE=$(curl -sf -X POST "${API_URL}/api/v1/protect" \
             \"type\": \"test\"
         }
     }") || { fail "POST /api/v1/protect request failed"; HASH=""; }
+fi
 
 if [ -n "$RESPONSE" ]; then
     SUCCESS=$(echo "$RESPONSE" | jq -r '.success' 2>/dev/null)

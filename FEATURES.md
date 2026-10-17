@@ -44,6 +44,13 @@ who registered them.
 - **Duplicate detection** — re-registering returns the existing record
 - Files are **not** canonicalised. A re-exported JPEG is a different file, and
   the 404 says so in words.
+- **Registration requires an account** (16 Oct 2026). Both `POST /protect`
+  handlers use `requireAuth`; anonymous calls get `401`. Every registration made
+  through the API from here on has an owner who can erase it.
+- **No bulk endpoint.** `POST /protect/bulk` returns `410`. It used to write only
+  to the in-process cache, which `/verify` read — so an anonymous call could make
+  an unregistered work verify. The app's Bulk Register tab calls `/protect` once
+  per work.
 
 ### Provenance agent (Rust, `provenance/`)
 

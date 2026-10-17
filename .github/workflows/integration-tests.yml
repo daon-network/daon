@@ -160,6 +160,17 @@ jobs:
           SQL
           echo "✅ Fixtures seeded"
 
+      # Registration requires an account. Mint a token for the seeded user with
+      # the server's own signing code, so the smoke tests below register as
+      # someone rather than anonymously.
+      - name: Mint test token
+        working-directory: ./api-server
+        run: |
+          TOKEN=$(npx tsx -e "import('./src/utils/jwt.ts').then(m => console.log(m.generateAccessToken(1)))")
+          test -n "$TOKEN"
+          echo "::add-mask::$TOKEN"
+          echo "DAON_TEST_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
       # Start API server in background
       - name: Start API server
         run: |
@@ -249,6 +260,7 @@ jobs:
           # Test 1: Protect content
           echo "Test 1: Protect content"
           PROTECT_RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/protect \
+            -H "Authorization: Bearer $DAON_TEST_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"content":"integration test content","metadata":{"title":"Test"}}')
           echo $PROTECT_RESPONSE | jq .
@@ -282,6 +294,7 @@ jobs:
           
           # Protect content via API
           RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/protect \
+            -H "Authorization: Bearer $DAON_TEST_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"content":"blockchain integration test"}')
           
@@ -313,6 +326,7 @@ jobs:
           
           # Protect content
           RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/protect \
+            -H "Authorization: Bearer $DAON_TEST_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"content":"database test","metadata":{"title":"DB Test"}}')
           
@@ -360,41 +374,29 @@ jobs:
           echo "✅ Redis caching working"
 
       # Test bulk protection
-      - name: Test bulk protection
+      # Bulk registration was retired: it wrote only to the process cache and
+      # let anonymous callers make unregistered works verify.
+      - name: Bulk registration is gone
         run: |
-          echo "📦 Testing bulk protection..."
-          
-          # Create JSON with 10 works
-          cat > /tmp/bulk_test.json << 'EOF'
-          {
-            "works": [
-              {"content": "Work 1", "metadata": {"title": "Title 1"}},
-              {"content": "Work 2", "metadata": {"title": "Title 2"}},
-              {"content": "Work 3", "metadata": {"title": "Title 3"}},
-              {"content": "Work 4", "metadata": {"title": "Title 4"}},
-              {"content": "Work 5", "metadata": {"title": "Title 5"}},
-              {"content": "Work 6", "metadata": {"title": "Title 6"}},
-              {"content": "Work 7", "metadata": {"title": "Title 7"}},
-              {"content": "Work 8", "metadata": {"title": "Title 8"}},
-              {"content": "Work 9", "metadata": {"title": "Title 9"}},
-              {"content": "Work 10", "metadata": {"title": "Title 10"}}
-            ],
-            "license": "liberation_v1"
-          }
-          EOF
-          
-          # Bulk protect
-          RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/protect/bulk \
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/v1/protect/bulk \
             -H "Content-Type: application/json" \
-            -d @/tmp/bulk_test.json)
-          
-          PROTECTED=$(echo $RESPONSE | jq -r '.protected')
-          echo "Protected: $PROTECTED works"
-          
-          if [ "$PROTECTED" = "10" ]; then
-            echo "✅ Bulk protection working"
+            -d '{"works":[{"content":"bulk"}]}')
+          if [ "$STATUS" = "410" ]; then
+            echo "✅ /protect/bulk returns 410"
           else
-            echo "❌ Bulk protection failed"
+            echo "❌ /protect/bulk returned $STATUS"
+            exit 1
+          fi
+
+      - name: Anonymous registration is refused
+        run: |
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:3000/api/v1/protect \
+            -H "Content-Type: application/json" \
+            -d '{"content":"anonymous"}')
+          if [ "$STATUS" = "401" ]; then
+            echo "✅ anonymous /protect returns 401"
+          else
+            echo "❌ anonymous /protect returned $STATUS"
             exit 1
           fi
 

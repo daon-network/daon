@@ -36,7 +36,7 @@ sudo apt-get install k6
 **Run**:
 ```bash
 # Against production
-k6 run --env API_URL=https://api.daon.network load-test.js
+k6 run --env DAON_TEST_TOKEN=$DAON_TEST_TOKEN --env API_URL=https://api.daon.network load-test.js
 
 # Against local
 k6 run load-test.js
@@ -64,34 +64,13 @@ k6 run --out json=load-results.json load-test.js
 
 **Run**:
 ```bash
-k6 run --env API_URL=https://api.daon.network stress-test.js
+k6 run --env DAON_TEST_TOKEN=$DAON_TEST_TOKEN --env API_URL=https://api.daon.network stress-test.js
 ```
 
 **Monitor**:
 - At what load do errors start?
 - What breaks first? (API, DB, Blockchain)
 - How does it degrade? (graceful or crash)
-
----
-
-### 3. Bulk Test (`bulk-test.js`)
-
-**Purpose**: Test AO3 migration scenario
-
-**Scenario**:
-- 100 users each upload 50 works
-- 5,000 total works protected
-- Tests bulk endpoint under load
-
-**Run**:
-```bash
-k6 run --env API_URL=https://api.daon.network bulk-test.js
-```
-
-**Success Criteria**:
-- ✅ All 5,000 works protected
-- ✅ 95% of bulk operations < 60s
-- ✅ Error rate < 10%
 
 ---
 
@@ -207,17 +186,12 @@ ssh USER@SERVER 'docker stats'  # In separate terminal
 
 ```bash
 # 1. Load test (25 minutes)
-k6 run --env API_URL=https://api.daon.network load-test.js
-
-# Wait 10 minutes for system to stabilize
-
-# 2. Bulk test (30 minutes)
-k6 run --env API_URL=https://api.daon.network bulk-test.js
+k6 run --env DAON_TEST_TOKEN=$DAON_TEST_TOKEN --env API_URL=https://api.daon.network load-test.js
 
 # Wait 10 minutes for system to stabilize
 
 # 3. Stress test (25 minutes)
-k6 run --env API_URL=https://api.daon.network stress-test.js
+k6 run --env DAON_TEST_TOKEN=$DAON_TEST_TOKEN --env API_URL=https://api.daon.network stress-test.js
 ```
 
 ### Post-test Analysis

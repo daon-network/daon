@@ -8,6 +8,7 @@
 
 import React, { useState } from 'react';
 import { Check, X } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 interface BulkItem {
   title: string;
@@ -20,6 +21,7 @@ interface BulkItem {
 }
 
 export default function BulkRegisterForm() {
+  const { accessToken } = useAuth();
   const [items, setItems] = useState<BulkItem[]>([]);
   const [processing, setProcessing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -92,6 +94,11 @@ export default function BulkRegisterForm() {
       return;
     }
 
+    if (!accessToken) {
+      alert('You must be logged in to register content');
+      return;
+    }
+
     setProcessing(true);
     setCurrentIndex(0);
 
@@ -115,6 +122,7 @@ export default function BulkRegisterForm() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
             content: item.content,

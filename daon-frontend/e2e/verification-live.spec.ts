@@ -9,6 +9,8 @@ import { test, expect, request as playwrightRequest } from '@playwright/test';
  * Environment variables:
  *   BASE_URL  - Frontend URL (default: http://localhost:4000, set by playwright.config.ts)
  *   API_URL   - API URL for seeding test content (default: https://api.daon.network)
+ *   DAON_TEST_TOKEN - access token for a test account. Registration requires
+ *                     an account, so the seeded content is owned (and erasable).
  */
 
 // These tests require a live frontend+API. Skip them in local/CI runs where
@@ -17,6 +19,7 @@ const isRemote = !!process.env.BASE_URL;
 test.skip(!isRemote, 'verification-live tests only run with BASE_URL set (use npm run test:e2e:remote)');
 
 const API_URL = process.env.API_URL || 'https://api.daon.network';
+const DAON_TEST_TOKEN = process.env.DAON_TEST_TOKEN;
 
 let testContentHash: string;
 let testContent: string;
@@ -24,7 +27,12 @@ let testContent: string;
 test.beforeAll(async () => {
   // Seed a known piece of content so we have a hash to verify against.
   // Uses Playwright's request API (no browser needed).
-  const apiContext = await playwrightRequest.newContext();
+  if (!DAON_TEST_TOKEN) {
+    throw new Error('DAON_TEST_TOKEN is not set: registration requires an account');
+  }
+  const apiContext = await playwrightRequest.newContext({
+    extraHTTPHeaders: { Authorization: `Bearer ${DAON_TEST_TOKEN}` },
+  });
   testContent = `Live E2E Verification Test — ${Date.now()}`;
 
   const response = await apiContext.post(`${API_URL}/api/v1/protect`, {
