@@ -71,10 +71,11 @@ Bulk Register tab sent no token, so logged-in users registered ownerless works t
 Registrations made before this date may still be ownerless.
 
 **And the auth check itself was wrong.** `server.ts` verified tokens with `auth/auth.ts`'s legacy
-`verifyToken`, which reads `userId`. Logins issue `utils/jwt.ts` tokens, which carry `user_id`. Where
-the two secrets match (production sets one `JWT_SECRET`), a real user's token verified and their id
-came out `undefined` — so **signed-in registrations were very likely stored with no owner too**, and
-association attest/dispute compared against `undefined`. `requireAuth` now uses `verifyAccessToken`.
+`verifyToken`, while logins issue `utils/jwt.ts` tokens. In production the two did not even share a
+secret — neither was configured (see *JWT signing secret* below), so each fell back to its own default
+— and the legacy check rejected every real login. The outcome: **signed-in registrations were stored
+with no owner too**, and the association routes refused every real user with a 401, so associations
+have never worked for anyone. `requireAuth` now uses `verifyAccessToken`.
 Whether the 109 ownerless records include real users' work is worth one query against production.
 
 ### 4. The dead perceptual code — seed or delete
@@ -206,6 +207,13 @@ Not engineering, tracked here so it does not get lost.
 
 ## Done since the last list
 
+- **JWT signing secret** — 17 Oct 2026, PR #168. Production's API containers were never given
+  `JWT_SECRET`, so access tokens were signed with the default in `utils/jwt.ts` — public in this
+  repository — and anyone could have minted a valid token for any account. Confirmed against
+  production before the fix (a token signed with the default was accepted) and after it (refused).
+  The secret now exists, deploy refuses to run without it, and the API refuses to start without a
+  real one. Every session was signed out once. Whether it was used before then is being checked
+  against `activity_log`.
 - **Account deletion (#145)** — shipped 9 Sep 2026, PR #152.
 - **Dependabot** — 6 shipped-code alerts fixed, 5 dismissed as `not_used` against an undeployed
   module, 1 dev-only deferred (item 2 above). 9 Sep 2026.
