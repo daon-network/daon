@@ -26,10 +26,10 @@ import request from 'supertest';
 import app, { contentHashCandidates } from '../server.js';
 import { contentCommit } from '../verifier/index.js';
 import { toPlainText } from '../utils/content-canonical.js';
-import { generateToken } from '../auth/auth.js';
+import { generateAccessToken } from '../utils/jwt.js';
 
 // Registration requires an account.
-const AUTH = `Bearer ${generateToken(1, 'test@daon.network')}`;
+const AUTH = `Bearer ${generateAccessToken(1)}`;
 
 /** What the server should now store for a piece of text. */
 function expectedIdentity(content: string): string {

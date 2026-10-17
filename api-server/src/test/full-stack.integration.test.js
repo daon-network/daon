@@ -17,7 +17,7 @@ import { test, describe, before, after } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { createRequire } from 'module';
 import crypto from 'crypto';
-import { generateToken } from '../auth/auth.js';
+import { generateAccessToken } from '../utils/jwt.js';
 import { contentHashCandidates } from '../server.js';
 
 const require = createRequire(import.meta.url);
@@ -29,7 +29,7 @@ const BLOCKCHAIN_RPC = process.env.BLOCKCHAIN_RPC || 'http://localhost:26657';
 
 // Helper to make API requests
 // Registration requires an account; user 1 is seeded by the workflow.
-const AUTH = `Bearer ${generateToken(1, 'admin@daon.io')}`;
+const AUTH = `Bearer ${generateAccessToken(1)}`;
 const api = {
   get: (path) => request(API_URL).get(path),
   post: (path) => request(API_URL).post(path).set('Authorization', AUTH),

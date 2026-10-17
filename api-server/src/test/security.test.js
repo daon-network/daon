@@ -2,10 +2,10 @@ import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { createRequire } from 'module';
 import app from '../server.js';
-import { generateToken } from '../auth/auth.js';
+import { generateAccessToken } from '../utils/jwt.js';
 
 // Registration requires an account.
-const AUTH = `Bearer ${generateToken(1, 'test@daon.network')}`;
+const AUTH = `Bearer ${generateAccessToken(1)}`;
 
 const require = createRequire(import.meta.url);
 const request = require('supertest');

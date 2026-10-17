@@ -70,6 +70,13 @@ at all and wrote only to the process cache that `/verify` falls back to (now `41
 Bulk Register tab sent no token, so logged-in users registered ownerless works through it.
 Registrations made before this date may still be ownerless.
 
+**And the auth check itself was wrong.** `server.ts` verified tokens with `auth/auth.ts`'s legacy
+`verifyToken`, which reads `userId`. Logins issue `utils/jwt.ts` tokens, which carry `user_id`. Where
+the two secrets match (production sets one `JWT_SECRET`), a real user's token verified and their id
+came out `undefined` — so **signed-in registrations were very likely stored with no owner too**, and
+association attest/dispute compared against `undefined`. `requireAuth` now uses `verifyAccessToken`.
+Whether the 109 ownerless records include real users' work is worth one query against production.
+
 ### 4. The dead perceptual code — seed or delete
 
 **[carried]**

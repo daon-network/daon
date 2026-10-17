@@ -166,7 +166,7 @@ jobs:
       - name: Mint test token
         working-directory: ./api-server
         run: |
-          TOKEN=$(npx tsx -e "import('./src/auth/auth.ts').then(m => console.log(m.generateToken(1, 'admin@daon.io')))")
+          TOKEN=$(npx tsx -e "import('./src/utils/jwt.ts').then(m => console.log(m.generateAccessToken(1)))")
           test -n "$TOKEN"
           echo "::add-mask::$TOKEN"
           echo "DAON_TEST_TOKEN=$TOKEN" >> "$GITHUB_ENV"

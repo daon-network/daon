@@ -3,10 +3,10 @@ import { strict as assert } from 'node:assert';
 import { createRequire } from 'module';
 import app, { contentHashCandidates } from '../server.js';
 import { TEST_CONFIG } from './setup.test.js';
-import { generateToken } from '../auth/auth.js';
+import { generateAccessToken } from '../utils/jwt.js';
 
 // Registration requires an account.
-const AUTH = `Bearer ${generateToken(1, 'test@daon.network')}`;
+const AUTH = `Bearer ${generateAccessToken(1)}`;
 
 const require = createRequire(import.meta.url);
 const request = require('supertest');
@@ -122,6 +122,23 @@ describe('API Endpoints', () => {
         .send({ content: `anonymous ${crypto.randomUUID()}` })
         .expect(401);
       assert.strictEqual(response.body.success, false);
+    });
+
+    // The token a real login issues carries `user_id`. A token that verifies
+    // but carries no usable id must not get through as an ownerless caller --
+    // which is exactly what happened when this route read `userId`.
+    test('rejects a signed token that carries no user_id', async () => {
+      const { default: jwt } = await import('jsonwebtoken');
+      const legacy = jwt.sign(
+        { userId: 1, type: 'access' },
+        process.env.JWT_SECRET || 'dev-secret-change-in-production',
+        { algorithm: 'HS256' },
+      );
+      await request(app)
+        .post('/api/v1/protect')
+        .set('Authorization', `Bearer ${legacy}`)
+        .send({ content: `legacy ${crypto.randomUUID()}` })
+        .expect(401);
     });
 
     test('rejects an anonymous file registration', async () => {

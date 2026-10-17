@@ -26,7 +26,7 @@ import { DatabaseClient, db } from './database/client.js';
 import { contentCommit } from './verifier/index.js';
 import createAuthRoutes from './auth/auth-routes.js';
 import { requireAdminAuth, logAdminAction } from './auth/admin-middleware.js';
-import { verifyToken } from './auth/auth.js';
+import { verifyAccessToken } from './utils/jwt.js';
 import { verifyClaim } from './verifier/index.js';
 import { sendKeyEventNotification } from './utils/email.js';
 import healthRoutes from './routes/health.js';
@@ -207,15 +207,25 @@ app.use((req, res, next) => {
 // mechanism -- DAON never ranks competing assertions, so knowing who made one is
 // all it has. It is also what makes erasure answerable: a registration with no
 // owner can never be deleted on request, because nobody can authenticate as it.
+//
+// Tokens are the ones /api/v1/auth issues (utils/jwt.ts: `user_id`, type
+// `access`). This used to check them with auth/auth.ts's legacy verifier, which
+// reads `userId` -- so a real login's token verified and the caller's id came
+// out undefined, and their registrations were stored with no owner.
 const requireAuth = (req: any, res: any, next: any) => {
   const authHeader = req.headers['authorization'];
-  const decoded = authHeader?.startsWith('Bearer ')
-    ? verifyToken(authHeader.substring(7))
-    : null;
-  if (!decoded) {
+  let userId: unknown;
+  try {
+    userId = authHeader?.startsWith('Bearer ')
+      ? verifyAccessToken(authHeader.substring(7)).user_id
+      : undefined;
+  } catch {
+    userId = undefined;
+  }
+  if (!Number.isInteger(userId) || (userId as number) <= 0) {
     return res.status(401).json({ success: false, error: 'authentication required' });
   }
-  req.userId = decoded.userId;
+  req.userId = userId;
   next();
 };
 
