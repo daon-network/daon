@@ -159,6 +159,7 @@ services:
       API_MNEMONIC: ${API_MNEMONIC}
       API_KEY_SECRET: ${API_KEY_SECRET}
       TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY}
+      JWT_SECRET: ${JWT_SECRET}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-1"
       # SMTP Email Configuration
@@ -210,6 +211,7 @@ services:
       API_MNEMONIC: ${API_MNEMONIC}
       API_KEY_SECRET: ${API_KEY_SECRET}
       TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY}
+      JWT_SECRET: ${JWT_SECRET}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       INSTANCE_ID: "api-3"
       # SMTP Email Configuration
