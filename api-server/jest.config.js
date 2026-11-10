@@ -32,7 +32,8 @@ export default {
     'broker-registration-admin\\.test\\.ts$',
     'transfer-endpoint\\.test\\.ts$',
     'usage-endpoint\\.test\\.ts$',
-    'webhook-delivery\\.test\\.ts$'
+    'webhook-delivery\\.test\\.ts$',
+    'email-address\\.test\\.ts$'
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
