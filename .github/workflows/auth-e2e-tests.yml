@@ -25,7 +25,7 @@ jobs:
     # Pinned rather than floating: a browser build changing under CI without a
     # commit is the kind of drift that produces a failure nobody can reproduce.
     container:
-      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
       # --ipc=host is Playwright's recommendation for browsers in Docker: the
       # default 64 MB of /dev/shm is thin for a browser.
       options: --ipc=host
