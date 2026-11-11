@@ -2445,169 +2445,25 @@ app.delete('/api/v1/broker/webhooks/:webhookId',
   }
 );
 
-/**
- * Transfer Ownership Endpoint
- * 
- * Transfers content ownership from one identity to another
- * Records full transfer history on blockchain
- * Only current owner can initiate transfer
- */
-app.post('/api/v1/transfer', [
-  body('contentHash')
-    .isHexadecimal()
-    .isLength({ min: 64, max: 64 })
-    .withMessage('Valid SHA-256 hash required'),
-  body('newOwner')
-    .notEmpty()
-    .withMessage('New owner identity required'),
-  body('currentOwner')
-    .notEmpty()
-    .withMessage('Current owner identity required'),
-  body('signature')
-    .optional()
-    .isString()
-    .withMessage('Owner signature for verification'),
-  handleValidationErrors
-], async (req, res) => {
-  try {
-    const { contentHash, newOwner, currentOwner, signature } = req.body;
-    
-    logger.info(`Transfer request: ${contentHash} from ${currentOwner} to ${newOwner}`);
-    
-    // Check if content exists
-    let record = protectedContent.get(contentHash);
-    
-    if (!record) {
-      // Try blockchain if enabled
-      if (blockchainEnabled && blockchainClient.connected) {
-        try {
-          const blockchainRecord = await blockchainClient.verifyContent(contentHash);
-          if (blockchainRecord.verified) {
-            record = {
-              contentHash,
-              owner: blockchainRecord.creator,
-              license: blockchainRecord.license,
-              blockchain: true
-            };
-          }
-        } catch (err) {
-          logger.warn('Blockchain lookup failed:', err.message);
-        }
-      }
-      
-      if (!record) {
-        return res.status(404).json({
-          success: false,
-          error: 'Content not found',
-          message: 'Content hash not registered'
-        });
-      }
-    }
-    
-    // Verify current owner
-    if (record.owner !== currentOwner) {
-      logger.warn(`Unauthorized transfer attempt: ${currentOwner} is not owner of ${contentHash}`);
-      return res.status(403).json({
-        success: false,
-        error: 'Unauthorized',
-        message: 'Only current owner can transfer ownership',
-        currentOwner: record.owner
-      });
-    }
-    
-    // TODO: Validate signature if provided
-    // For now, accept without signature (will need proper auth)
-    
-    const timestamp = new Date().toISOString();
-    const transferRecord = `${currentOwner}->${newOwner}@${timestamp}`;
-    
-    // Update ownership
-    const previousOwner = record.owner;
-    record.owner = newOwner;
-    record.transferHistory = record.transferHistory || [];
-    record.transferHistory.push(transferRecord);
-    record.lastTransfer = timestamp;
-    
-    // If blockchain enabled, execute transfer there
-    if (blockchainEnabled && blockchainClient.connected) {
-      try {
-        // Call blockchain transfer function
-        // await blockchainClient.transferOwnership(contentHash, currentOwner, newOwner);
-        logger.info(`Blockchain transfer would execute here: ${contentHash}`);
-        record.blockchain = true;
-      } catch (blockchainError) {
-        logger.warn('Blockchain transfer failed, updating memory only:', blockchainError.message);
-      }
-    }
-    
-    // Update in-memory storage
-    protectedContent.set(contentHash, record);
-    
-    logger.info(`Ownership transferred: ${contentHash} from ${previousOwner} to ${newOwner}`);
-    
-    res.json({
-      success: true,
-      contentHash,
-      previousOwner,
-      newOwner,
-      timestamp,
-      transferHistory: record.transferHistory,
-      blockchain: record.blockchain || false,
-      message: 'Ownership successfully transferred'
-    });
-    
-  } catch (error) {
-    logger.error('Ownership transfer failed:', error);
-    
-    res.status(500).json({
-      success: false,
-      error: 'Transfer failed',
-      message: error.message
-    });
-  }
+// Transfer and transfer history are retired. Both read and wrote only the
+// in-process cache -- never the database or the chain -- so a transfer
+// vanished on restart and the history showed only what this process had seen.
+// Ownership transfer needs a real design against the database record; see
+// WISHLIST.md.
+app.post('/api/v1/transfer', (_req, res) => {
+  res.status(410).json({
+    success: false,
+    error: 'gone',
+    message: 'Ownership transfer is not available.',
+  });
 });
 
-/**
- * Get Transfer History
- * 
- * Returns complete ownership history for a piece of content
- */
-app.get('/api/v1/transfer-history/:hash', [
-  param('hash')
-    .isHexadecimal()
-    .isLength({ min: 64, max: 64 })
-    .withMessage('Invalid SHA-256 hash'),
-  handleValidationErrors
-], async (req, res) => {
-  try {
-    const { hash } = req.params;
-    let record = protectedContent.get(hash);
-    
-    if (!record) {
-      return res.status(404).json({
-        success: false,
-        error: 'Content not found'
-      });
-    }
-    
-    res.json({
-      success: true,
-      contentHash: hash,
-      currentOwner: record.owner,
-      ownerType: record.ownerType || 'direct',
-      broker: record.broker,
-      transferHistory: record.transferHistory || [],
-      registeredAt: record.timestamp
-    });
-    
-  } catch (error) {
-    logger.error('Transfer history lookup failed:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Lookup failed',
-      message: error.message
-    });
-  }
+app.get('/api/v1/transfer-history/:hash', (_req, res) => {
+  res.status(410).json({
+    success: false,
+    error: 'gone',
+    message: 'Transfer history is not available.',
+  });
 });
 
 // Protection statistics endpoint
