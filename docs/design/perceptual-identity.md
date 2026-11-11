@@ -437,13 +437,13 @@ The most common case is a creator re-registering their own work, and it must sta
 
 ### Different account, tiers 0–2 — declines to mint a second record
 
-> **Open — conflicts with the registration-exclusivity proposal (PR #159). Decide that first.**
-> This section refuses a second account's registration at tiers 0–2, which *widens* what a first
-> registrant can block beyond exact bytes. The door it offers is an association — but associations
-> are gated by the owner of record, and if the first registrant is a squatter, the squatter *is* the
-> owner of record and simply never attests. That is the veto `decisions.md` removed when it moved
-> the gate off the previous asserter. #159 proposes the opposite: registrations stop being
-> exclusive. Until that is decided, treat this section as unsettled.
+> **Decided 11 Nov 2026: registrations are exclusive.** A hash that already has an owner is a hard
+> stop for any other account. That settles tier 0, which is today's behaviour. Two things it
+> leaves open, recorded in `WISHLIST.md` entry 6:
+> - whether tiers 1–2 count as an "identical hash" for this purpose;
+> - what recourse a creator has when the first registrant is not them. The door below is an
+>   association, associations are gated by the owner of record, and that first registrant need never
+>   attest.
 
 Where two submissions correspond under a reduction anyone can recompute, DAON declines to issue a
 second independent certificate. This is defensible precisely because it rests on a computation and
@@ -456,8 +456,8 @@ But it must not be a dead end, and the dispute path already exists:
 
 So the submitter receives the existing record and the route to assert an association against it.
 The owner of record attests, or the assertion expires in five days and is refused — and either way
-the assertion stays on the record, dated. Nobody is locked out, nobody squats a hash, and DAON
-decides nothing.
+the assertion stays on the record, dated, and DAON decides nothing. What it does not yet do is
+help a creator whose work someone else registered first — see the note above.
 
 That is the refusal, with a door in it.
 
@@ -471,9 +471,9 @@ Approximate correspondence never refuses. The reasons are cumulative and each is
   near-duplicates and waves through deliberate ones — its only reliable victims are the innocent.
 - **Refusal teaches the threshold.** A refused party edits and resubmits until they pass, and no
   record of any of it survives. An admitted party leaves a dated record.
-- **It would squat.** `decisions.md` already reversed a unique constraint on exact hashes for this
-  reason; approximate matching is the same trap with a wider radius, blocking a neighbourhood
-  rather than a hash.
+- **It would squat.** `decisions.md` reversed a unique constraint on association hashes for this
+  reason. Registrations keep theirs for exact hashes, by decision; approximate matching would
+  extend that block from a hash to a neighbourhood.
 
 Instead the registration succeeds and carries a **correspondence note**: a record that, at
 registration time, a corresponding rendition already existed — which prior record, at what
@@ -663,7 +663,7 @@ Tiled renditions compose through the existing `content_commit_parts`. No new tre
 | **False rendition** — pair a rendition with a work it did not come from | B0 makes it dated; B1 exposes it on disclosure | Undetected until challenged. B2 closes it. |
 | **Corpus reconstruction** — harvest renditions to rebuild works | Renditions are never published; only their commitments are | A disclosed rendition leaks 1 KiB to that counterparty, by the holder's choice |
 | **Note as scarlet letter** — mine correspondence notes for guilt | Only a fixed-width commitment is public, present on every record whether or not a note exists | Requires the empty-commitment rule to be enforced, not documented |
-| **Refusal as denial-of-service** — register first to block a creator | Refusal is confined to tiers 0–2 and routes to the association path rather than terminating | **Unresolved.** If the first registrant is the squatter, they are the owner of record who must attest, so the association expires and the creator stays blocked. See the open note under *Refusal*. |
+| **Refusal as denial-of-service** — register first to block a creator | Refusal is confined to tiers 0–2 and routes to the association path rather than terminating | **Unresolved.** Exclusivity is decided, so the first registrant holds the hash; if that is not the creator, they are the owner of record who must attest, the association expires, and the creator stays blocked. Recourse is open — `WISHLIST.md` entry 6. |
 | **False identifier** — claim an identifier belonging to someone else's work | Dated and refutable on disclosure; the ledger never asserted it was checked | Real. A false claim is evidence against the claimant, not something prevented. |
 | **Determinism drift** — two implementations disagree on `R` | Pinned filters, published cross-language vectors | The most likely real failure. Vectors are mandatory. |
 
@@ -750,8 +750,9 @@ Tiled renditions compose through the existing `content_commit_parts`. No new tre
    is pinned today. If determinism fails, it fails here, cheaply.
 4. **Anchor the ISCC rendition** — `iscc:image-norm:v1`, and the Chromaprint vector for audio.
    Tier 2, opt-in. In parallel, draft the IEP pinning ISCC's pre-processing.
-5. **Refusal at tiers 0–2**, routed to the existing association path. *Blocked on the
-   registration-exclusivity decision (PR #159) — see the open note under* Refusal.
+5. **Refusal at tiers 0–2**, routed to the existing association path. Tier 0 is decided and
+   shipped. *Tiers 1–2 wait on whether they count as an identical hash — see the note under*
+   Refusal.
 6. **Tiled renditions for crop resistance.**
 7. **Only then:** an off-chain tier-3 index — opt-in, replaceable, rendering candidates rather than
    verdicts — and with it the correspondence note and `0x06`, which have nothing to record until
