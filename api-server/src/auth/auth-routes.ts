@@ -8,6 +8,7 @@ import { Router, Request, Response } from 'express';
 import { AuthService, DeviceInfo } from './auth-service.js';
 import { DatabaseClient } from '../database/client.js';
 import { verifyAccessToken } from '../utils/jwt.js';
+import { isPlainEmailAddress } from '../utils/email.js';
 
 const router = Router();
 
@@ -69,6 +70,14 @@ export function createAuthRoutes(db: DatabaseClient): Router {
           success: false,
           error: 'invalid_request',
           message: 'Email is required'
+        });
+      }
+
+      if (!isPlainEmailAddress(email)) {
+        return res.status(400).json({
+          success: false,
+          error: 'invalid_request',
+          message: 'Enter a single email address, like name@example.com'
         });
       }
       
@@ -527,6 +536,14 @@ export function createAuthRoutes(db: DatabaseClient): Router {
           success: false,
           error: 'invalid_request',
           message: 'New email and verification code are required'
+        });
+      }
+
+      if (!isPlainEmailAddress(new_email)) {
+        return res.status(400).json({
+          success: false,
+          error: 'invalid_request',
+          message: 'Enter a single email address, like name@example.com'
         });
       }
       

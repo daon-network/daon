@@ -16,6 +16,16 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:4000';
 
 let transporter: Transporter | null = null;
 
+// A single plain mailbox: local@domain, no display name, comments, quoting,
+// groups or lists. Deliberately narrower than RFC 5322 — every address we send
+// to is one a person typed as their own.
+const PLAIN_ADDRESS =
+  /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/;
+
+export function isPlainEmailAddress(value: unknown): value is string {
+  return typeof value === 'string' && value.length <= 254 && PLAIN_ADDRESS.test(value);
+}
+
 /**
  * Initialize email transporter
  */
@@ -411,6 +421,10 @@ async function sendEmail(
   text: string,
   magicLinkId?: number
 ): Promise<void> {
+  if (!isPlainEmailAddress(to)) {
+    throw new Error('invalid recipient address');
+  }
+
   const transport = getTransporter();
   
   if (!transport) {
