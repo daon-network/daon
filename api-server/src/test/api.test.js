@@ -166,6 +166,22 @@ describe('API Endpoints', () => {
     });
   });
 
+  describe('transfer - retired', () => {
+    // Both read and wrote only the process cache. Neither may act on a request.
+    test('POST /api/v1/transfer is gone, whatever the body', async () => {
+      const hash = 'a'.repeat(64);
+      await request(app)
+        .post('/api/v1/transfer')
+        .send({ contentHash: hash, currentOwner: 'x', newOwner: 'y' })
+        .expect(410);
+      await request(app).post('/api/v1/transfer').send({}).expect(410);
+    });
+
+    test('GET /api/v1/transfer-history/:hash is gone', async () => {
+      await request(app).get(`/api/v1/transfer-history/${'a'.repeat(64)}`).expect(410);
+    });
+  });
+
   describe('GET /api/v1/verify/:hash - Content Verification', () => {
     test('should verify protected content', async () => {
       const testContent = 'Content to verify';
