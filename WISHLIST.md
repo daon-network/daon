@@ -96,24 +96,36 @@ reach of Art. 17 the moment it is wired up.
 
 ---
 
-### 6. Registrations are exclusive; associations deliberately are not
+### 6. Registrations are exclusive — decided
 
-**[verified 9 Sep 2026, re-checked 17 Oct 2026]**
+**[decided 11 Nov 2026]**
 
-`protected_content.content_hash` is `UNIQUE`, so the first account to register a hash blocks every
-other. A few lines below it in the same file, `content_associations` is **deliberately not unique**,
-with the reasoning attached:
+**A hash that already has an owner is a hard stop.** A second account cannot register it: you cannot
+claim ownership of something that already exists. `protected_content.content_hash` stays `UNIQUE`.
 
-> *"A unique constraint would let whoever asserted first squat the hash, and the person best placed
-> to do that is not the creator."*
+This was proposed the other way on 9 Sep — make registrations non-exclusive, the way
+`content_associations` is — and decided against. The two tables differ on purpose. An association
+asserts a relationship and is gated by the owner of record, so many can coexist. A registration is a
+claim of ownership, and there is one.
 
-That reasoning was worked out for associations and never carried back to registrations, where it
-matters more. Surfaced by a question about public domain works, which is where it is most obvious: a
-public domain hash is computable by anyone from a file anyone can download, so squatting *Pride and Prejudice* costs one request. Since 16 Oct 2026 (#163) that request needs an
-account, which makes a squatter attributable and their registration erasable — but does not stop it. It applies to any work, though — the public domain case is just the
-one with an unambiguous right answer.
+What the decision accepts: the first registrant holds the hash, including someone who registers a
+work that is not theirs. A public domain hash is computable by anyone from a file anyone can
+download. Since 16 Oct 2026 (#163) registering needs an account, so such a registration is
+attributable and erasable.
 
-Two smaller things in the same area:
+**Open — follow from the decision, not yet answered:**
+
+- **Recourse.** The route this design offers a second claimant is an association against the existing
+  record, and associations are gated by the owner of record. If the first registrant is not the
+  creator, they never attest, and the real creator has no way to contest it.
+- **Ownerless hashes.** The rule is about hashes that *have an owner*. Records with no owner exist —
+  the 109 early test registrations — and `UNIQUE` blocks those hashes too. Whether an ownerless hash
+  can be claimed is not decided.
+- **Beyond exact bytes.** PR #148's tiers 1–2 (same pixels in a different container; the same
+  anchored rendition) are exact hashes over a normalised input. Whether "identical hash" includes
+  them decides how far the hard stop reaches.
+
+Two smaller things in the same area, unchanged by the decision:
 
 - **The defaults assert restrictions the registrant may have no standing to assert.** `license`
   defaults to `liberation_v1` and `ai_training_policy` to `prohibited`, so registering a work you did
@@ -122,19 +134,7 @@ Two smaller things in the same area:
   rights holder*. There is no way to express "nobody holds rights to this," only "I decline mine."
 
 Not a similarity problem, and explicitly not an argument for perceptual matching — see the
-*Deliberately not built* section of `FEATURES.md` and PR #148. Non-exclusivity is the fix.
-
-**Open — decide before building.** Non-exclusive registration leaves a question this entry does not
-answer: **who is the owner of record when several accounts register the same hash?** The association
-gate in `decisions.md` (*The gate is the owner of record*), PR #148's refusal tiers and the brokerage
-dispute flow all assume exactly one. PR #148 also currently proposes the opposite direction — refusing
-a second account's registration across a wider radius than exact bytes — so the two need reconciling,
-and this decision should come first.
-
-## Tier 3 — Honesty debt
-
-Claims that are ahead of the code. The project treats this as a first-class defect, so it is not the
-bottom of the list.
+*Deliberately not built* section of `FEATURES.md` and PR #148.
 
 ### 7. Three documents call the broker complete
 
